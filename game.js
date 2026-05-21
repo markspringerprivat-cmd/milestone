@@ -503,10 +503,10 @@
     el('resetGameBtn')?.addEventListener('click', resetGame);
     el('levelUnlockedContinueBtn')?.addEventListener('click', () => { const m = el('levelUnlockedModal'); hide(m); m?.classList.remove('stage-popup'); m?.style.removeProperty('--popup-bg'); startBackgroundMusic(true); });
     el('closeScanBtn')?.addEventListener('click', closeScanModal);
-    el('backToBoardBtn')?.addEventListener('click', closeScanModal);
+    el('backToBoardBtn')?.addEventListener('click', () => escapeFromBoardModal('scan'));
     el('manualUnlockBtn')?.addEventListener('click', () => handleScanText(el('manualCodeInput')?.value));
     el('manualCodeInput')?.addEventListener('keydown', e => { if (e.key === 'Enter') handleScanText(e.target.value); });
-    el('encounterBackBtn')?.addEventListener('click', () => { hide(el('encounterModal')); startBackgroundMusic(true); });
+    el('encounterBackBtn')?.addEventListener('click', () => escapeFromBoardModal('encounter'));
     el('launchLevelBtn')?.addEventListener('click', async () => {
       if (!pendingLaunch) return;
       await playSound('fight');
@@ -538,6 +538,26 @@
     }
   }
 
+  function escapeFromBoardModal(source) {
+    const state = getState();
+    let slot = null;
+    if (source === 'scan') {
+      slot = Number.isInteger(activeSlotForScan) ? activeSlotForScan : null;
+      closeScanModal(false);
+    } else if (source === 'encounter') {
+      slot = pendingLaunch && Number.isInteger(pendingLaunch.slot) ? pendingLaunch.slot : null;
+      hide(el('encounterModal'));
+      pendingLaunch = null;
+    }
+    if (Number.isInteger(slot) && !state.completed[slot]) {
+      state.slots[slot] = null;
+      setState(state);
+      renderBoard();
+    }
+    showLevelUnlockedModalOnBoard({ type: 'escaped', slot });
+    startBackgroundMusic(true);
+  }
+
   function showLevelUnlockedModalOnBoard(options = {}) {
     const modal = el('levelUnlockedModal');
     if (!modal) {
@@ -547,12 +567,12 @@
     const title = el('levelUnlockedTitle');
     const text = el('levelUnlockedText');
     const image = modal.querySelector('.character-img');
-    const isRun = options.type === 'run';
-    if (title) title.textContent = isRun ? 'Du bist erfolgreich weggerannt' : 'Neues Level freigeschaltet';
-    if (text) text.textContent = isRun ? 'Du kannst jetzt einen neuen QR-Code scannen oder das Level später erneut starten.' : 'Weiter zum Spielbrett.';
+    const isEscape = options.type === 'escaped' || options.type === 'run';
+    if (title) title.textContent = isEscape ? 'Du bist entkommen' : 'Neues Level freigeschaltet';
+    if (text) text.textContent = isEscape ? 'Scanne einen neuen QR-Code, um es erneut zu versuchen.' : 'Weiter zum Spielbrett.';
     if (image) {
-      image.src = isRun ? 'held_verloren.webp' : 'held_gewonnen.webp';
-      image.alt = isRun ? 'Held ist weggerannt' : 'Held steckt die Flagge in den Boden';
+      image.src = isEscape ? 'held_entkommen.webp' : 'held_gewonnen.webp';
+      image.alt = isEscape ? 'Held ist entkommen' : 'Held steckt die Flagge in den Boden';
     }
     const bg = options.isBoss ? BOSS_POPUP_BACKGROUND : (Number.isInteger(options.slot) ? POPUP_BACKGROUNDS[options.slot] : null);
     if (bg) {
@@ -997,7 +1017,7 @@
     const label = el('evaluationLabel');
     if (!modal || !image || !label) {
       const wrong = results.filter(result => !result).length;
-      if (wrong >= 2) showLoseFlow();
+      if (wrong >= 2) showLoseFlow(meta);
       else showWinFlow(data, meta);
       return;
     }
@@ -1057,14 +1077,14 @@
         if (checkBtn) checkBtn.disabled = false;
         hide(modal);
         if (won) showWinFlow(data, meta, false);
-        else showLoseFlow(false);
+        else showLoseFlow(meta, false);
       }, { once: true });
     } else {
       stopBattleBackground();
       if (checkBtn) checkBtn.disabled = false;
       hide(modal);
       if (won) showWinFlow(data, meta);
-      else showLoseFlow();
+      else showLoseFlow(meta);
     }
   }
 
@@ -1109,7 +1129,7 @@
       state.slots[meta.slot] = null;
       setState(state);
     }
-    storeBoardReturnModal('run', meta);
+    storeBoardReturnModal('escaped', meta);
     markBoardMusicResume();
     window.location.href = 'index.html';
   }
@@ -1130,7 +1150,7 @@
     window.location.href = 'index.html';
   }
 
-  function showLoseFlow(playOutcome = true) {
+  function showLoseFlow(meta, playOutcome = true) {
     const modal = el('resultModal');
     modal?.querySelector('.encounter-card')?.classList.remove('outcome-hero');
     modal?.querySelector('.encounter-card')?.classList.add('outcome-clean');
@@ -1140,13 +1160,14 @@
     setText('resultTitle', '');
     setText('resultText', '');
     const buttons = el('resultButtons');
-    buttons.innerHTML = '<button id="retryBtn" class="game-btn primary">Neuer Versuch</button><a class="game-btn muted" href="index.html">Zurück zum Spielbrett</a>';
+    buttons.innerHTML = '<button id="retryBtn" class="game-btn primary">Neuer Versuch</button><button id="escapeBtn" class="game-btn muted">Wegrennen</button>';
     show(modal);
     if (playOutcome) {
       prepareOutcomeSound();
       playSound('lose');
     }
-    el('retryBtn').addEventListener('click', () => hide(modal));
+    el('retryBtn')?.addEventListener('click', () => hide(modal));
+    el('escapeBtn')?.addEventListener('click', () => runAwayFromLevel(meta));
   }
 
   function initCodes() {
