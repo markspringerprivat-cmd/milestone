@@ -249,7 +249,7 @@
     }
 
     el('startGameBtn')?.addEventListener('click', async () => {
-      await enableSoundFromGesture();
+      await unlockAudioFromGesture();
       const s = getState();
       s.started = true;
       setState(s);
