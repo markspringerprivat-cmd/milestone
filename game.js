@@ -147,14 +147,38 @@
   };
   const SOUND_STORE = 'koenigreichSinneSoundMutedV1';
   const audio = {};
+  const managedPlayers = {};
+  const playerTokens = {};
   let audioReady = false;
   let audioUnlocked = false;
   let soundMuted = localStorage.getItem(SOUND_STORE) === '1';
   let audioButton = null;
-  const activeEffectSounds = {};
 
   function isBoardVisible() {
     return document.body.dataset.page === 'board' && !el('boardScreen')?.classList.contains('hidden');
+  }
+
+  function createManagedPlayer() {
+    const player = new Audio();
+    player.preload = 'auto';
+    player.setAttribute('playsinline', '');
+    player.playsInline = true;
+    return player;
+  }
+
+  function volumeForKey(key) {
+    if (key === 'background') return 0.04;
+    if (key === 'battle_background') return 0.10;
+    if (key === 'win' || key === 'lose') return 0.96;
+    if (key === 'final') return 0.94;
+    if (/^(richtig|falsch)_\d+$/.test(key)) return 0.92;
+    return 0.88;
+  }
+
+  function channelForKey(key) {
+    if (key === 'win' || key === 'lose') return 'outcome';
+    if (key === 'final' || /^(richtig|falsch)_\d+$/.test(key)) return 'evaluation';
+    return 'ui';
   }
 
   function initAudio() {
@@ -163,17 +187,21 @@
       const a = new Audio(file);
       a.preload = 'auto';
       a.setAttribute('playsinline', '');
+      a.playsInline = true;
       if (key === 'background') {
         a.loop = true;
-        a.volume = 0.045;
+        a.volume = volumeForKey(key);
       } else if (key === 'battle_background') {
         a.loop = true;
-        a.volume = 0.20;
+        a.volume = volumeForKey(key);
       } else {
-        a.volume = 0.86;
+        a.volume = volumeForKey(key);
       }
       audio[key] = a;
     });
+    managedPlayers.ui = createManagedPlayer();
+    managedPlayers.evaluation = createManagedPlayer();
+    managedPlayers.outcome = createManagedPlayer();
     audioReady = true;
   }
 
@@ -192,6 +220,9 @@
       if (soundMuted) {
         stopBackgroundMusic();
         stopBattleBackground();
+        stopManagedChannel('ui');
+        stopManagedChannel('evaluation');
+        stopManagedChannel('outcome');
       } else {
         await unlockAudioFromGesture();
         if (isBoardVisible()) startBackgroundMusic(true);
@@ -210,8 +241,8 @@
   }
 
   async function unlockAudioFromGesture() {
-    // Nur Audioobjekte vorbereiten. Kein Test-Sound wird abgespielt.
     initAudio();
+    audioUnlocked = true;
   }
 
   function stopBackgroundMusic() {
@@ -226,7 +257,11 @@
     if (soundMuted) return;
     const bg = audio.battle_background;
     if (!bg) return;
-    try { bg.currentTime = 0; bg.volume = 0.18; } catch {}
+    try {
+      bg.pause();
+      bg.currentTime = 0;
+      bg.volume = volumeForKey('battle_background');
+    } catch {}
     bg.play().catch(() => {});
   }
 
@@ -237,14 +272,57 @@
     try { bg.pause(); bg.currentTime = 0; } catch {}
   }
 
+  function stopManagedChannel(channel) {
+    initAudio();
+    const player = managedPlayers[channel];
+    if (!player) return;
+    try {
+      player.pause();
+      player.currentTime = 0;
+    } catch {}
+  }
+
+  async function playManagedSound(key, channel = channelForKey(key)) {
+    initAudio();
+    if (soundMuted) return Promise.resolve();
+    const file = AUDIO_FILES[key];
+    const player = managedPlayers[channel];
+    if (!file || !player) return Promise.resolve();
+
+    const token = (playerTokens[channel] || 0) + 1;
+    playerTokens[channel] = token;
+
+    try {
+      player.pause();
+      player.loop = false;
+      player.volume = volumeForKey(key);
+      if (player.dataset.soundKey !== key) {
+        player.src = file;
+        player.dataset.soundKey = key;
+        player.load();
+      } else {
+        player.currentTime = 0;
+      }
+      const attempt = () => {
+        if (playerTokens[channel] !== token || soundMuted) return Promise.resolve();
+        try { player.currentTime = 0; } catch {}
+        return player.play().catch(() => {});
+      };
+      await attempt();
+      if (player.paused && playerTokens[channel] === token && !soundMuted) {
+        await new Promise(resolve => window.setTimeout(resolve, 80));
+        await attempt();
+      }
+    } catch {
+      return Promise.resolve();
+    }
+  }
+
   function playSound(key) {
     initAudio();
     if (soundMuted) return Promise.resolve();
     const file = AUDIO_FILES[key];
     if (!file) return Promise.resolve();
-
-    // Hintergrundmusik wird separat gesteuert. Alle anderen Sounds sind klar an Buttons
-    // oder an die Auswertungsschritte gebunden und werden als eigene Instanz gestartet.
     if (key === 'background') {
       return audio.background?.play().catch(() => {}) || Promise.resolve();
     }
@@ -252,32 +330,25 @@
       startBattleBackground();
       return Promise.resolve();
     }
-
-    try {
-      if (activeEffectSounds[key]) {
-        activeEffectSounds[key].pause();
-        activeEffectSounds[key].currentTime = 0;
-      }
-      const a = new Audio(file);
-      a.preload = 'auto';
-      a.setAttribute('playsinline', '');
-      a.volume = key === 'win' || key === 'lose' ? 0.95 : 0.88;
-      activeEffectSounds[key] = a;
-      return a.play().catch(() => {});
-    } catch {
-      return Promise.resolve();
-    }
+    return playManagedSound(key);
   }
 
   function stopSound(key) {
     initAudio();
-    const a = activeEffectSounds[key] || audio[key];
-    if (!a) return;
-    try { a.pause(); a.currentTime = 0; } catch {}
+    if (key === 'background') {
+      stopBackgroundMusic();
+      return;
+    }
+    if (key === 'battle_background') {
+      stopBattleBackground();
+      return;
+    }
+    stopManagedChannel(channelForKey(key));
   }
 
   function prepareOutcomeSound() {
-    ['richtig','falsch','richtig_1','richtig_2','richtig_3','falsch_1','falsch_2','falsch_3','final'].forEach(stopSound);
+    stopManagedChannel('evaluation');
+    stopManagedChannel('outcome');
   }
 
   function startBackgroundMusic(restart = false) {
@@ -288,6 +359,7 @@
     if (restart) {
       try { bg.currentTime = 0; } catch {}
     }
+    bg.volume = volumeForKey('background');
     if (!bg.paused) return;
     bg.play().then(() => { audioUnlocked = true; }).catch(() => {});
   }
@@ -296,8 +368,11 @@
     initAudio();
     ensureAudioButton();
     document.addEventListener('visibilitychange', () => {
-      if (document.hidden) stopBackgroundMusic();
-      else if (isBoardVisible()) startBackgroundMusic(true);
+      if (document.hidden) {
+        stopBackgroundMusic();
+      } else if (isBoardVisible()) {
+        startBackgroundMusic(true);
+      }
     });
   }
 
@@ -749,6 +824,9 @@
   }
 
   let lastEvaluationImage = { correct: null, wrong: null };
+  let evaluationRunToken = 0;
+  const EVALUATION_ENTRY_CLASSES = ['enter-left', 'enter-right', 'enter-top', 'enter-bottom', 'enter-zoom'];
+  const FINAL_ENTRY_CLASSES = ['enter-zoom', 'enter-top', 'enter-bottom'];
 
   function randomFrom(list) {
     return list[Math.floor(Math.random() * list.length)];
@@ -762,11 +840,35 @@
     return picked;
   }
 
+  function wait(ms) {
+    return new Promise(resolve => window.setTimeout(resolve, ms));
+  }
+
+  function nextPaint(frames = 2) {
+    return new Promise(resolve => {
+      const step = () => {
+        if (frames <= 0) {
+          resolve();
+          return;
+        }
+        frames -= 1;
+        window.requestAnimationFrame(step);
+      };
+      window.requestAnimationFrame(step);
+    });
+  }
+
   function setEvaluationImage(image, src, alt, finalStep = false) {
     if (!image) return;
-    image.className = finalStep ? 'evaluation-img final-step' : 'evaluation-img answer-step';
+    const entryClass = finalStep ? randomFrom(FINAL_ENTRY_CLASSES) : randomFrom(EVALUATION_ENTRY_CLASSES);
+    image.className = 'evaluation-img';
+    image.style.animation = 'none';
     image.src = src;
     image.alt = alt;
+    image.decoding = 'async';
+    void image.offsetWidth;
+    image.style.animation = '';
+    image.className = `evaluation-img ${finalStep ? 'final-step' : 'answer-step'} ${entryClass}`;
   }
 
   function setEvaluationStatus(text, kind = '') {
@@ -788,7 +890,21 @@
     dots.innerHTML = Array.from({ length: total }, (_, i) => `<span class="${i === activeIndex ? 'active' : ''}"></span>`).join('');
   }
 
-  function showEvaluationFlow(results, data, meta) {
+  async function playEvaluationCue(imageSrc, runToken) {
+    if (runToken !== evaluationRunToken) return;
+    prepareOutcomeSound();
+    await playSound(soundKeyForEvaluationImage(imageSrc));
+  }
+
+  async function playFinalCue(runToken) {
+    if (runToken !== evaluationRunToken) return;
+    prepareOutcomeSound();
+    await nextPaint(2);
+    if (runToken !== evaluationRunToken) return;
+    await playSound('final');
+  }
+
+  async function showEvaluationFlow(results, data, meta) {
     const modal = el('evaluationModal');
     const image = el('evaluationImage');
     const label = el('evaluationLabel');
@@ -799,63 +915,70 @@
       return;
     }
     const action = el('evaluationAction');
+    const checkBtn = el('checkAnswerBtn');
+    if (checkBtn) checkBtn.disabled = true;
     if (action) { action.innerHTML = ''; hide(action); }
     show(modal);
     startBattleBackground();
-    let index = 0;
+    const runToken = ++evaluationRunToken;
     const totalSteps = results.length + 1;
-    const showStep = () => {
-      if (index < results.length) {
-        const isCorrect = results[index];
-        label.textContent = `Frage ${index + 1}`;
-        const group = isCorrect ? 'correct' : 'wrong';
-        const imageSrc = isCorrect
-          ? randomFromNoRepeat(EVALUATION_IMAGES.correct, group)
-          : randomFromNoRepeat(EVALUATION_IMAGES.wrong, group);
-        setEvaluationImage(image, imageSrc, `Auswertung Frage ${index + 1}`);
-        setEvaluationStatus(isCorrect ? 'Richtig' : 'Falsch', isCorrect ? 'ok' : 'bad');
-        prepareOutcomeSound();
-        playSound(soundKeyForEvaluationImage(imageSrc));
-        setEvaluationDots(index, totalSteps);
-        index += 1;
-        window.setTimeout(showStep, 2000);
-        return;
-      }
-      label.textContent = 'Auswertung';
-      setEvaluationImage(image, EVALUATION_IMAGES.final, 'Finale Auswertung', true);
-      setEvaluationStatus('');
-      prepareOutcomeSound();
-      playSound('final');
+
+    for (let index = 0; index < results.length; index += 1) {
+      if (runToken !== evaluationRunToken) return;
+      const isCorrect = results[index];
+      label.textContent = `Frage ${index + 1}`;
+      const group = isCorrect ? 'correct' : 'wrong';
+      const imageSrc = isCorrect
+        ? randomFromNoRepeat(EVALUATION_IMAGES.correct, group)
+        : randomFromNoRepeat(EVALUATION_IMAGES.wrong, group);
+      setEvaluationImage(image, imageSrc, `Auswertung Frage ${index + 1}`);
+      setEvaluationStatus(isCorrect ? 'Richtig' : 'Falsch', isCorrect ? 'ok' : 'bad');
       setEvaluationDots(index, totalSteps);
-      const action = el('evaluationAction');
-      if (action) {
-        action.innerHTML = '';
-        hide(action);
-      }
-      window.setTimeout(() => {
-        const wrong = results.filter(result => !result).length;
-        const won = wrong < 2;
-        if (action) {
-          action.innerHTML = '<button id="showResultBtn" class="game-btn primary">Ergebnis anzeigen</button>';
-          show(action);
-          el('showResultBtn')?.addEventListener('click', () => {
-            prepareOutcomeSound();
-            stopSound('final');
-            stopBattleBackground();
-            playSound(won ? 'win' : 'lose');
-            hide(modal);
-            if (won) showWinFlow(data, meta, false);
-            else showLoseFlow(false);
-          }, { once: true });
-        } else {
-          stopBattleBackground();
-          hide(modal);
-          if (won) showWinFlow(data, meta);
-          else showLoseFlow();
-        }
-      }, 3000);
-    };
-    showStep();
+      await playEvaluationCue(imageSrc, runToken);
+      if (runToken !== evaluationRunToken) return;
+      await wait(3000);
+    }
+
+    if (runToken !== evaluationRunToken) return;
+    label.textContent = 'Auswertung';
+    setEvaluationImage(image, EVALUATION_IMAGES.final, 'Finale Auswertung', true);
+    setEvaluationStatus('');
+    window.setTimeout(() => {
+      if (runToken === evaluationRunToken) image.classList.add('final-loop');
+    }, 1350);
+    setEvaluationDots(results.length, totalSteps);
+    if (action) {
+      action.innerHTML = '';
+      hide(action);
+    }
+    await playFinalCue(runToken);
+    if (runToken !== evaluationRunToken) return;
+    await wait(4000);
+    if (runToken !== evaluationRunToken) return;
+
+    const wrong = results.filter(result => !result).length;
+    const won = wrong < 2;
+    if (action) {
+      action.innerHTML = '<button id="showResultBtn" class="game-btn primary">Ergebnis anzeigen</button>';
+      show(action);
+      el('showResultBtn')?.addEventListener('click', async () => {
+        if (runToken !== evaluationRunToken) return;
+        prepareOutcomeSound();
+        stopSound('final');
+        stopBattleBackground();
+        await playSound(won ? 'win' : 'lose');
+        if (checkBtn) checkBtn.disabled = false;
+        hide(modal);
+        if (won) showWinFlow(data, meta, false);
+        else showLoseFlow(false);
+      }, { once: true });
+    } else {
+      stopBattleBackground();
+      if (checkBtn) checkBtn.disabled = false;
+      hide(modal);
+      if (won) showWinFlow(data, meta);
+      else showLoseFlow();
+    }
   }
 
   function showWinFlow(data, meta, playOutcome = true) {
