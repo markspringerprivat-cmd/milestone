@@ -449,6 +449,17 @@
   function hide(node) { node && node.classList.add('hidden'); }
   function setText(id, text) { const n = el(id); if (n) n.textContent = text; }
 
+  function setBoardMenuOpen(open) {
+    if (document.body.dataset.page !== 'board') return;
+    document.body.classList.toggle('board-menu-open', !!open);
+  }
+
+  function toggleBoardMenu(open) {
+    const started = getState().started;
+    if (!started) return;
+    setBoardMenuOpen(typeof open === 'boolean' ? open : !document.body.classList.contains('board-menu-open'));
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     armAudioUnlock();
     const rememberBoardReturn = event => {
@@ -471,9 +482,9 @@
     const below = el('belowBoard');
 
     if (state.started) {
-      hide(intro); show(board); show(below);
+      hide(intro); show(board); show(below); show(el('openBoardMenuBtn'));
     } else {
-      show(intro); hide(board); hide(below);
+      show(intro); hide(board); hide(below); hide(el('openBoardMenuBtn')); setBoardMenuOpen(false);
     }
 
     const startBtn = el('startGameBtn');
@@ -491,6 +502,8 @@
       hide(intro);
       show(board);
       show(below);
+      show(el('openBoardMenuBtn'));
+      setBoardMenuOpen(false);
       updateBoardBox();
       renderBoard();
       startBackgroundMusic(true);
@@ -501,11 +514,14 @@
       startBtn.addEventListener('touchend', startGameNow, { passive: false });
     }
     el('resetGameBtn')?.addEventListener('click', resetGame);
+    el('openBoardMenuBtn')?.addEventListener('click', () => toggleBoardMenu(true));
+    el('closeBoardMenuBtn')?.addEventListener('click', () => toggleBoardMenu(false));
     el('levelUnlockedContinueBtn')?.addEventListener('click', () => { const m = el('levelUnlockedModal'); hide(m); m?.classList.remove('stage-popup'); m?.style.removeProperty('--popup-bg'); startBackgroundMusic(true); });
     el('closeScanBtn')?.addEventListener('click', closeScanModal);
     el('backToBoardBtn')?.addEventListener('click', () => escapeFromBoardModal('scan'));
     el('manualUnlockBtn')?.addEventListener('click', () => handleScanText(el('manualCodeInput')?.value));
     el('manualCodeInput')?.addEventListener('keydown', e => { if (e.key === 'Enter') handleScanText(e.target.value); });
+    el('randomUnlockBtn')?.addEventListener('click', handleRandomUnlock);
     el('encounterBackBtn')?.addEventListener('click', () => escapeFromBoardModal('encounter'));
     el('launchLevelBtn')?.addEventListener('click', async () => {
       if (!pendingLaunch) return;
@@ -566,10 +582,12 @@
     }
     const title = el('levelUnlockedTitle');
     const text = el('levelUnlockedText');
+    const kicker = el('levelUnlockedKicker');
     const image = modal.querySelector('.character-img');
     const isEscape = options.type === 'escaped' || options.type === 'run';
     if (title) title.textContent = isEscape ? 'Du bist entkommen' : 'Neues Level freigeschaltet';
     if (text) text.textContent = isEscape ? 'Scanne einen neuen QR-Code, um es erneut zu versuchen.' : 'Weiter zum Spielbrett.';
+    if (kicker) { kicker.textContent = isEscape ? '' : 'Erfolg'; kicker.classList.toggle('hidden', isEscape); }
     if (image) {
       image.src = isEscape ? 'held_entkommen.webp' : 'held_gewonnen.webp';
       image.alt = isEscape ? 'Held ist entkommen' : 'Held steckt die Flagge in den Boden';
@@ -673,6 +691,7 @@
   function handleNodeClick(index) {
     const state = getState();
     const active = currentSlot(state);
+    setBoardMenuOpen(false);
     if (state.completed[index]) {
       const sense = state.slots[index];
       window.location.href = `level.html?sense=${encodeURIComponent(sense)}&slot=${index}`;
@@ -689,6 +708,7 @@
   }
 
   function handleBossClick() {
+    setBoardMenuOpen(false);
     const state = getState();
     if (state.bossCompleted) return;
     if (!allLevelsDone(state)) return;
@@ -814,6 +834,36 @@
     if (reader) reader.innerHTML = '<p id="cameraInfo" class="camera-info">Kamera wird vorbereitet …</p>';
   }
 
+  function unlockSenseForActiveSlot(sense) {
+    if (!sense) return false;
+    const msg = el('scanMessage');
+    const state = getState();
+    if (usedSenseIds(state).includes(sense.id)) {
+      if (msg) { msg.className = 'message bad'; msg.textContent = 'Dieser Gegner wurde in diesem Spiel bereits verwendet.'; show(msg); }
+      return false;
+    }
+    if (activeSlotForScan === null || activeSlotForScan < 0) return false;
+    state.slots[activeSlotForScan] = sense.id;
+    setState(state);
+    playSound('levelunlocked');
+    closeScanModal(false);
+    showEncounter(sense.id, activeSlotForScan);
+    renderBoard();
+    return true;
+  }
+
+  function handleRandomUnlock() {
+    const state = getState();
+    const available = senseList().filter(sense => !usedSenseIds(state).includes(sense.id));
+    const msg = el('scanMessage');
+    if (!available.length) {
+      if (msg) { msg.className = 'message bad'; msg.textContent = 'Es ist kein zufälliger Gegner mehr verfügbar.'; show(msg); }
+      return;
+    }
+    const sense = available[Math.floor(Math.random() * available.length)];
+    unlockSenseForActiveSlot(sense);
+  }
+
   function handleScanText(text) {
     const msg = el('scanMessage');
     const sense = codeToSense(text);
@@ -821,18 +871,7 @@
       if (msg) { msg.className = 'message bad'; msg.textContent = 'Dieser Code passt zu keinem Sinnes-Level.'; show(msg); }
       return;
     }
-    const state = getState();
-    if (usedSenseIds(state).includes(sense.id)) {
-      if (msg) { msg.className = 'message bad'; msg.textContent = 'Dieser QR-Code wurde in diesem Spiel bereits verwendet.'; show(msg); }
-      return;
-    }
-    if (activeSlotForScan === null || activeSlotForScan < 0) return;
-    state.slots[activeSlotForScan] = sense.id;
-    setState(state);
-    playSound('levelunlocked');
-    closeScanModal(false);
-    showEncounter(sense.id, activeSlotForScan);
-    renderBoard();
+    unlockSenseForActiveSlot(sense);
   }
 
   function showEncounter(senseId, slot) {

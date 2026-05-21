@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Königreich der Sinne</title>
-  <link rel="stylesheet" href="style.css?v=beauty2">
-  <script src="game.js?v=beauty2" defer></script>
+  <link rel="stylesheet" href="style.css?v=beauty3">
+  <script src="game.js?v=beauty3" defer></script>
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" async></script>
 </head>
 <body data-page="board">
@@ -13,6 +13,7 @@
     <section id="introScreen" class="intro-screen" aria-label="Intro">
       <img src="intro.webp" alt="Introbild Königreich der Sinne" class="intro-img">
       <div class="intro-panel">
+        <h1 class="intro-title">Angriff auf das Königreich der Sinne</h1>
         <button id="startGameBtn" class="game-btn primary">Spiel starten</button>
       </div>
     </section>
@@ -22,12 +23,12 @@
       <div id="mapInner" class="map-inner" aria-label="Levelpunkte auf dem Spielbrett"></div>
     </section>
 
-    <section id="belowBoard" class="below-board hidden">
+    <section id="belowBoard" class="below-board hidden" aria-label="Optionen">
       <div class="content-wrap">
-        <article class="panel">
-          <h1>Königreich der Sinne</h1>
-          <p>Scanne QR-Codes in beliebiger Reihenfolge. Der gescannte Code bestimmt, welches Sinnes-Level auf dem aktuellen Feld freigeschaltet wird. Nach bestandenem Quiz wird das nächste Feld aktiv.</p>
-          <div id="progressSummary" class="progress-summary"></div>
+        <button id="closeBoardMenuBtn" class="board-menu-top" type="button" aria-label="Zurück zum Spielfeld">↑ Zum Spielfeld</button>
+        <article class="panel board-help-card">
+          <h2>Anleitung</h2>
+          <p>Scanne QR-Codes in beliebiger Reihenfolge. Der gescannte Code bestimmt, welches Sinnes-Level auf dem aktuell aktiven Feld freigeschaltet wird. Nach bestandenem Quiz wird das nächste Feld aktiv.</p>
         </article>
 
         <div class="action-row">
@@ -36,6 +37,8 @@
         </div>
       </div>
     </section>
+
+    <button id="openBoardMenuBtn" class="board-menu-btn hidden" type="button" aria-label="Optionen öffnen">⚙</button>
   </main>
 
   <div id="scanModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="scanTitle">
@@ -61,6 +64,9 @@
             <button id="backToBoardBtn" class="game-btn muted">Wegrennen</button>
           </div>
           <p id="scanMessage" class="message hidden"></p>
+          <div class="button-line scan-random-line">
+            <button id="randomUnlockBtn" class="game-btn secondary" type="button">Zufälligen Gegner wählen</button>
+          </div>
         </div>
       </div>
     </div>
@@ -85,7 +91,7 @@
     <div class="modal-card encounter-card outcome-hero">
       <img src="held_gewonnen.webp" class="character-img" alt="Held steckt die Flagge in den Boden">
       <div class="encounter-text">
-        <span class="kicker">Erfolg</span>
+        <span id="levelUnlockedKicker" class="kicker">Erfolg</span>
         <h2 id="levelUnlockedTitle">Neues Level freigeschaltet</h2>
         <p id="levelUnlockedText">Weiter zum Spielbrett.</p>
         <div class="button-line center">
