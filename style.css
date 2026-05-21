@@ -29,21 +29,26 @@
 @media(max-width:560px){.hero-token{width:clamp(76px,19vmin,102px);height:clamp(76px,19vmin,102px)}.lock-token{width:clamp(42px,12vmin,62px);height:clamp(42px,12vmin,62px)}.token-label{font-size:.6rem;bottom:-8px;padding:3px 7px}.done-token{width:54px;height:54px}.done-token span{display:none}.speaker-btn{width:42px;height:42px;font-size:1.15rem}}
 
 /* Stage-Hintergründe für die Levelseiten */
-body[data-page="level"]{background:transparent var(--stage-bg,none) center top/cover no-repeat fixed;color:var(--ink)}
-body[data-page="level"]::before{content:"";position:fixed;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.04) 38%,rgba(16,20,33,.06));pointer-events:none;z-index:0}
-body[data-page="level"] .level-shell{position:relative;z-index:1}
-body[data-page="level"] .level-header{background:transparent;border:0;border-radius:0;padding:0;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;margin-bottom:10px}
+body[data-page="level"]{background:#101421;color:var(--ink);min-height:100svh}
+body[data-page="level"]::before{content:"";position:fixed;inset:-12px;background:var(--stage-bg,none) center center/cover no-repeat;filter:blur(8px);transform:scale(1.04);pointer-events:none;z-index:0}
+body[data-page="level"]::after{content:"";position:fixed;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.03) 38%,rgba(16,20,33,.05)), var(--stage-bg,none) center center/contain no-repeat;pointer-events:none;z-index:1}
+body[data-page="level"] .level-shell{position:relative;z-index:2;padding-top:16px}
+body[data-page="level"] .level-header{position:sticky;top:max(10px,env(safe-area-inset-top));z-index:6;background:transparent;border:0;border-radius:0;padding:0;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;margin-bottom:10px}
 body[data-page="level"] .level-header .game-btn.muted{background:rgba(255,255,255,.88);backdrop-filter:blur(8px)}
 body[data-page="level"] .level-header .badge{background:rgba(25,33,57,.45);border:1px solid rgba(255,255,255,.22);backdrop-filter:blur(8px);color:#fff}
-body[data-page="level"] .level-figure-strip{display:flex;justify-content:center;align-items:center;min-height:210px;margin:0 0 14px;padding:0;background:transparent;border:0}
-body[data-page="level"] .top-enemy{width:min(100%,330px);max-height:290px;object-fit:contain;filter:drop-shadow(0 14px 24px rgba(0,0,0,.24))}
-body[data-page="level"] .panel{background:rgba(255,250,240,.56);border:1px solid rgba(255,255,255,.52);backdrop-filter:blur(8px)}
-body[data-page="level"] .light-panel{background:rgba(255,250,240,.54)}
+body[data-page="level"] .level-figure-strip{position:fixed;left:0;right:0;top:78px;z-index:2;display:flex;justify-content:center;align-items:center;height:250px;margin:0;padding:0;background:transparent;border:0;pointer-events:none}
+body[data-page="level"] .top-enemy{width:min(76vw,330px);max-height:245px;object-fit:contain;filter:drop-shadow(0 14px 24px rgba(0,0,0,.24))}
+body[data-page="level"] .level-grid{grid-template-columns:1fr;margin-top:275px;position:relative;z-index:4}
+body[data-page="level"] .quiz-panel{position:relative;z-index:4}
+body[data-page="level"] .panel{background:rgba(255,250,240,.36);border:1px solid rgba(255,255,255,.44);backdrop-filter:blur(8px)}
+body[data-page="level"] .light-panel{background:rgba(255,250,240,.34)}
 body[data-page="level"] .light-panel h2,body[data-page="level"] .quiz-panel h2{color:#182338}
 body[data-page="level"] .light-panel p,body[data-page="level"] .light-panel li{color:#23314a}
-body[data-page="level"] .task{background:rgba(255,255,255,.52);border-left:6px solid rgba(52,104,255,.8)}
-body[data-page="level"] .quiz-panel{background:rgba(255,255,255,.66)}
-body[data-page="level"] #quizQuestion{background:rgba(255,255,255,.88);border:1px solid rgba(220,229,242,.95);border-radius:18px;padding:15px 16px;color:#1d2533;font-weight:700}
-body[data-page="level"] .quiz-option{background:rgba(255,255,255,.86);border:1px solid rgba(207,217,234,.95)}
+body[data-page="level"] .task{background:rgba(255,255,255,.42);border-left:6px solid rgba(52,104,255,.8)}
+body[data-page="level"] .quiz-panel{background:rgba(255,255,255,.46)}
+body[data-page="level"] #quizQuestion{background:rgba(255,255,255,.82);border:1px solid rgba(220,229,242,.95);border-radius:18px;padding:15px 16px;color:#1d2533;font-weight:700}
+body[data-page="level"] .quiz-question-card{background:rgba(255,255,255,.52);border:1px solid rgba(255,255,255,.62);border-radius:22px;padding:16px;margin:14px 0;backdrop-filter:blur(6px)}
+body[data-page="level"] .quiz-question-card h3{margin:0 0 10px;color:#182338;font-size:1.05rem}
+body[data-page="level"] .quiz-option{background:rgba(255,255,255,.84);border:1px solid rgba(207,217,234,.95)}
 body[data-page="level"] input{background:rgba(255,255,255,.94)}
-@media(max-width:760px){body[data-page="level"]{background-attachment:scroll;background-position:center top}.level-header{grid-template-columns:1fr;align-items:stretch}.level-header .game-btn{width:100%}.level-header .badge{text-align:center;justify-self:start}.top-enemy{width:min(100%,270px);max-height:240px}}
+@media(max-width:760px){body[data-page="level"] .level-header{grid-template-columns:1fr;align-items:stretch}.level-header .game-btn{width:100%}.level-header .badge{text-align:center;justify-self:start}.top-enemy{width:min(72vw,250px);max-height:210px}.level-figure-strip{top:112px!important;height:220px!important}.level-grid{margin-top:245px!important}}

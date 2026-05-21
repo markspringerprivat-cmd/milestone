@@ -53,6 +53,52 @@
     quiz: { q: 'Welche Aussage passt am besten?', a: ['Sinnesorgane arbeiten immer vollständig getrennt.', 'Nur die Zunge ist für Geschmack verantwortlich.', 'Das Gehirn verarbeitet Sinnesinformationen und ordnet sie ein.'], correct: 2 }
   };
 
+
+  const QUESTION_BANK = {
+    sehen: [
+      { q: 'Wo werden Lichtreize im Auge in Nervensignale umgewandelt?', a: ['In der Linse', 'Auf der Netzhaut', 'In der Ohrmuschel'], correct: 1 },
+      { q: 'Welche Aufgabe hat die Linse?', a: ['Sie bündelt das Licht', 'Sie erzeugt Geräusche', 'Sie schmeckt süß'], correct: 0 },
+      { q: 'Wohin leitet der Sehnerv die Signale?', a: ['Zum Gehirn', 'Zur Haut', 'Zur Zunge'], correct: 0 },
+      { q: 'Was erkennt das Auge besonders gut?', a: ['Licht, Farben und Bewegung', 'Gerüche und Düfte', 'Wärme im Essen'], correct: 0 },
+      { q: 'Warum arbeiten Auge und Gehirn zusammen?', a: ['Das Gehirn ordnet die Sehinformationen ein', 'Das Auge verdaut Nahrung', 'Das Gehirn ersetzt die Netzhaut'], correct: 0 }
+    ],
+    hoeren: [
+      { q: 'Welches Sinnesorgan ist auch am Gleichgewicht beteiligt?', a: ['Die Zunge', 'Die Nase', 'Das Ohr'], correct: 2 },
+      { q: 'Was sammelt Schallwellen zuerst?', a: ['Die Ohrmuschel', 'Die Netzhaut', 'Die Geschmacksknospe'], correct: 0 },
+      { q: 'Was gerät durch Schall in Schwingung?', a: ['Das Trommelfell', 'Die Pupille', 'Die Hautporen'], correct: 0 },
+      { q: 'Wo werden Schwingungen in Nervensignale umgewandelt?', a: ['In der Hörschnecke', 'In der Linse', 'Auf der Zunge'], correct: 0 },
+      { q: 'Warum ist lauter Schall problematisch?', a: ['Er kann das Gehör schädigen', 'Er macht Farben unsichtbar', 'Er verhindert jeden Geschmack'], correct: 0 }
+    ],
+    riechen: [
+      { q: 'Warum schmeckt Essen bei Schnupfen oft schwächer?', a: ['Weil die Haut langsamer arbeitet', 'Weil Geruch und Geschmack zusammenwirken', 'Weil die Augen weniger Licht aufnehmen'], correct: 1 },
+      { q: 'Was gelangt beim Riechen zur Riechschleimhaut?', a: ['Duftmoleküle', 'Lichtstrahlen', 'Schallwellen'], correct: 0 },
+      { q: 'Welche Zellen erkennen Geruchsstoffe?', a: ['Riechzellen', 'Hörzellen', 'Sehzellen der Netzhaut'], correct: 0 },
+      { q: 'Wobei kann der Geruchssinn helfen?', a: ['Vor Rauch oder verdorbenem Essen warnen', 'Bücher schneller lesen', 'Kälte sehen'], correct: 0 },
+      { q: 'Womit sind Gerüche oft eng verbunden?', a: ['Erinnerungen und Gefühlen', 'Nur mit Knochen', 'Nur mit Muskeln'], correct: 0 }
+    ],
+    schmecken: [
+      { q: 'Welche Geschmacksrichtung gehört zu den häufig genannten Grundrichtungen?', a: ['Umami', 'Knusprig', 'Heiß'], correct: 0 },
+      { q: 'Wo befinden sich viele Geschmacksknospen?', a: ['Auf der Zunge', 'Im Trommelfell', 'In der Pupille'], correct: 0 },
+      { q: 'Was gehört nicht zu den klassischen Geschmacksrichtungen?', a: ['Süß', 'Bitter', 'Glänzend'], correct: 2 },
+      { q: 'Warum beeinflusst die Nase den Geschmack?', a: ['Geruch und Geschmack werden gemeinsam verarbeitet', 'Die Nase kaut die Nahrung', 'Die Nase ersetzt die Zunge vollständig'], correct: 0 },
+      { q: 'Was kann den Geschmack zusätzlich beeinflussen?', a: ['Temperatur und Konsistenz', 'Nur die Haarfarbe', 'Nur die Schuhgröße'], correct: 0 }
+    ],
+    fuehlen: [
+      { q: 'Welche Funktion hat Schmerz?', a: ['Er warnt vor möglicher Gefahr', 'Er verbessert das Sehen', 'Er ersetzt den Geruchssinn'], correct: 0 },
+      { q: 'Welches ist das größte Sinnesorgan des Körpers?', a: ['Die Haut', 'Das Auge', 'Das Ohr'], correct: 0 },
+      { q: 'Welche Reize kann die Haut wahrnehmen?', a: ['Druck, Wärme, Kälte und Schmerz', 'Nur Farben', 'Nur Musik'], correct: 0 },
+      { q: 'Welche zusätzliche Aufgabe hat die Haut?', a: ['Sie schützt den Körper', 'Sie bündelt Licht auf der Netzhaut', 'Sie erzeugt Schallwellen'], correct: 0 },
+      { q: 'Warum ist Berührung ein Sinneseindruck?', a: ['Rezeptoren in der Haut nehmen sie wahr', 'Die Zunge sieht sie', 'Die Nase hört sie'], correct: 0 }
+    ],
+    boss: [
+      { q: 'Welche Aussage passt am besten?', a: ['Sinnesorgane arbeiten immer vollständig getrennt.', 'Nur die Zunge ist für Geschmack verantwortlich.', 'Das Gehirn verarbeitet Sinnesinformationen und ordnet sie ein.'], correct: 2 },
+      { q: 'Was nehmen Sinnesorgane auf?', a: ['Reize', 'Hausaufgaben', 'Batterien'], correct: 0 },
+      { q: 'Warum wirken beim Essen mehrere Sinne zusammen?', a: ['Geruch, Geschmack, Temperatur und Konsistenz ergänzen sich', 'Nur das Ohr entscheidet über Geschmack', 'Die Haut ersetzt das Gehirn'], correct: 0 },
+      { q: 'Was macht das Gehirn mit Sinnesinformationen?', a: ['Es verarbeitet und ordnet sie ein', 'Es löscht sie sofort', 'Es schickt sie zur Pflanze'], correct: 0 },
+      { q: 'Was zeigt das Königreich der Sinne insgesamt?', a: ['Wahrnehmung entsteht durch mehrere zusammenarbeitende Systeme', 'Nur ein Sinn ist wichtig', 'Sinne haben nichts mit Lernen zu tun'], correct: 0 }
+    ]
+  };
+
   const LEVEL_POSITIONS = [
     { x: 47.8, y: 85.8 },
     { x: 50.2, y: 65.8 },
@@ -584,23 +630,34 @@
     if (content) content.innerHTML = data.content.map(p => `<p>${escapeHtml(p)}</p>`).join('');
     const tasks = el('levelTasks');
     if (tasks) tasks.innerHTML = data.tasks.map((t, i) => `<div class="task"><b>Aufgabe ${i + 1}</b>${escapeHtml(t)}</div>`).join('');
-    setText('quizQuestion', data.quiz.q);
+    const questions = getQuestions(data);
+    setText('quizQuestion', 'Beantworte alle fünf Fragen richtig, um das Level abzuschließen.');
     const options = el('quizOptions');
     if (options) {
-      options.innerHTML = data.quiz.a.map((opt, i) => `<label class="quiz-option"><input type="radio" id="answer_${i}" name="quizAnswer" value="${i}"><span>${escapeHtml(opt)}</span></label>`).join('');
+      options.innerHTML = questions.map((question, qi) => `
+        <article class="quiz-question-card">
+          <h3>Frage ${qi + 1}: ${escapeHtml(question.q)}</h3>
+          ${question.a.map((opt, oi) => `<label class="quiz-option"><input type="radio" id="answer_${qi}_${oi}" name="quizAnswer_${qi}" value="${oi}"><span>${escapeHtml(opt)}</span></label>`).join('')}
+        </article>
+      `).join('');
     }
     el('checkAnswerBtn')?.addEventListener('click', () => checkAnswer(data, meta));
     el('outroResetBtn')?.addEventListener('click', resetGame);
   }
 
+  function getQuestions(data) {
+    return QUESTION_BANK[data.id] || (data.quiz ? [data.quiz] : []);
+  }
+
   function checkAnswer(data, meta) {
-    const selected = document.querySelector('input[name="quizAnswer"]:checked');
     const feedback = el('quizFeedback');
-    if (!selected) {
-      if (feedback) { feedback.className = 'message bad'; feedback.textContent = 'Bitte wähle zuerst eine Antwort aus.'; show(feedback); }
+    const questions = getQuestions(data);
+    const answers = questions.map((_, qi) => document.querySelector(`input[name="quizAnswer_${qi}"]:checked`));
+    if (answers.some(answer => !answer)) {
+      if (feedback) { feedback.className = 'message bad'; feedback.textContent = 'Bitte beantworte zuerst alle fünf Fragen.'; show(feedback); }
       return;
     }
-    const ok = Number(selected.value) === data.quiz.correct;
+    const ok = answers.every((answer, qi) => Number(answer.value) === questions[qi].correct);
     if (ok) showWinFlow(data, meta);
     else showLoseFlow();
   }
