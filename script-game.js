@@ -10,9 +10,9 @@ const SLOTS = [
   { x: 49.5, y: 66.5 },
   { x: 50.2, y: 49.5 },
   { x: 50.5, y: 31.8 },
-  { x: 54.5, y: 14.7 }
+  { x: 54.2, y: 20.3 }
 ];
-const ENDLEVEL = { file: 'endlevel.html', x: 56, y: 5.8 };
+const ENDLEVEL = { file: 'endlevel.html', x: 55.8, y: 8.6 };
 const STORE = 'sinneQrFreeMilestonesV1';
 let activeSlot = null;
 let qrScanner = null;
@@ -74,6 +74,8 @@ function initIndex() {
   renderBoard();
   document.getElementById('closeModal')?.addEventListener('click', closeScanModal);
   document.getElementById('startLevelBtn')?.addEventListener('click', startPendingLevel);
+  document.getElementById('backToBoardBtn')?.addEventListener('click', closeScanModal);
+  document.getElementById('confirmBackToBoardBtn')?.addEventListener('click', closeScanModal);
   const manualBtn = document.getElementById('modalManualBtn');
   const manualInput = document.getElementById('modalManualCode');
   if (manualBtn) manualBtn.addEventListener('click', () => handleScan(manualInput.value));

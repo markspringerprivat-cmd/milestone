@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Sinnesorgane · QR-Spielbrett</title>
-  <link rel="stylesheet" href="style-game.css?v=4">
+  <link rel="stylesheet" href="style-game.css?v=7">
   <script src="https://unpkg.com/html5-qrcode" defer></script>
-  <script src="script-game.js?v=4" defer></script>
+  <script src="script-game.js?v=7" defer></script>
 </head>
 <body onload="initIndex()">
   <section class="board-screen" aria-label="Spielbrett">
@@ -68,13 +68,14 @@
           <div class="input-wrap">
             <input id="modalManualCode" placeholder="z. B. SINNE-AUGE-2026">
             <button id="modalManualBtn" class="btn primary" type="button">Freischalten</button>
+            <button id="backToBoardBtn" class="btn light" type="button">Zurück zum Brett</button>
           </div>
           <div id="modalMsg" class="modal-alert hidden"></div>
           <div id="scanConfirm" class="scan-confirm hidden">
             <span></span>
             <strong></strong>
             <p>Dieses Sinnesorgan wurde dem aktuellen Level zugeordnet.</p>
-            <button id="startLevelBtn" class="btn finish" type="button">Level starten</button>
+            <div class="confirm-actions"><button id="startLevelBtn" class="btn finish" type="button">Level starten</button><button id="confirmBackToBoardBtn" class="btn light" type="button">Zurück zum Brett</button></div>
           </div>
         </div>
       </div>
