@@ -630,7 +630,7 @@
     boss.style.left = `${BOSS_POSITION.x}%`;
     boss.style.top = `${BOSS_POSITION.y}%`;
     boss.innerHTML = bossDone
-      ? '<div class="done-token crown-done">✓<span>Gerettet</span></div>'
+      ? '<img class="done-flag-token boss-flag-token" src="flag_complete.webp" alt="Finale abgeschlossen">'
       : bossActive
         ? '<img class="hero-token" src="held.webp" alt="Held"><span class="token-label">Boss</span>'
         : '<img class="lock-token" src="lock.png" alt="Schloss"><span class="token-label">Finale</span>';
@@ -643,7 +643,7 @@
   function tokenHtml(number, assigned, done, active) {
     if (done) {
       const label = assigned ? SENSES[assigned].label : `Level ${number}`;
-      return `<div class="done-token">✓<span>${escapeHtml(label)}</span></div>`;
+      return `<img class="done-flag-token" src="flag_complete.webp" alt="${escapeHtml(label)} abgeschlossen">`;
     }
     if (active) {
       return `<img class="hero-token" src="held.webp" alt="Held"><span class="token-label">Level ${number}</span>`;
