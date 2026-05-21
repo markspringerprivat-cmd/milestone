@@ -74,3 +74,31 @@ body[data-page="level"] input{background:rgba(255,255,255,.94)}
 @keyframes evaluationFlyZoom{from{opacity:0;transform:scale(.74) rotate(-2deg)}to{opacity:1;transform:scale(1) rotate(0)}}
 @keyframes evaluationSway{from{transform:translateX(-8px) rotate(-1.2deg) scale(1)}to{transform:translateX(8px) rotate(1.2deg) scale(1)}}
 @media(max-width:760px){.evaluation-card{min-height:min(70svh,560px);padding:18px}.evaluation-img{width:min(96%,360px);height:min(48svh,360px)}.evaluation-label{font-size:clamp(1.35rem,7vw,2.4rem)}}
+
+
+/* Grasland-Hintergrund für Pop-ups in Stage 1 */
+body.grass-popups .modal, .modal.grass-popup{background:rgba(4,7,14,.50)}
+body.grass-popups .modal-card, .modal.grass-popup .modal-card{
+  position:relative;
+  overflow:hidden;
+  background:rgba(255,250,240,.80);
+}
+body.grass-popups .modal-card::before, .modal.grass-popup .modal-card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:url("popup_gras.webp") center center/cover no-repeat;
+  opacity:.56;
+  z-index:-2;
+}
+body.grass-popups .modal-card::after, .modal.grass-popup .modal-card::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:rgba(255,255,255,.38);
+  z-index:-1;
+}
+body.grass-popups .evaluation-card, .modal.grass-popup .evaluation-card{background:rgba(255,250,240,.72)}
+body.grass-popups .encounter-card, .modal.grass-popup .encounter-card{background:rgba(255,250,240,.74)}
+body.grass-popups .modal-card, .modal.grass-popup .modal-card{z-index:0}
+body.grass-popups .modal-card > *, .modal.grass-popup .modal-card > *{position:relative;z-index:2}

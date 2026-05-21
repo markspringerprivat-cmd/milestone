@@ -142,6 +142,7 @@
   let audioUnlocked = false;
   let soundMuted = localStorage.getItem(SOUND_STORE) === '1';
   let audioButton = null;
+  const activeEffectSounds = {};
 
   function isBoardVisible() {
     return document.body.dataset.page === 'board' && !el('boardScreen')?.classList.contains('hidden');
@@ -210,11 +211,25 @@
   function playSound(key) {
     initAudio();
     if (soundMuted) return Promise.resolve();
-    const a = audio[key];
-    if (!a) return Promise.resolve();
+    const file = AUDIO_FILES[key];
+    if (!file) return Promise.resolve();
+
+    // Hintergrundmusik wird separat gesteuert. Alle anderen Sounds sind klar an Buttons
+    // oder an die Auswertungsschritte gebunden und werden als eigene Instanz gestartet.
+    if (key === 'background') {
+      return audio.background?.play().catch(() => {}) || Promise.resolve();
+    }
+
     try {
-      a.pause();
-      a.currentTime = 0;
+      if (activeEffectSounds[key]) {
+        activeEffectSounds[key].pause();
+        activeEffectSounds[key].currentTime = 0;
+      }
+      const a = new Audio(file);
+      a.preload = 'auto';
+      a.setAttribute('playsinline', '');
+      a.volume = key === 'win' || key === 'lose' ? 0.95 : 0.88;
+      activeEffectSounds[key] = a;
       return a.play().catch(() => {});
     } catch {
       return Promise.resolve();
@@ -223,7 +238,7 @@
 
   function stopSound(key) {
     initAudio();
-    const a = audio[key];
+    const a = activeEffectSounds[key] || audio[key];
     if (!a) return;
     try { a.pause(); a.currentTime = 0; } catch {}
   }
@@ -470,8 +485,16 @@
     showBossEncounter();
   }
 
+  function setGrassPopupState(enabled) {
+    ['scanModal', 'encounterModal'].forEach(id => {
+      const modal = el(id);
+      if (modal) modal.classList.toggle('grass-popup', Boolean(enabled));
+    });
+  }
+
   function openScanModal(slot) {
     stopBackgroundMusic();
+    setGrassPopupState(slot === 0);
     activeSlotForScan = slot;
     setText('scanTitle', `Level ${slot + 1}: QR-Code scannen`);
     setText('scanHelp', 'Scanne einen beliebigen noch nicht erledigten Sinnes-Code. Der Code bestimmt das Thema dieses Levels.');
@@ -483,6 +506,7 @@
   }
 
   function closeScanModal(resumeMusic = true) {
+    setGrassPopupState(false);
     stopCameraScan();
     hide(el('scanModal'));
     if (resumeMusic && isBoardVisible()) startBackgroundMusic(true);
@@ -593,6 +617,7 @@
 
   function showEncounter(senseId, slot) {
     const sense = SENSES[senseId];
+    setGrassPopupState(slot === 0);
     pendingLaunch = { type: 'sense', sense: sense.id, slot };
     el('encounterImage').src = sense.enemy;
     el('encounterImage').alt = `Gegner ${sense.label}`;
@@ -603,6 +628,7 @@
   }
 
   function showBossEncounter() {
+    setGrassPopupState(false);
     pendingLaunch = { type: 'boss' };
     el('encounterImage').src = BOSS.enemy;
     el('encounterImage').alt = 'Bossgegner';
@@ -635,6 +661,7 @@
   function applyStageBackground(meta) {
     const bg = meta.isBoss ? BOSS_BACKGROUND : STAGE_BACKGROUNDS[meta.slot] || STAGE_BACKGROUNDS[0];
     document.body.classList.add('stage-page');
+    document.body.classList.toggle('grass-popups', !meta.isBoss && meta.slot === 0);
     document.body.style.setProperty('--stage-bg', `url("${bg}")`);
   }
 
@@ -749,7 +776,7 @@
       label.textContent = 'Auswertung';
       setEvaluationImage(image, EVALUATION_IMAGES.final, 'Finale Auswertung', true);
       prepareOutcomeSound();
-      playSound('final');
+      window.setTimeout(() => playSound('final'), 60);
       setEvaluationDots(index, totalSteps);
       const action = el('evaluationAction');
       if (action) {
@@ -764,6 +791,7 @@
           show(action);
           el('showResultBtn')?.addEventListener('click', () => {
             prepareOutcomeSound();
+            stopSound('final');
             playSound(won ? 'win' : 'lose');
             hide(modal);
             if (won) showWinFlow(data, meta, false);
