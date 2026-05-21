@@ -61,6 +61,8 @@
     { x: 50.5, y: 19.7 }
   ];
   const BOSS_POSITION = { x: 50.3, y: 7.4 };
+  const STAGE_BACKGROUNDS = ['stage_gras.webp', 'stage_sand.webp', 'stage_eis.webp', 'stage_lava.webp', 'stage_himmel.webp'];
+  const BOSS_BACKGROUND = 'stage_all.webp';
   const STORE = 'koenigreichSinneGameRebuildV1';
   const BOARD_RATIO = 1086 / 1448;
 
@@ -564,7 +566,15 @@
     renderLevel(SENSES[senseId], { isBoss: false, slot });
   }
 
+
+  function applyStageBackground(meta) {
+    const bg = meta.isBoss ? BOSS_BACKGROUND : STAGE_BACKGROUNDS[meta.slot] || STAGE_BACKGROUNDS[0];
+    document.body.classList.add('stage-page');
+    document.body.style.setProperty('--stage-bg', `url("${bg}")`);
+  }
+
   function renderLevel(data, meta) {
+    applyStageBackground(meta);
     setText('levelBadge', meta.isBoss ? 'Finale' : `Level ${meta.slot + 1}`);
     setText('levelKicker', meta.isBoss ? 'Bosslevel' : 'Sinnes-Level');
     setText('levelTitle', data.title);

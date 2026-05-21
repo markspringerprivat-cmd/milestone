@@ -27,3 +27,23 @@
 .speaker-btn{position:fixed;top:max(12px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));z-index:200;width:46px;height:46px;border-radius:50%;border:2px solid rgba(255,255,255,.55);background:rgba(13,20,37,.72);color:#fff;font-size:1.3rem;display:grid;place-items:center;box-shadow:0 10px 25px rgba(0,0,0,.28);backdrop-filter:blur(8px);cursor:pointer}.speaker-btn:hover,.speaker-btn:focus-visible{transform:scale(1.05);outline:none;box-shadow:0 0 0 4px rgba(255,211,79,.28),0 10px 25px rgba(0,0,0,.28)}
 .sound-btn{display:none!important}
 @media(max-width:560px){.hero-token{width:clamp(76px,19vmin,102px);height:clamp(76px,19vmin,102px)}.lock-token{width:clamp(42px,12vmin,62px);height:clamp(42px,12vmin,62px)}.token-label{font-size:.6rem;bottom:-8px;padding:3px 7px}.done-token{width:54px;height:54px}.done-token span{display:none}.speaker-btn{width:42px;height:42px;font-size:1.15rem}}
+
+/* Stage-Hintergründe für die Levelseiten */
+body[data-page="level"]{background:transparent var(--stage-bg,none) center top/cover no-repeat fixed;color:var(--ink)}
+body[data-page="level"]::before{content:"";position:fixed;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.04) 38%,rgba(16,20,33,.06));pointer-events:none;z-index:0}
+body[data-page="level"] .level-shell{position:relative;z-index:1}
+body[data-page="level"] .level-header{background:transparent;border:0;border-radius:0;padding:0;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;margin-bottom:10px}
+body[data-page="level"] .level-header .game-btn.muted{background:rgba(255,255,255,.88);backdrop-filter:blur(8px)}
+body[data-page="level"] .level-header .badge{background:rgba(25,33,57,.45);border:1px solid rgba(255,255,255,.22);backdrop-filter:blur(8px);color:#fff}
+body[data-page="level"] .level-figure-strip{display:flex;justify-content:center;align-items:center;min-height:210px;margin:0 0 14px;padding:0;background:transparent;border:0}
+body[data-page="level"] .top-enemy{width:min(100%,330px);max-height:290px;object-fit:contain;filter:drop-shadow(0 14px 24px rgba(0,0,0,.24))}
+body[data-page="level"] .panel{background:rgba(255,250,240,.56);border:1px solid rgba(255,255,255,.52);backdrop-filter:blur(8px)}
+body[data-page="level"] .light-panel{background:rgba(255,250,240,.54)}
+body[data-page="level"] .light-panel h2,body[data-page="level"] .quiz-panel h2{color:#182338}
+body[data-page="level"] .light-panel p,body[data-page="level"] .light-panel li{color:#23314a}
+body[data-page="level"] .task{background:rgba(255,255,255,.52);border-left:6px solid rgba(52,104,255,.8)}
+body[data-page="level"] .quiz-panel{background:rgba(255,255,255,.66)}
+body[data-page="level"] #quizQuestion{background:rgba(255,255,255,.88);border:1px solid rgba(220,229,242,.95);border-radius:18px;padding:15px 16px;color:#1d2533;font-weight:700}
+body[data-page="level"] .quiz-option{background:rgba(255,255,255,.86);border:1px solid rgba(207,217,234,.95)}
+body[data-page="level"] input{background:rgba(255,255,255,.94)}
+@media(max-width:760px){body[data-page="level"]{background-attachment:scroll;background-position:center top}.level-header{grid-template-columns:1fr;align-items:stretch}.level-header .game-btn{width:100%}.level-header .badge{text-align:center;justify-self:start}.top-enemy{width:min(100%,270px);max-height:240px}}
