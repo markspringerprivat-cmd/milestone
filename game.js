@@ -54,13 +54,13 @@
   };
 
   const LEVEL_POSITIONS = [
-    { x: 47.2, y: 85.6 },
-    { x: 50.0, y: 67.4 },
-    { x: 50.1, y: 50.0 },
-    { x: 50.2, y: 32.0 },
-    { x: 53.6, y: 19.6 }
+    { x: 47.8, y: 85.8 },
+    { x: 50.2, y: 65.8 },
+    { x: 50.4, y: 48.8 },
+    { x: 50.3, y: 30.8 },
+    { x: 50.5, y: 19.7 }
   ];
-  const BOSS_POSITION = { x: 53.4, y: 8.4 };
+  const BOSS_POSITION = { x: 50.3, y: 7.4 };
   const STORE = 'koenigreichSinneGameRebuildV1';
   const BOARD_RATIO = 1086 / 1448;
 
@@ -248,14 +248,31 @@
       show(intro); hide(board); hide(below);
     }
 
-    el('startGameBtn')?.addEventListener('click', async () => {
-      await unlockAudioFromGesture();
+    const startBtn = el('startGameBtn');
+    let startAlreadyHandled = false;
+    const startGameNow = (event) => {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      if (startAlreadyHandled) return;
+      startAlreadyHandled = true;
       const s = getState();
       s.started = true;
       setState(s);
-      hide(intro); show(board); show(below);
-      updateBoardBox(); renderBoard(); startBackgroundMusic();
-    });
+      hide(intro);
+      show(board);
+      show(below);
+      updateBoardBox();
+      renderBoard();
+      // Audio wird erst nach dem sicheren Wechsel gestartet, damit mobile Browser den Start nicht blockieren.
+      unlockAudioFromGesture().then(() => startBackgroundMusic()).catch(() => {});
+    };
+    if (startBtn) {
+      startBtn.addEventListener('click', startGameNow);
+      startBtn.addEventListener('pointerup', startGameNow);
+      startBtn.addEventListener('touchend', startGameNow, { passive: false });
+    }
     el('resetGameBtn')?.addEventListener('click', resetGame);
     el('closeScanBtn')?.addEventListener('click', closeScanModal);
     el('backToBoardBtn')?.addEventListener('click', closeScanModal);
