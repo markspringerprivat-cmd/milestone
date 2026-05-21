@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Level · Königreich der Sinne</title>
+  <link rel="stylesheet" href="style.css?v=flat-1">
+  <script src="game.js?v=flat-1" defer></script>
+</head>
+<body data-page="level">
+  <main class="level-shell">
+    <header class="level-header">
+      <a class="game-btn muted" href="index.html">Zurück zum Spielbrett</a>
+      <span id="levelBadge" class="badge"></span>
+    </header>
+
+    <section class="level-hero">
+      <div>
+        <span id="levelKicker" class="kicker"></span>
+        <h1 id="levelTitle"></h1>
+        <p id="levelIntro"></p>
+      </div>
+      <img id="levelEnemy" class="hero-enemy" alt="Gegnerbild">
+    </section>
+
+    <section class="level-grid">
+      <article class="panel light-panel">
+        <h2>Inhalt</h2>
+        <div id="levelContent"></div>
+      </article>
+      <aside class="panel light-panel">
+        <h2>Anleitung und Aufgaben</h2>
+        <div id="levelTasks"></div>
+      </aside>
+    </section>
+
+    <section class="panel quiz-panel">
+      <h2>Quizfrage</h2>
+      <p id="quizQuestion"></p>
+      <div id="quizOptions" class="quiz-options"></div>
+      <div class="button-line">
+        <button id="checkAnswerBtn" class="game-btn primary">Antwort prüfen</button>
+        <a class="game-btn muted" href="index.html">Zurück zum Spielbrett</a>
+      </div>
+      <p id="quizFeedback" class="message hidden"></p>
+    </section>
+  </main>
+
+  <div id="resultModal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-card encounter-card">
+      <img id="resultImage" class="character-img" alt="Ergebnisbild">
+      <div class="encounter-text">
+        <span id="resultKicker" class="kicker"></span>
+        <h2 id="resultTitle"></h2>
+        <p id="resultText"></p>
+        <div id="resultButtons" class="button-line center"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="outroModal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="outro-card">
+      <img src="outro.webp" alt="Outrobild Königreich gerettet" class="outro-img">
+      <div class="outro-actions">
+        <a class="game-btn primary" href="index.html">Zum Spielbrett</a>
+        <button id="outroResetBtn" class="game-btn danger">Neues Spiel</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
