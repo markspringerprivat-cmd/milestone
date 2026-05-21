@@ -517,6 +517,9 @@
     el('openBoardMenuBtn')?.addEventListener('click', () => toggleBoardMenu(true));
     el('closeBoardMenuBtn')?.addEventListener('click', () => toggleBoardMenu(false));
     el('levelUnlockedContinueBtn')?.addEventListener('click', () => { const m = el('levelUnlockedModal'); hide(m); m?.classList.remove('stage-popup'); m?.style.removeProperty('--popup-bg'); startBackgroundMusic(true); });
+    el('scanJumpBottomBtn')?.addEventListener('click', () => scrollScanModal('bottom'));
+    el('scanJumpTopBtn')?.addEventListener('click', () => scrollScanModal('top'));
+    el('toggleScannerBtn')?.addEventListener('click', toggleScannerPanel);
     el('closeScanBtn')?.addEventListener('click', closeScanModal);
     el('backToBoardBtn')?.addEventListener('click', () => escapeFromBoardModal('scan'));
     el('manualUnlockBtn')?.addEventListener('click', () => handleScanText(el('manualCodeInput')?.value));
@@ -571,7 +574,7 @@
       renderBoard();
     }
     showLevelUnlockedModalOnBoard({ type: 'escaped', slot });
-    startBackgroundMusic(true);
+    stopBackgroundMusic();
   }
 
   function showLevelUnlockedModalOnBoard(options = {}) {
@@ -732,6 +735,25 @@
     });
   }
 
+  function scanCard() {
+    return document.querySelector('#scanModal .scan-card');
+  }
+
+  function scrollScanModal(direction) {
+    const card = scanCard();
+    if (!card) return;
+    card.scrollTo({ top: direction === 'top' ? 0 : card.scrollHeight, behavior: 'smooth' });
+  }
+
+  function toggleScannerPanel() {
+    const card = scanCard();
+    if (!card) return;
+    const collapsed = card.classList.toggle('scanner-collapsed');
+    setText('toggleScannerBtn', collapsed ? 'Scanner ausklappen' : 'Scanner einklappen');
+    if (collapsed) window.setTimeout(() => scrollScanModal('bottom'), 80);
+    else window.setTimeout(() => scrollScanModal('top'), 80);
+  }
+
   function openScanModal(slot) {
     stopBackgroundMusic();
     setStagePopupState(slot);
@@ -741,6 +763,10 @@
     setText('scanMessage', '');
     hide(el('scanMessage'));
     const input = el('manualCodeInput'); if (input) input.value = '';
+    const card = document.querySelector('#scanModal .scan-card');
+    card?.classList.remove('scanner-collapsed');
+    setText('toggleScannerBtn', 'Scanner einklappen');
+    if (card) card.scrollTop = 0;
     show(el('scanModal'));
     startCameraScan();
   }

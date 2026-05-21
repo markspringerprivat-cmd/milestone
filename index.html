@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Königreich der Sinne</title>
-  <link rel="stylesheet" href="style.css?v=beauty3">
-  <script src="game.js?v=beauty3" defer></script>
+  <link rel="stylesheet" href="style.css?v=beauty4">
+  <script src="game.js?v=beauty4" defer></script>
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" async></script>
 </head>
 <body data-page="board">
@@ -43,12 +43,18 @@
 
   <div id="scanModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="scanTitle">
     <div class="modal-card scan-card">
-      <div class="modal-head">
+      <div class="modal-head scan-head">
         <div>
           <h2 id="scanTitle">QR-Code scannen</h2>
           <p id="scanHelp">Scanne einen beliebigen noch nicht verwendeten Sinnes-Code.</p>
         </div>
-        <button id="closeScanBtn" class="round-btn" aria-label="Schließen">×</button>
+        <div class="scan-head-actions">
+          <button id="toggleScannerBtn" class="game-btn muted compact-btn" type="button">Scanner einklappen</button>
+          <button id="closeScanBtn" class="round-btn" aria-label="Schließen">×</button>
+        </div>
+      </div>
+      <div class="scan-scroll-nav top">
+        <button id="scanJumpBottomBtn" class="jump-btn" type="button" aria-label="Nach unten">↓</button>
       </div>
       <div class="scan-layout">
         <div class="camera-box">
@@ -68,6 +74,9 @@
             <button id="randomUnlockBtn" class="game-btn secondary" type="button">Zufälligen Gegner wählen</button>
           </div>
         </div>
+      </div>
+      <div class="scan-scroll-nav bottom">
+        <button id="scanJumpTopBtn" class="jump-btn" type="button" aria-label="Nach oben">↑</button>
       </div>
     </div>
   </div>
