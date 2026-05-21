@@ -66,6 +66,7 @@ body[data-page="level"] input{background:rgba(255,255,255,.94)}
 .evaluation-dots{display:flex;gap:7px;justify-content:center;margin-top:18px}
 .evaluation-dots span{width:9px;height:9px;border-radius:50%;background:rgba(29,37,51,.24)}
 .evaluation-dots span.active{background:#ffb300;box-shadow:0 0 0 5px rgba(255,179,0,.18)}
+.evaluation-action{margin-top:20px;display:flex;justify-content:center}
 @keyframes evaluationFlyLeft{from{opacity:0;transform:translateX(-90px) rotate(-4deg) scale(.9)}to{opacity:1;transform:translateX(0) rotate(0) scale(1)}}
 @keyframes evaluationFlyRight{from{opacity:0;transform:translateX(90px) rotate(4deg) scale(.9)}to{opacity:1;transform:translateX(0) rotate(0) scale(1)}}
 @keyframes evaluationFlyTop{from{opacity:0;transform:translateY(-90px) rotate(3deg) scale(.9)}to{opacity:1;transform:translateY(0) rotate(0) scale(1)}}

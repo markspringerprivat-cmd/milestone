@@ -3,7 +3,7 @@
 
   const SENSES = {
     sehen: {
-      id: 'sehen', label: 'Sehen', code: 'SINNE-SEHEN', enemy: 'sehen.webp', defeated: 'sehen_besiegt.webp',
+      id: 'sehen', label: 'Sehen', enemyName: 'Sehlina', code: 'SINNE-SEHEN', enemy: 'sehen.webp', defeated: 'sehen_besiegt.webp',
       title: 'Level: Sehen', speech: '„Meine Illusionen blenden dich. Mal sehen, ob du den richtigen Reiz erkennst!“',
       intro: 'Hier geht es um das Auge, Lichtreize und die Verarbeitung von Sehinformationen.',
       content: ['Das Auge nimmt Lichtreize aus der Umgebung auf. Hornhaut und Linse bündeln das Licht, sodass auf der Netzhaut ein Bild entsteht.', 'Auf der Netzhaut sitzen Sinneszellen. Sie wandeln Licht in elektrische Signale um. Diese Signale gelangen über den Sehnerv zum Gehirn, wo sie verarbeitet und zu einem Bild zusammengesetzt werden.'],
@@ -11,7 +11,7 @@
       quiz: { q: 'Wo werden Lichtreize im Auge in Nervensignale umgewandelt?', a: ['In der Linse', 'Auf der Netzhaut', 'In der Ohrmuschel'], correct: 1 }
     },
     hoeren: {
-      id: 'hoeren', label: 'Hören', code: 'SINNE-HOEREN', enemy: 'hoeren.webp', defeated: 'hoeren_besiegt.webp',
+      id: 'hoeren', label: 'Hören', enemyName: 'Höhribert', code: 'SINNE-HOEREN', enemy: 'hoeren.webp', defeated: 'hoeren_besiegt.webp',
       title: 'Level: Hören', speech: '„Ich verdrehe jede Schallwelle. Ob du trotzdem den richtigen Ton triffst?“',
       intro: 'Hier geht es um das Ohr, Schallwellen und den Gleichgewichtssinn.',
       content: ['Das Ohr nimmt Schallwellen auf. Die Ohrmuschel leitet den Schall zum Trommelfell weiter. Dieses gerät in Schwingung.', 'Die Gehörknöchelchen verstärken die Schwingungen. In der Hörschnecke werden sie in Nervensignale umgewandelt. Außerdem ist das Innenohr wichtig für das Gleichgewicht.'],
@@ -19,7 +19,7 @@
       quiz: { q: 'Welches Sinnesorgan ist auch am Gleichgewicht beteiligt?', a: ['Die Zunge', 'Die Nase', 'Das Ohr'], correct: 2 }
     },
     riechen: {
-      id: 'riechen', label: 'Riechen', code: 'SINNE-RIECHEN', enemy: 'riechen.webp', defeated: 'riechen_besiegt.webp',
+      id: 'riechen', label: 'Riechen', enemyName: 'Riechard', code: 'SINNE-RIECHEN', enemy: 'riechen.webp', defeated: 'riechen_besiegt.webp',
       title: 'Level: Riechen', speech: '„Mein Nebel liegt in der Luft. Folge der Spur, wenn du dich traust!“',
       intro: 'Hier geht es um die Nase, Geruchsstoffe und die Bedeutung des Riechens im Alltag.',
       content: ['Die Nase erkennt Geruchsstoffe in der Luft. Beim Einatmen gelangen Duftmoleküle zur Riechschleimhaut.', 'Dort sitzen Riechzellen, die passende Moleküle erkennen und Signale an das Gehirn senden. Gerüche können warnen, Erinnerungen auslösen und den Geschmack beeinflussen.'],
@@ -27,7 +27,7 @@
       quiz: { q: 'Warum schmeckt Essen bei Schnupfen oft schwächer?', a: ['Weil die Haut langsamer arbeitet', 'Weil Geruch und Geschmack zusammenwirken', 'Weil die Augen weniger Licht aufnehmen'], correct: 1 }
     },
     schmecken: {
-      id: 'schmecken', label: 'Schmecken', code: 'SINNE-SCHMECKEN', enemy: 'schmecken.webp', defeated: 'schmecken_besiegt.webp',
+      id: 'schmecken', label: 'Schmecken', enemyName: 'König Schmatz', code: 'SINNE-SCHMECKEN', enemy: 'schmecken.webp', defeated: 'schmecken_besiegt.webp',
       title: 'Level: Schmecken', speech: '„Süß, sauer, salzig? Ich bringe alles durcheinander. Beweise deinen Geschmack!“',
       intro: 'Hier geht es um die Zunge, Geschmacksrichtungen und das Zusammenspiel der Sinne.',
       content: ['Auf der Zunge befinden sich Geschmacksknospen. Sie erkennen Stoffe aus der Nahrung und ermöglichen Geschmackswahrnehmungen.', 'Häufig unterscheidet man süß, sauer, salzig, bitter und umami. Geschmack entsteht aber nicht nur auf der Zunge: Geruch, Temperatur und Konsistenz wirken mit.'],
@@ -35,7 +35,7 @@
       quiz: { q: 'Welche Geschmacksrichtung gehört zu den häufig genannten Grundrichtungen?', a: ['Umami', 'Knusprig', 'Heiß'], correct: 0 }
     },
     fuehlen: {
-      id: 'fuehlen', label: 'Fühlen', code: 'SINNE-FUEHLEN', enemy: 'fuehlen.webp', defeated: 'fuehlen_besiegt.webp',
+      id: 'fuehlen', label: 'Fühlen', enemyName: 'Dr. Tastibald', code: 'SINNE-FUEHLEN', enemy: 'fuehlen.webp', defeated: 'fuehlen_besiegt.webp',
       title: 'Level: Fühlen', speech: '„Meine Panzer fühlen alles. Spürst du, was Schutz wirklich bedeutet?“',
       intro: 'Hier geht es um die Haut, Berührung, Temperatur, Schmerz und Schutz.',
       content: ['Die Haut ist das größte Sinnesorgan des Körpers. Sie enthält Rezeptoren für Berührung, Druck, Wärme, Kälte und Schmerz.', 'Gleichzeitig schützt die Haut vor Verletzungen, Krankheitserregern und Austrocknung. Sie ist also Sinnesorgan und Schutzschicht zugleich.'],
@@ -45,7 +45,7 @@
   };
 
   const BOSS = {
-    id: 'boss', label: 'Boss', enemy: 'boss.webp', defeated: 'boss_besiegt.webp', title: 'Finale: Boss der Sinne',
+    id: 'boss', label: 'Boss', enemyName: 'Sinntron 3000', enemy: 'boss.webp', defeated: 'boss_besiegt.webp', title: 'Finale: Boss der Sinne',
     speech: '„Alle Sinne gegen mich? Dann zeig, dass du das Königreich wirklich verstanden hast!“',
     intro: 'Im finalen Level geht es um das Zusammenspiel aller Sinnesorgane.',
     content: ['Sinnesorgane nehmen Reize aus der Umwelt oder aus dem Körper auf. Das Gehirn verarbeitet diese Informationen und ordnet sie ein.', 'Viele Wahrnehmungen entstehen durch das Zusammenspiel mehrerer Sinne. Beim Essen wirken zum Beispiel Geschmack, Geruch, Temperatur, Konsistenz und Sehen zusammen.'],
@@ -597,7 +597,7 @@
     el('encounterImage').src = sense.enemy;
     el('encounterImage').alt = `Gegner ${sense.label}`;
     setText('encounterKicker', `Level ${slot + 1} freigeschaltet`);
-    setText('encounterTitle', sense.title);
+    setText('encounterTitle', sense.enemyName || sense.title);
     setText('encounterSpeech', sense.speech);
     show(el('encounterModal'));
   }
@@ -607,7 +607,7 @@
     el('encounterImage').src = BOSS.enemy;
     el('encounterImage').alt = 'Bossgegner';
     setText('encounterKicker', 'Finale freigeschaltet');
-    setText('encounterTitle', BOSS.title);
+    setText('encounterTitle', BOSS.enemyName || BOSS.title);
     setText('encounterSpeech', BOSS.speech);
     show(el('encounterModal'));
   }
@@ -644,7 +644,7 @@
     setText('levelKicker', meta.isBoss ? 'Bosslevel' : 'Sinnes-Level');
     setText('levelTitle', data.title);
     setText('levelIntro', data.intro);
-    const enemy = el('levelEnemy'); if (enemy) { enemy.src = data.enemy; enemy.alt = data.title; }
+    const enemy = el('levelEnemy'); if (enemy) { enemy.src = data.enemy; enemy.alt = data.enemyName || data.title; }
     const content = el('levelContent');
     if (content) content.innerHTML = data.content.map(p => `<p>${escapeHtml(p)}</p>`).join('');
     const tasks = el('levelTasks');
@@ -725,6 +725,8 @@
       else showWinFlow(data, meta);
       return;
     }
+    const action = el('evaluationAction');
+    if (action) { action.innerHTML = ''; hide(action); }
     show(modal);
     let index = 0;
     const totalSteps = results.length + 1;
@@ -749,29 +751,48 @@
       prepareOutcomeSound();
       playSound('final');
       setEvaluationDots(index, totalSteps);
+      const action = el('evaluationAction');
+      if (action) {
+        action.innerHTML = '';
+        hide(action);
+      }
       window.setTimeout(() => {
-        hide(modal);
-        prepareOutcomeSound();
         const wrong = results.filter(result => !result).length;
-        if (wrong >= 2) showLoseFlow();
-        else showWinFlow(data, meta);
+        const won = wrong < 2;
+        if (action) {
+          action.innerHTML = '<button id="showResultBtn" class="game-btn primary">Ergebnis anzeigen</button>';
+          show(action);
+          el('showResultBtn')?.addEventListener('click', () => {
+            prepareOutcomeSound();
+            playSound(won ? 'win' : 'lose');
+            hide(modal);
+            if (won) showWinFlow(data, meta, false);
+            else showLoseFlow(false);
+          }, { once: true });
+        } else {
+          hide(modal);
+          if (won) showWinFlow(data, meta);
+          else showLoseFlow();
+        }
       }, 3000);
     };
     showStep();
   }
 
-  function showWinFlow(data, meta) {
+  function showWinFlow(data, meta, playOutcome = true) {
     const modal = el('resultModal');
     el('resultImage').src = data.defeated;
-    el('resultImage').alt = `${data.label || 'Boss'} besiegt`;
+    el('resultImage').alt = `${data.enemyName || data.label || 'Boss'} besiegt`;
     setText('resultKicker', 'Richtig beantwortet');
-    setText('resultTitle', meta.isBoss ? 'Boss besiegt!' : `${data.label} besiegt!`);
+    setText('resultTitle', meta.isBoss ? `${data.enemyName || 'Boss'} besiegt!` : `${data.enemyName || data.label} besiegt!`);
     setText('resultText', meta.isBoss ? 'Der Boss ist geschlagen. Das Königreich der Sinne ist gerettet.' : 'Du hast das Level geschafft. Gleich geht es zurück zum Spielbrett.');
     const buttons = el('resultButtons');
     buttons.innerHTML = '<button id="continueWinBtn" class="game-btn primary">Weiter</button>';
     show(modal);
-    prepareOutcomeSound();
-    playSound('win');
+    if (playOutcome) {
+      prepareOutcomeSound();
+      playSound('win');
+    }
     el('continueWinBtn').addEventListener('click', () => showHeroWon(meta));
   }
 
@@ -801,7 +822,7 @@
     window.location.href = 'index.html';
   }
 
-  function showLoseFlow() {
+  function showLoseFlow(playOutcome = true) {
     const modal = el('resultModal');
     el('resultImage').src = 'held_verloren.webp';
     el('resultImage').alt = 'Held verloren';
@@ -811,8 +832,10 @@
     const buttons = el('resultButtons');
     buttons.innerHTML = '<button id="retryBtn" class="game-btn primary">Neuer Versuch</button><a class="game-btn muted" href="index.html">Zurück zum Spielbrett</a>';
     show(modal);
-    prepareOutcomeSound();
-    playSound('lose');
+    if (playOutcome) {
+      prepareOutcomeSound();
+      playSound('lose');
+    }
     el('retryBtn').addEventListener('click', () => hide(modal));
   }
 
