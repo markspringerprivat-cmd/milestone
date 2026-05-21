@@ -70,6 +70,68 @@
   let activeSlotForScan = null;
   let pendingLaunch = null;
 
+  const AUDIO_FILES = {
+    background: 'background.mp3',
+    levelstart: 'levelstart.mp3',
+    levelunlocked: 'levelunlocked.mp3',
+    fight: 'fight.mp3',
+    win: 'win.mp3',
+    lose: 'lose.mp3'
+  };
+  const audio = {};
+  let audioReady = false;
+
+  function initAudio() {
+    if (audioReady) return;
+    Object.entries(AUDIO_FILES).forEach(([key, file]) => {
+      const a = new Audio(file);
+      a.preload = 'auto';
+      if (key === 'background') {
+        a.loop = true;
+        a.volume = 0.14;
+      } else {
+        a.volume = 0.72;
+      }
+      audio[key] = a;
+    });
+    audioReady = true;
+  }
+
+  function playSound(key) {
+    initAudio();
+    const a = audio[key];
+    if (!a) return Promise.resolve();
+    try {
+      a.pause();
+      a.currentTime = 0;
+      return a.play().catch(() => {});
+    } catch {
+      return Promise.resolve();
+    }
+  }
+
+  function startBackgroundMusic() {
+    initAudio();
+    const bg = audio.background;
+    if (!bg) return;
+    if (!bg.paused) return;
+    bg.play().catch(() => {});
+  }
+
+  function armAudioUnlock() {
+    initAudio();
+    startBackgroundMusic();
+    const unlock = () => {
+      startBackgroundMusic();
+      document.removeEventListener('pointerdown', unlock);
+      document.removeEventListener('keydown', unlock);
+      document.removeEventListener('touchstart', unlock);
+    };
+    document.addEventListener('pointerdown', unlock, { once: true });
+    document.addEventListener('keydown', unlock, { once: true });
+    document.addEventListener('touchstart', unlock, { once: true });
+  }
+
   function defaultState() {
     return { started: false, slots: [null, null, null, null, null], completed: [false, false, false, false, false], bossCompleted: false };
   }
@@ -100,6 +162,7 @@
   function setText(id, text) { const n = el(id); if (n) n.textContent = text; }
 
   document.addEventListener('DOMContentLoaded', () => {
+    armAudioUnlock();
     const page = document.body.dataset.page;
     if (page === 'board') initBoard();
     if (page === 'level') initLevel();
@@ -119,6 +182,7 @@
     }
 
     el('startGameBtn')?.addEventListener('click', () => {
+      startBackgroundMusic();
       const s = getState();
       s.started = true;
       setState(s);
@@ -131,10 +195,13 @@
     el('manualUnlockBtn')?.addEventListener('click', () => handleScanText(el('manualCodeInput')?.value));
     el('manualCodeInput')?.addEventListener('keydown', e => { if (e.key === 'Enter') handleScanText(e.target.value); });
     el('encounterBackBtn')?.addEventListener('click', () => hide(el('encounterModal')));
-    el('launchLevelBtn')?.addEventListener('click', () => {
+    el('launchLevelBtn')?.addEventListener('click', async () => {
       if (!pendingLaunch) return;
-      if (pendingLaunch.type === 'boss') window.location.href = 'level.html?type=boss';
-      else window.location.href = `level.html?sense=${encodeURIComponent(pendingLaunch.sense)}&slot=${pendingLaunch.slot}`;
+      await playSound('fight');
+      window.setTimeout(() => {
+        if (pendingLaunch.type === 'boss') window.location.href = 'level.html?type=boss';
+        else window.location.href = `level.html?sense=${encodeURIComponent(pendingLaunch.sense)}&slot=${pendingLaunch.slot}`;
+      }, 450);
     });
 
     window.addEventListener('resize', () => { updateBoardBox(); renderBoard(); });
@@ -232,6 +299,7 @@
       showEncounter(state.slots[index], index);
       return;
     }
+    playSound('levelstart');
     openScanModal(index);
   }
 
@@ -239,6 +307,7 @@
     const state = getState();
     if (state.bossCompleted) return;
     if (!allLevelsDone(state)) return;
+    playSound('levelstart');
     showBossEncounter();
   }
 
@@ -355,6 +424,7 @@
     if (activeSlotForScan === null || activeSlotForScan < 0) return;
     state.slots[activeSlotForScan] = sense.id;
     setState(state);
+    playSound('levelunlocked');
     closeScanModal();
     showEncounter(sense.id, activeSlotForScan);
     renderBoard();
@@ -432,6 +502,7 @@
   }
 
   function showWinFlow(data, meta) {
+    playSound('win');
     const modal = el('resultModal');
     el('resultImage').src = data.defeated;
     el('resultImage').alt = `${data.label || 'Boss'} besiegt`;
@@ -470,6 +541,7 @@
   }
 
   function showLoseFlow() {
+    playSound('lose');
     const modal = el('resultModal');
     el('resultImage').src = 'held_verloren.webp';
     el('resultImage').alt = 'Held verloren';
