@@ -107,13 +107,13 @@
   };
 
   const LEVEL_POSITIONS = [
-    { x: 47.8, y: 85.8 },
-    { x: 50.2, y: 65.8 },
-    { x: 50.4, y: 48.8 },
-    { x: 50.3, y: 30.8 },
-    { x: 50.5, y: 19.7 }
+    { x: 47.2, y: 85.8 },
+    { x: 51.8, y: 63.9 },
+    { x: 49.9, y: 47.7 },
+    { x: 51.5, y: 32.8 },
+    { x: 50.1, y: 18.8 }
   ];
-  const BOSS_POSITION = { x: 50.3, y: 7.4 };
+  const BOSS_POSITION = { x: 50.0, y: 8.6 };
   const STAGE_BACKGROUNDS = ['stage_gras.webp', 'stage_sand.webp', 'stage_eis.webp', 'stage_lava.webp', 'stage_himmel.webp'];
   const BOSS_BACKGROUND = 'stage_all.webp';
   const STORE = 'koenigreichSinneGameRebuildV1';
@@ -701,8 +701,28 @@
     showEvaluationFlow(results, data, meta);
   }
 
+  const EVALUATION_DIRECTIONS = ['fly-left', 'fly-right', 'fly-top', 'fly-bottom', 'fly-zoom'];
+  let lastEvaluationImage = { correct: null, wrong: null };
+
   function randomFrom(list) {
     return list[Math.floor(Math.random() * list.length)];
+  }
+
+  function randomFromNoRepeat(list, group) {
+    const previous = lastEvaluationImage[group];
+    const choices = list.length > 1 ? list.filter(item => item !== previous) : list;
+    const picked = randomFrom(choices);
+    lastEvaluationImage[group] = picked;
+    return picked;
+  }
+
+  function setEvaluationImage(image, src, alt, finalStep = false) {
+    if (!image) return;
+    image.className = 'evaluation-img';
+    void image.offsetWidth;
+    image.src = src;
+    image.alt = alt;
+    image.classList.add(finalStep ? 'fly-zoom' : randomFrom(EVALUATION_DIRECTIONS));
   }
 
   function setEvaluationDots(activeIndex, total) {
@@ -728,8 +748,11 @@
       if (index < results.length) {
         const isCorrect = results[index];
         label.textContent = `Frage ${index + 1}`;
-        image.src = isCorrect ? randomFrom(EVALUATION_IMAGES.correct) : randomFrom(EVALUATION_IMAGES.wrong);
-        image.alt = `Auswertung Frage ${index + 1}`;
+        const group = isCorrect ? 'correct' : 'wrong';
+        const imageSrc = isCorrect
+          ? randomFromNoRepeat(EVALUATION_IMAGES.correct, group)
+          : randomFromNoRepeat(EVALUATION_IMAGES.wrong, group);
+        setEvaluationImage(image, imageSrc, `Auswertung Frage ${index + 1}`);
         prepareOutcomeSound();
         playSound(isCorrect ? 'richtig' : 'falsch');
         setEvaluationDots(index, totalSteps);
@@ -738,8 +761,7 @@
         return;
       }
       label.textContent = 'Auswertung';
-      image.src = EVALUATION_IMAGES.final;
-      image.alt = 'Finale Auswertung';
+      setEvaluationImage(image, EVALUATION_IMAGES.final, 'Finale Auswertung', true);
       prepareOutcomeSound();
       playSound('final');
       setEvaluationDots(index, totalSteps);
