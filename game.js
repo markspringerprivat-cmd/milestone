@@ -351,17 +351,38 @@
     stopManagedChannel('outcome');
   }
 
+  function markBoardMusicResume() {
+    sessionStorage.setItem('resumeBoardMusic', '1');
+    localStorage.setItem('koenigreichSinneResumeMusicV1', String(Date.now()));
+  }
+
   function startBackgroundMusic(restart = false) {
     initAudio();
-    if (soundMuted || !isBoardVisible()) return;
+    if (soundMuted || !isBoardVisible()) return Promise.resolve();
     const bg = audio.background;
-    if (!bg) return;
-    if (restart) {
-      try { bg.currentTime = 0; } catch {}
-    }
-    bg.volume = volumeForKey('background');
-    if (!bg.paused) return;
-    bg.play().then(() => { audioUnlocked = true; }).catch(() => {});
+    if (!bg) return Promise.resolve();
+    try {
+      bg.volume = volumeForKey('background');
+      if (restart) {
+        bg.pause();
+        bg.currentTime = 0;
+      }
+    } catch {}
+    return bg.play().then(() => {
+      audioUnlocked = true;
+    }).catch(() => {
+      // Mobile Browser erlauben Audio manchmal erst nach der nächsten Nutzerinteraktion.
+    });
+  }
+
+  function scheduleBoardMusicResume() {
+    if (!isBoardVisible() || soundMuted) return;
+    const attempts = [0, 120, 350, 800, 1500, 2600];
+    attempts.forEach(delay => window.setTimeout(() => startBackgroundMusic(delay === 0), delay));
+    const resumeOnce = () => startBackgroundMusic(true);
+    window.addEventListener('pointerdown', resumeOnce, { once: true, passive: true });
+    window.addEventListener('touchstart', resumeOnce, { once: true, passive: true });
+    window.addEventListener('click', resumeOnce, { once: true });
   }
 
   function armAudioUnlock() {
@@ -407,10 +428,13 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     armAudioUnlock();
-    document.addEventListener('click', event => {
-      const link = event.target.closest && event.target.closest('a[href="index.html"]');
-      if (link) sessionStorage.setItem('resumeBoardMusic', '1');
-    }, true);
+    const rememberBoardReturn = event => {
+      const target = event.target.closest && event.target.closest('a[href="index.html"], button[data-board-return]');
+      if (target) markBoardMusicResume();
+    };
+    document.addEventListener('pointerdown', rememberBoardReturn, true);
+    document.addEventListener('touchstart', rememberBoardReturn, true);
+    document.addEventListener('click', rememberBoardReturn, true);
     const page = document.body.dataset.page;
     if (page === 'board') initBoard();
     if (page === 'level') { stopBackgroundMusic(); initLevel(); }
@@ -473,9 +497,11 @@
     el('boardImage')?.addEventListener('load', () => { updateBoardBox(); renderBoard(); });
     updateBoardBox(); renderBoard();
     if (state.started) {
-      const shouldResume = sessionStorage.getItem('resumeBoardMusic') === '1';
+      const shouldResume = sessionStorage.getItem('resumeBoardMusic') === '1' || localStorage.getItem('koenigreichSinneResumeMusicV1');
       sessionStorage.removeItem('resumeBoardMusic');
-      window.setTimeout(() => startBackgroundMusic(true), shouldResume ? 80 : 250);
+      localStorage.removeItem('koenigreichSinneResumeMusicV1');
+      if (shouldResume) scheduleBoardMusicResume();
+      else window.setTimeout(() => startBackgroundMusic(true), 250);
     }
   }
 
@@ -936,7 +962,7 @@
       setEvaluationDots(index, totalSteps);
       await playEvaluationCue(imageSrc, runToken);
       if (runToken !== evaluationRunToken) return;
-      await wait(3000);
+      await wait(2500);
     }
 
     if (runToken !== evaluationRunToken) return;
@@ -1024,7 +1050,7 @@
     }
     state.completed[meta.slot] = true;
     setState(state);
-    sessionStorage.setItem('resumeBoardMusic', '1');
+    markBoardMusicResume();
     window.location.href = 'index.html';
   }
 
