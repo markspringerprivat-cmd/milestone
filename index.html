@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Königreich der Sinne</title>
-  <link rel="stylesheet" href="style.css?v=popupbg5">
-  <script src="game.js?v=popupbg5" defer></script>
+  <link rel="stylesheet" href="style.css?v=popupbg6">
+  <script src="game.js?v=popupbg6" defer></script>
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" async></script>
 </head>
 <body data-page="board">
@@ -80,5 +80,20 @@
       </div>
     </div>
   </div>
+
+  <div id="levelUnlockedModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="levelUnlockedTitle">
+    <div class="modal-card encounter-card outcome-hero">
+      <img src="held_gewonnen.webp" class="character-img" alt="Held steckt die Flagge in den Boden">
+      <div class="encounter-text">
+        <span class="kicker">Erfolg</span>
+        <h2 id="levelUnlockedTitle">Neues Level freigeschaltet</h2>
+        <p>Weiter zum Spielbrett.</p>
+        <div class="button-line center">
+          <button id="levelUnlockedContinueBtn" class="game-btn primary">Weiter</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>

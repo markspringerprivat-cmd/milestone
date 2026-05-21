@@ -119,6 +119,7 @@
   const POPUP_BACKGROUNDS = ['popup_gras.webp', 'popup_sand.webp', 'popup_eis.webp', 'popup_lava.webp', 'popup_himmel.webp'];
   const BOSS_POPUP_BACKGROUND = 'popup_all.webp';
   const STORE = 'koenigreichSinneGameRebuildV1';
+  const UNLOCKED_MODAL_STORE = 'koenigreichSinneShowUnlockedModalV1';
   const BOARD_RATIO = 1086 / 1448;
 
   let scanStream = null;
@@ -478,6 +479,7 @@
       startBtn.addEventListener('touchend', startGameNow, { passive: false });
     }
     el('resetGameBtn')?.addEventListener('click', resetGame);
+    el('levelUnlockedContinueBtn')?.addEventListener('click', () => { hide(el('levelUnlockedModal')); startBackgroundMusic(true); });
     el('closeScanBtn')?.addEventListener('click', closeScanModal);
     el('backToBoardBtn')?.addEventListener('click', closeScanModal);
     el('manualUnlockBtn')?.addEventListener('click', () => handleScanText(el('manualCodeInput')?.value));
@@ -500,9 +502,24 @@
       const shouldResume = sessionStorage.getItem('resumeBoardMusic') === '1' || localStorage.getItem('koenigreichSinneResumeMusicV1');
       sessionStorage.removeItem('resumeBoardMusic');
       localStorage.removeItem('koenigreichSinneResumeMusicV1');
-      if (shouldResume) scheduleBoardMusicResume();
-      else window.setTimeout(() => startBackgroundMusic(true), 250);
+      if (localStorage.getItem(UNLOCKED_MODAL_STORE) === '1') {
+        localStorage.removeItem(UNLOCKED_MODAL_STORE);
+        window.setTimeout(showLevelUnlockedModalOnBoard, 120);
+      } else if (shouldResume) {
+        scheduleBoardMusicResume();
+      } else {
+        window.setTimeout(() => startBackgroundMusic(true), 250);
+      }
     }
+  }
+
+  function showLevelUnlockedModalOnBoard() {
+    const modal = el('levelUnlockedModal');
+    if (!modal) {
+      startBackgroundMusic(true);
+      return;
+    }
+    show(modal);
   }
 
   function updateBoardBox() {
@@ -1022,7 +1039,10 @@
       prepareOutcomeSound();
       playSound('win');
     }
-    el('continueWinBtn').addEventListener('click', () => showHeroWon(meta));
+    el('continueWinBtn').addEventListener('click', () => {
+      if (meta.isBoss) showHeroWon(meta);
+      else finishLevel(meta);
+    });
   }
 
   function showHeroWon(meta) {
@@ -1050,6 +1070,7 @@
     }
     state.completed[meta.slot] = true;
     setState(state);
+    localStorage.setItem(UNLOCKED_MODAL_STORE, '1');
     markBoardMusicResume();
     window.location.href = 'index.html';
   }
