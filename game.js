@@ -120,6 +120,7 @@
   const BOSS_POPUP_BACKGROUND = 'popup_all.webp';
   const STORE = 'koenigreichSinneGameRebuildV1';
   const UNLOCKED_MODAL_STORE = 'koenigreichSinneShowUnlockedModalV1';
+  const RETURN_MODAL_STORE = 'koenigreichSinneReturnModalV1';
   const BOARD_RATIO = 1086 / 1448;
 
   let scanStream = null;
@@ -357,6 +358,27 @@
     localStorage.setItem('koenigreichSinneResumeMusicV1', String(Date.now()));
   }
 
+  function storeBoardReturnModal(type, meta = {}) {
+    const payload = {
+      type,
+      slot: Number.isInteger(meta.slot) ? meta.slot : null,
+      isBoss: !!meta.isBoss
+    };
+    localStorage.setItem(RETURN_MODAL_STORE, JSON.stringify(payload));
+  }
+
+  function readBoardReturnModal() {
+    try {
+      const raw = localStorage.getItem(RETURN_MODAL_STORE);
+      if (!raw) return null;
+      localStorage.removeItem(RETURN_MODAL_STORE);
+      return JSON.parse(raw);
+    } catch {
+      localStorage.removeItem(RETURN_MODAL_STORE);
+      return null;
+    }
+  }
+
   function startBackgroundMusic(restart = false) {
     initAudio();
     if (soundMuted || !isBoardVisible()) return Promise.resolve();
@@ -479,7 +501,7 @@
       startBtn.addEventListener('touchend', startGameNow, { passive: false });
     }
     el('resetGameBtn')?.addEventListener('click', resetGame);
-    el('levelUnlockedContinueBtn')?.addEventListener('click', () => { hide(el('levelUnlockedModal')); startBackgroundMusic(true); });
+    el('levelUnlockedContinueBtn')?.addEventListener('click', () => { const m = el('levelUnlockedModal'); hide(m); m?.classList.remove('stage-popup'); m?.style.removeProperty('--popup-bg'); startBackgroundMusic(true); });
     el('closeScanBtn')?.addEventListener('click', closeScanModal);
     el('backToBoardBtn')?.addEventListener('click', closeScanModal);
     el('manualUnlockBtn')?.addEventListener('click', () => handleScanText(el('manualCodeInput')?.value));
@@ -502,9 +524,12 @@
       const shouldResume = sessionStorage.getItem('resumeBoardMusic') === '1' || localStorage.getItem('koenigreichSinneResumeMusicV1');
       sessionStorage.removeItem('resumeBoardMusic');
       localStorage.removeItem('koenigreichSinneResumeMusicV1');
-      if (localStorage.getItem(UNLOCKED_MODAL_STORE) === '1') {
+      const returnModal = readBoardReturnModal();
+      if (returnModal) {
+        window.setTimeout(() => showLevelUnlockedModalOnBoard(returnModal), 120);
+      } else if (localStorage.getItem(UNLOCKED_MODAL_STORE) === '1') {
         localStorage.removeItem(UNLOCKED_MODAL_STORE);
-        window.setTimeout(showLevelUnlockedModalOnBoard, 120);
+        window.setTimeout(() => showLevelUnlockedModalOnBoard({ type: 'unlocked' }), 120);
       } else if (shouldResume) {
         scheduleBoardMusicResume();
       } else {
@@ -513,11 +538,29 @@
     }
   }
 
-  function showLevelUnlockedModalOnBoard() {
+  function showLevelUnlockedModalOnBoard(options = {}) {
     const modal = el('levelUnlockedModal');
     if (!modal) {
       startBackgroundMusic(true);
       return;
+    }
+    const title = el('levelUnlockedTitle');
+    const text = el('levelUnlockedText');
+    const image = modal.querySelector('.character-img');
+    const isRun = options.type === 'run';
+    if (title) title.textContent = isRun ? 'Du bist erfolgreich weggerannt' : 'Neues Level freigeschaltet';
+    if (text) text.textContent = isRun ? 'Du kannst jetzt einen neuen QR-Code scannen oder das Level später erneut starten.' : 'Weiter zum Spielbrett.';
+    if (image) {
+      image.src = isRun ? 'held_verloren.webp' : 'held_gewonnen.webp';
+      image.alt = isRun ? 'Held ist weggerannt' : 'Held steckt die Flagge in den Boden';
+    }
+    const bg = options.isBoss ? BOSS_POPUP_BACKGROUND : (Number.isInteger(options.slot) ? POPUP_BACKGROUNDS[options.slot] : null);
+    if (bg) {
+      modal.classList.add('stage-popup');
+      modal.style.setProperty('--popup-bg', `url("${bg}")`);
+    } else {
+      modal.classList.remove('stage-popup');
+      modal.style.removeProperty('--popup-bg');
     }
     show(modal);
   }
@@ -846,6 +889,7 @@
       `).join('');
     }
     el('checkAnswerBtn')?.addEventListener('click', () => checkAnswer(data, meta));
+    el('runAwayBtn')?.addEventListener('click', () => runAwayFromLevel(meta));
     el('outroResetBtn')?.addEventListener('click', resetGame);
   }
 
@@ -1059,6 +1103,17 @@
     el('finishLevelBtn').addEventListener('click', () => finishLevel(meta));
   }
 
+  function runAwayFromLevel(meta) {
+    const state = getState();
+    if (!meta.isBoss && Number.isInteger(meta.slot) && !state.completed[meta.slot]) {
+      state.slots[meta.slot] = null;
+      setState(state);
+    }
+    storeBoardReturnModal('run', meta);
+    markBoardMusicResume();
+    window.location.href = 'index.html';
+  }
+
   function finishLevel(meta) {
     const state = getState();
     if (meta.isBoss) {
@@ -1070,7 +1125,7 @@
     }
     state.completed[meta.slot] = true;
     setState(state);
-    localStorage.setItem(UNLOCKED_MODAL_STORE, '1');
+    storeBoardReturnModal('unlocked', meta);
     markBoardMusicResume();
     window.location.href = 'index.html';
   }
