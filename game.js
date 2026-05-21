@@ -78,10 +78,16 @@
     win: 'win.mp3',
     lose: 'lose.mp3'
   };
+  const SOUND_STORE = 'koenigreichSinneSoundMutedV1';
   const audio = {};
   let audioReady = false;
-  let soundUnlocked = false;
+  let audioUnlocked = false;
+  let soundMuted = localStorage.getItem(SOUND_STORE) === '1';
   let audioButton = null;
+
+  function isBoardVisible() {
+    return document.body.dataset.page === 'board' && !el('boardScreen')?.classList.contains('hidden');
+  }
 
   function initAudio() {
     if (audioReady) return;
@@ -91,9 +97,9 @@
       a.setAttribute('playsinline', '');
       if (key === 'background') {
         a.loop = true;
-        a.volume = 0.18;
+        a.volume = 0.14;
       } else {
-        a.volume = 0.82;
+        a.volume = 0.86;
       }
       audio[key] = a;
     });
@@ -104,78 +110,92 @@
     if (audioButton) return audioButton;
     audioButton = document.createElement('button');
     audioButton.type = 'button';
-    audioButton.id = 'soundEnableBtn';
-    audioButton.className = 'sound-btn';
-    audioButton.textContent = 'Ton einschalten';
+    audioButton.id = 'speakerToggleBtn';
+    audioButton.className = 'speaker-btn';
+    audioButton.setAttribute('aria-label', 'Ton umschalten');
     audioButton.addEventListener('click', async (event) => {
       event.preventDefault();
-      await enableSoundFromGesture();
+      soundMuted = !soundMuted;
+      localStorage.setItem(SOUND_STORE, soundMuted ? '1' : '0');
+      updateAudioButton();
+      if (soundMuted) {
+        stopBackgroundMusic();
+      } else {
+        await unlockAudioFromGesture();
+        if (isBoardVisible()) startBackgroundMusic();
+      }
     });
     document.body.appendChild(audioButton);
+    updateAudioButton();
     return audioButton;
   }
 
   function updateAudioButton() {
     const btn = ensureAudioButton();
-    if (soundUnlocked) btn.classList.add('hidden');
-    else btn.classList.remove('hidden');
+    btn.textContent = soundMuted ? '🔇' : '🔊';
+    btn.title = soundMuted ? 'Ton einschalten' : 'Ton ausschalten';
+    btn.setAttribute('aria-pressed', soundMuted ? 'true' : 'false');
   }
 
-  async function enableSoundFromGesture() {
+  async function unlockAudioFromGesture() {
+    initAudio();
+    if (soundMuted) return;
+    try {
+      const probe = audio.levelstart || audio.background;
+      probe.muted = true;
+      await probe.play();
+      probe.pause();
+      probe.currentTime = 0;
+      probe.muted = false;
+      audioUnlocked = true;
+    } catch {
+      // Mobile Browser erlauben Audio häufig erst beim nächsten direkten Tippen.
+    }
+  }
+
+  function stopBackgroundMusic() {
     initAudio();
     const bg = audio.background;
-    try {
-      bg.muted = false;
-      bg.volume = 0.18;
-      await bg.play();
-      soundUnlocked = true;
-      updateAudioButton();
-    } catch {
-      soundUnlocked = false;
-      updateAudioButton();
-    }
+    if (!bg) return;
+    try { bg.pause(); } catch {}
   }
 
   function playSound(key) {
     initAudio();
+    if (soundMuted) return Promise.resolve();
     const a = audio[key];
     if (!a) return Promise.resolve();
     try {
       a.pause();
       a.currentTime = 0;
-      return a.play().catch(() => {
-        updateAudioButton();
-      });
+      return a.play().catch(() => {});
     } catch {
-      updateAudioButton();
       return Promise.resolve();
     }
   }
 
   function startBackgroundMusic() {
     initAudio();
+    if (soundMuted || !isBoardVisible()) return;
     const bg = audio.background;
     if (!bg || !bg.paused) return;
-    bg.play().then(() => {
-      soundUnlocked = true;
-      updateAudioButton();
-    }).catch(() => {
-      soundUnlocked = false;
-      updateAudioButton();
-    });
+    bg.play().then(() => { audioUnlocked = true; }).catch(() => {});
   }
 
   function armAudioUnlock() {
     initAudio();
     ensureAudioButton();
-    updateAudioButton();
-    const unlock = () => enableSoundFromGesture();
+    const unlock = async () => {
+      await unlockAudioFromGesture();
+      if (isBoardVisible()) startBackgroundMusic();
+    };
     document.addEventListener('pointerdown', unlock, { once: true, passive: true });
     document.addEventListener('touchstart', unlock, { once: true, passive: true });
     document.addEventListener('click', unlock, { once: true });
     document.addEventListener('keydown', unlock, { once: true });
     document.addEventListener('visibilitychange', () => {
-      if (!document.hidden && soundUnlocked) startBackgroundMusic();
+      if (document.hidden) stopBackgroundMusic();
+      else if (isBoardVisible()) startBackgroundMusic();
     });
   }
 
@@ -212,8 +232,8 @@
     armAudioUnlock();
     const page = document.body.dataset.page;
     if (page === 'board') initBoard();
-    if (page === 'level') initLevel();
-    if (page === 'codes') initCodes();
+    if (page === 'level') { stopBackgroundMusic(); initLevel(); }
+    if (page === 'codes') { stopBackgroundMusic(); initCodes(); }
   });
 
   function initBoard() {
@@ -234,7 +254,7 @@
       s.started = true;
       setState(s);
       hide(intro); show(board); show(below);
-      updateBoardBox(); renderBoard();
+      updateBoardBox(); renderBoard(); startBackgroundMusic();
     });
     el('resetGameBtn')?.addEventListener('click', resetGame);
     el('closeScanBtn')?.addEventListener('click', closeScanModal);
@@ -246,6 +266,7 @@
       if (!pendingLaunch) return;
       await playSound('fight');
       window.setTimeout(() => {
+        stopBackgroundMusic();
         if (pendingLaunch.type === 'boss') window.location.href = 'level.html?type=boss';
         else window.location.href = `level.html?sense=${encodeURIComponent(pendingLaunch.sense)}&slot=${pendingLaunch.slot}`;
       }, 450);
@@ -254,6 +275,7 @@
     window.addEventListener('resize', () => { updateBoardBox(); renderBoard(); });
     el('boardImage')?.addEventListener('load', () => { updateBoardBox(); renderBoard(); });
     updateBoardBox(); renderBoard();
+    if (state.started) startBackgroundMusic();
   }
 
   function updateBoardBox() {
@@ -283,35 +305,43 @@
       const assigned = state.slots[index];
       const done = state.completed[index];
       const isActive = index === active && !done;
-      const node = document.createElement('button');
-      node.type = 'button';
-      node.className = `node ${done ? 'completed' : isActive ? 'active' : 'locked'}`;
-      node.style.left = `${pos.x}%`;
-      node.style.top = `${pos.y}%`;
-      node.innerHTML = nodeHtml(index + 1, assigned, done, isActive);
-      node.addEventListener('click', () => handleNodeClick(index));
-      inner.appendChild(node);
+      const token = document.createElement('button');
+      token.type = 'button';
+      token.className = `map-token ${done ? 'done' : isActive ? 'hero-active' : 'locked'}`;
+      token.style.left = `${pos.x}%`;
+      token.style.top = `${pos.y}%`;
+      token.innerHTML = tokenHtml(index + 1, assigned, done, isActive);
+      token.addEventListener('click', () => handleNodeClick(index));
+      inner.appendChild(token);
     });
 
     const bossDone = state.bossCompleted;
     const bossActive = allLevelsDone(state) && !bossDone;
     const boss = document.createElement('button');
     boss.type = 'button';
-    boss.className = `node final ${bossDone ? 'completed' : bossActive ? 'active' : 'locked'}`;
+    boss.className = `map-token final ${bossDone ? 'done' : bossActive ? 'hero-active' : 'locked'}`;
     boss.style.left = `${BOSS_POSITION.x}%`;
     boss.style.top = `${BOSS_POSITION.y}%`;
-    boss.innerHTML = `<span class="top">Finale</span><span class="main">Krone</span>${bossDone ? '<span class="sub">gerettet</span>' : '<img class="lock" src="lock.png" alt="Schloss">'}`;
+    boss.innerHTML = bossDone
+      ? '<div class="done-token crown-done">✓<span>Gerettet</span></div>'
+      : bossActive
+        ? '<img class="hero-token" src="held.webp" alt="Held"><span class="token-label">Boss</span>'
+        : '<img class="lock-token" src="lock.png" alt="Schloss"><span class="token-label">Finale</span>';
     boss.addEventListener('click', handleBossClick);
     inner.appendChild(boss);
 
     renderProgress();
   }
 
-  function nodeHtml(number, assigned, done, active) {
-    const label = assigned ? SENSES[assigned].label : `Level ${number}`;
-    const sub = done ? 'geschafft' : active ? 'QR scannen' : 'gesperrt';
-    const lock = done ? '' : '<img class="lock" src="lock.png" alt="Schloss">';
-    return `<span class="top">Level ${number}</span><span class="main">${label}</span><span class="sub">${sub}</span>${lock}`;
+  function tokenHtml(number, assigned, done, active) {
+    if (done) {
+      const label = assigned ? SENSES[assigned].label : `Level ${number}`;
+      return `<div class="done-token">✓<span>${escapeHtml(label)}</span></div>`;
+    }
+    if (active) {
+      return `<img class="hero-token" src="held.webp" alt="Held"><span class="token-label">Level ${number}</span>`;
+    }
+    return `<img class="lock-token" src="lock.png" alt="Schloss"><span class="token-label">Level ${number}</span>`;
   }
 
   function renderProgress() {
