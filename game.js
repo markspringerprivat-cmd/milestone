@@ -131,7 +131,10 @@
     levelunlocked: 'levelunlocked.mp3',
     fight: 'fight.mp3',
     win: 'win.mp3',
-    lose: 'lose.mp3'
+    lose: 'lose.mp3',
+    richtig: 'richtig.mp3',
+    falsch: 'falsch.mp3',
+    final: 'final.mp3'
   };
   const SOUND_STORE = 'koenigreichSinneSoundMutedV1';
   const audio = {};
@@ -229,11 +232,15 @@
     }
   }
 
-  function startBackgroundMusic() {
+  function startBackgroundMusic(restart = false) {
     initAudio();
     if (soundMuted || !isBoardVisible()) return;
     const bg = audio.background;
-    if (!bg || !bg.paused) return;
+    if (!bg) return;
+    if (restart) {
+      try { bg.currentTime = 0; } catch {}
+    }
+    if (!bg.paused) return;
     bg.play().then(() => { audioUnlocked = true; }).catch(() => {});
   }
 
@@ -321,7 +328,7 @@
       updateBoardBox();
       renderBoard();
       // Audio wird erst nach dem sicheren Wechsel gestartet, damit mobile Browser den Start nicht blockieren.
-      unlockAudioFromGesture().then(() => startBackgroundMusic()).catch(() => {});
+      unlockAudioFromGesture().then(() => startBackgroundMusic(true)).catch(() => {});
     };
     if (startBtn) {
       startBtn.addEventListener('click', startGameNow);
@@ -333,7 +340,7 @@
     el('backToBoardBtn')?.addEventListener('click', closeScanModal);
     el('manualUnlockBtn')?.addEventListener('click', () => handleScanText(el('manualCodeInput')?.value));
     el('manualCodeInput')?.addEventListener('keydown', e => { if (e.key === 'Enter') handleScanText(e.target.value); });
-    el('encounterBackBtn')?.addEventListener('click', () => hide(el('encounterModal')));
+    el('encounterBackBtn')?.addEventListener('click', () => { hide(el('encounterModal')); startBackgroundMusic(true); });
     el('launchLevelBtn')?.addEventListener('click', async () => {
       if (!pendingLaunch) return;
       await playSound('fight');
@@ -347,7 +354,7 @@
     window.addEventListener('resize', () => { updateBoardBox(); renderBoard(); });
     el('boardImage')?.addEventListener('load', () => { updateBoardBox(); renderBoard(); });
     updateBoardBox(); renderBoard();
-    if (state.started) startBackgroundMusic();
+    if (state.started) startBackgroundMusic(true);
   }
 
   function updateBoardBox() {
@@ -461,6 +468,7 @@
   }
 
   function openScanModal(slot) {
+    stopBackgroundMusic();
     activeSlotForScan = slot;
     setText('scanTitle', `Level ${slot + 1}: QR-Code scannen`);
     setText('scanHelp', 'Scanne einen beliebigen noch nicht erledigten Sinnes-Code. Der Code bestimmt das Thema dieses Levels.');
@@ -471,9 +479,10 @@
     startCameraScan();
   }
 
-  function closeScanModal() {
+  function closeScanModal(resumeMusic = true) {
     stopCameraScan();
     hide(el('scanModal'));
+    if (resumeMusic && isBoardVisible()) startBackgroundMusic(true);
   }
 
   async function startCameraScan() {
@@ -574,7 +583,7 @@
     state.slots[activeSlotForScan] = sense.id;
     setState(state);
     playSound('levelunlocked');
-    closeScanModal();
+    closeScanModal(false);
     showEncounter(sense.id, activeSlotForScan);
     renderBoard();
   }
@@ -698,6 +707,7 @@
         label.textContent = `Frage ${index + 1}`;
         image.src = isCorrect ? randomFrom(EVALUATION_IMAGES.correct) : randomFrom(EVALUATION_IMAGES.wrong);
         image.alt = `Auswertung Frage ${index + 1}`;
+        playSound(isCorrect ? 'richtig' : 'falsch');
         setEvaluationDots(index, totalSteps);
         index += 1;
         window.setTimeout(showStep, 1000);
@@ -706,6 +716,7 @@
       label.textContent = 'Auswertung';
       image.src = EVALUATION_IMAGES.final;
       image.alt = 'Finale Auswertung';
+      playSound('final');
       setEvaluationDots(index, totalSteps);
       window.setTimeout(() => {
         hide(modal);
