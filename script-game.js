@@ -10,9 +10,9 @@ const SLOTS = [
   { x: 49.5, y: 66.5 },
   { x: 50.2, y: 49.5 },
   { x: 50.5, y: 31.8 },
-  { x: 54.2, y: 20.3 }
+  { x: 51.8, y: 19.4 }
 ];
-const ENDLEVEL = { file: 'endlevel.html', x: 55.8, y: 8.6 };
+const ENDLEVEL = { file: 'endlevel.html', x: 50.6, y: 8.2 };
 const STORE = 'sinneQrFreeMilestonesV1';
 let activeSlot = null;
 let qrScanner = null;

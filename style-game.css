@@ -26,3 +26,79 @@ a{text-decoration:none;color:inherit}img{max-width:100%;display:block}
 @media (max-width:980px){.content,.modal-grid,.info-layout,.qr-grid{grid-template-columns:1fr}.modal-panel{padding:20px}.info-section{padding-top:24px}}
 @media (max-width:720px){.shell,.info-section{width:min(100% - 18px,1180px);padding-top:16px}.hero{padding:22px}.topbar{margin-bottom:14px}.hero h1{font-size:clamp(1.8rem,9vw,3rem)}.map-board{height:100dvh;width:75dvh}.map-node{width:78px;height:78px;padding:7px;border-width:2px}.end-node{width:76px;height:76px}.node-level{font-size:.50rem}.map-node strong,.end-node strong{font-size:.68rem}.map-node small,.end-node small{display:none}.lock-icon{width:26px;height:26px;right:-5px;bottom:-4px}.btn,.chip{padding:10px 14px;font-size:.95rem}.scroll-cue{font-size:.72rem;padding:7px 10px}.modal{padding:10px}.scanner-box{min-height:260px}}
 @media print{body{background:white;color:#111}.topbar,.action-row,.btn,.toast,.modal,.scroll-cue{display:none!important}.hero,.info-card,.section,.quiz-card{background:white;color:#111;box-shadow:none;border:1px solid #ddd}.section p,.quiz-card p,.info-card p,.section li{color:#333}.qr-grid{grid-template-columns:repeat(2,1fr)}}
+
+/* Centering and visibility fixes */
+.board-screen{
+  display:block;
+  position:relative;
+  width:100vw;
+  max-width:100vw;
+  height:100dvh;
+  min-height:100dvh;
+  overflow:hidden;
+}
+.map-board{
+  position:absolute;
+  top:0;
+  left:50%;
+  transform:translateX(-50%);
+  height:100dvh;
+  width:max(100vw,75dvh);
+  max-width:none;
+  background-position:center center;
+}
+.map-node,.end-node{
+  width:112px;
+  height:112px;
+  border:3px solid rgba(255,255,255,.96);
+  box-shadow:0 12px 26px rgba(0,0,0,.33), inset 0 0 0 2px rgba(255,255,255,.28);
+  will-change:transform,box-shadow,filter;
+}
+.map-node:hover,.end-node:hover,
+.map-node:focus-visible,.end-node:focus-visible{
+  transform:translate(-50%,-50%) scale(1.08);
+  box-shadow:0 18px 38px rgba(0,0,0,.40),0 0 0 5px rgba(255,216,77,.55), inset 0 0 0 2px rgba(255,255,255,.42);
+  filter:brightness(1.08) saturate(1.08);
+  z-index:8;
+}
+.map-node.locked,.end-node.locked{
+  background:#b7bec9;
+  color:#1f2937;
+  filter:none;
+  opacity:1;
+}
+.lock-icon{
+  width:40px;
+  height:40px;
+  right:-7px;
+  bottom:-7px;
+  padding:3px;
+  background:#ffffff;
+  border:2px solid rgba(255,255,255,.95);
+}
+.end-node .lock-icon{display:block!important}
+.end-node.done .lock-icon{display:none!important}
+.scroll-cue{z-index:10}
+@media (min-width:900px){
+  .map-node,.end-node{width:108px;height:108px}
+  .lock-icon{width:38px;height:38px;right:-7px;bottom:-7px}
+}
+@media (max-width:720px){
+  .map-board{
+    left:50%;
+    transform:translateX(-50%);
+    height:100dvh;
+    width:max(100vw,75dvh);
+    background-position:center center;
+  }
+  .map-node{width:92px;height:92px;padding:8px}
+  .end-node{width:90px;height:90px;padding:8px}
+  .node-level{font-size:.56rem}
+  .map-node strong,.end-node strong{font-size:.76rem}
+  .lock-icon{width:34px;height:34px;right:-7px;bottom:-7px}
+}
+@media (max-width:390px){
+  .map-node{width:86px;height:86px}
+  .end-node{width:84px;height:84px}
+  .lock-icon{width:32px;height:32px}
+}
