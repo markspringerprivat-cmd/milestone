@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Königreich der Sinne</title>
+  <link rel="stylesheet" href="style.css?v=popupbg2">
+  <script src="game.js?v=popupbg2" defer></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" async></script>
+</head>
+<body data-page="board">
+  <main>
+    <section id="introScreen" class="intro-screen" aria-label="Intro">
+      <img src="intro.webp" alt="Introbild Königreich der Sinne" class="intro-img">
+      <div class="intro-panel">
+        <button id="startGameBtn" class="game-btn primary">Spiel starten</button>
+      </div>
+    </section>
+
+    <section id="boardScreen" class="board-screen hidden" aria-label="Spielbrett">
+      <img id="boardImage" src="board.webp" alt="Spielbrett der Sinnesorgane" class="board-image">
+      <div id="mapInner" class="map-inner" aria-label="Levelpunkte auf dem Spielbrett"></div>
+    </section>
+
+    <section id="belowBoard" class="below-board hidden">
+      <div class="content-wrap">
+        <article class="panel">
+          <h1>Königreich der Sinne</h1>
+          <p>Scanne QR-Codes in beliebiger Reihenfolge. Der gescannte Code bestimmt, welches Sinnes-Level auf dem aktuellen Feld freigeschaltet wird. Nach bestandenem Quiz wird das nächste Feld aktiv.</p>
+          <div id="progressSummary" class="progress-summary"></div>
+        </article>
+
+        <div class="action-row">
+          <a class="game-btn secondary" href="codes.html">QR-Codes anzeigen</a>
+          <button id="resetGameBtn" class="game-btn danger">Spielbrett zurücksetzen</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="scanModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="scanTitle">
+    <div class="modal-card scan-card">
+      <div class="modal-head">
+        <div>
+          <h2 id="scanTitle">QR-Code scannen</h2>
+          <p id="scanHelp">Scanne einen beliebigen noch nicht verwendeten Sinnes-Code.</p>
+        </div>
+        <button id="closeScanBtn" class="round-btn" aria-label="Schließen">×</button>
+      </div>
+      <div class="scan-layout">
+        <div class="camera-box">
+          <div id="qrReader" class="qr-reader"><p id="cameraInfo" class="camera-info">Kamera wird vorbereitet …</p></div>
+        </div>
+        <div class="manual-box">
+          <h3>Alternative Eingabe</h3>
+          <p>Falls die Kamera auf diesem Gerät nicht verfügbar ist, kann der QR-Code hier eingegeben werden.</p>
+          <label class="input-label" for="manualCodeInput">Code</label>
+          <input id="manualCodeInput" name="manualCodeInput" autocomplete="off" placeholder="z. B. SINNE-SCHMECKEN">
+          <div class="button-line">
+            <button id="manualUnlockBtn" class="game-btn primary">Freischalten</button>
+            <button id="backToBoardBtn" class="game-btn muted">Zurück zum Brett</button>
+          </div>
+          <p id="scanMessage" class="message hidden"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="encounterModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="encounterTitle">
+    <div class="modal-card encounter-card">
+      <img id="encounterImage" class="character-img" alt="Gegner">
+      <div class="encounter-text">
+        <span id="encounterKicker" class="kicker">Level freigeschaltet</span>
+        <h2 id="encounterTitle">Gegner erscheint</h2>
+        <p id="encounterSpeech"></p>
+        <div class="button-line center">
+          <button id="launchLevelBtn" class="game-btn primary">Level starten</button>
+          <button id="encounterBackBtn" class="game-btn muted">Zurück zum Brett</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
