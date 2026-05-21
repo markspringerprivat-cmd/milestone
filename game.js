@@ -928,7 +928,7 @@
       setEvaluationDots(index, totalSteps);
       await playEvaluationCue(imageSrc, runToken);
       if (runToken !== evaluationRunToken) return;
-      await wait(4000);
+      await wait(2000);
     }
 
     if (runToken !== evaluationRunToken) return;
