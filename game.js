@@ -80,21 +80,60 @@
   };
   const audio = {};
   let audioReady = false;
+  let soundUnlocked = false;
+  let audioButton = null;
 
   function initAudio() {
     if (audioReady) return;
     Object.entries(AUDIO_FILES).forEach(([key, file]) => {
       const a = new Audio(file);
       a.preload = 'auto';
+      a.setAttribute('playsinline', '');
       if (key === 'background') {
         a.loop = true;
-        a.volume = 0.14;
+        a.volume = 0.18;
       } else {
-        a.volume = 0.72;
+        a.volume = 0.82;
       }
       audio[key] = a;
     });
     audioReady = true;
+  }
+
+  function ensureAudioButton() {
+    if (audioButton) return audioButton;
+    audioButton = document.createElement('button');
+    audioButton.type = 'button';
+    audioButton.id = 'soundEnableBtn';
+    audioButton.className = 'sound-btn';
+    audioButton.textContent = 'Ton einschalten';
+    audioButton.addEventListener('click', async (event) => {
+      event.preventDefault();
+      await enableSoundFromGesture();
+    });
+    document.body.appendChild(audioButton);
+    return audioButton;
+  }
+
+  function updateAudioButton() {
+    const btn = ensureAudioButton();
+    if (soundUnlocked) btn.classList.add('hidden');
+    else btn.classList.remove('hidden');
+  }
+
+  async function enableSoundFromGesture() {
+    initAudio();
+    const bg = audio.background;
+    try {
+      bg.muted = false;
+      bg.volume = 0.18;
+      await bg.play();
+      soundUnlocked = true;
+      updateAudioButton();
+    } catch {
+      soundUnlocked = false;
+      updateAudioButton();
+    }
   }
 
   function playSound(key) {
@@ -104,8 +143,11 @@
     try {
       a.pause();
       a.currentTime = 0;
-      return a.play().catch(() => {});
+      return a.play().catch(() => {
+        updateAudioButton();
+      });
     } catch {
+      updateAudioButton();
       return Promise.resolve();
     }
   }
@@ -113,23 +155,28 @@
   function startBackgroundMusic() {
     initAudio();
     const bg = audio.background;
-    if (!bg) return;
-    if (!bg.paused) return;
-    bg.play().catch(() => {});
+    if (!bg || !bg.paused) return;
+    bg.play().then(() => {
+      soundUnlocked = true;
+      updateAudioButton();
+    }).catch(() => {
+      soundUnlocked = false;
+      updateAudioButton();
+    });
   }
 
   function armAudioUnlock() {
     initAudio();
-    startBackgroundMusic();
-    const unlock = () => {
-      startBackgroundMusic();
-      document.removeEventListener('pointerdown', unlock);
-      document.removeEventListener('keydown', unlock);
-      document.removeEventListener('touchstart', unlock);
-    };
-    document.addEventListener('pointerdown', unlock, { once: true });
+    ensureAudioButton();
+    updateAudioButton();
+    const unlock = () => enableSoundFromGesture();
+    document.addEventListener('pointerdown', unlock, { once: true, passive: true });
+    document.addEventListener('touchstart', unlock, { once: true, passive: true });
+    document.addEventListener('click', unlock, { once: true });
     document.addEventListener('keydown', unlock, { once: true });
-    document.addEventListener('touchstart', unlock, { once: true });
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && soundUnlocked) startBackgroundMusic();
+    });
   }
 
   function defaultState() {
@@ -181,8 +228,8 @@
       show(intro); hide(board); hide(below);
     }
 
-    el('startGameBtn')?.addEventListener('click', () => {
-      startBackgroundMusic();
+    el('startGameBtn')?.addEventListener('click', async () => {
+      await enableSoundFromGesture();
       const s = getState();
       s.started = true;
       setState(s);
