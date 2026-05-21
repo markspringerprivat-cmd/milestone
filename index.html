@@ -1,1 +1,89 @@
-<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sinnesorgane QR-Level</title><link rel="stylesheet" href="style.css"><script src="https://unpkg.com/html5-qrcode" defer></script><script src="script.js" defer></script></head><body onload="initIndex()"><main class="shell"><div class="topbar"><div class="brand">Sinnesorgane · QR-Level</div><nav class="nav"><a class="btn ghost" href="codes.html">QR-Codes anzeigen</a><button class="btn danger" data-reset>Fortschritt zurücksetzen</button></nav></div><section class="hero"><h1>QR-Codes scannen und Level freischalten</h1><p>Scanne die QR-Codes der Stationen. Mit jedem Code wird ein neues Level zu einem Sinnesorgan freigeschaltet. Wenn alle Level geöffnet wurden, erscheint das Endlevel mit Abschlusstest.</p></section><section class="card"><h2>Scanner</h2><div class="scanner-box"><div id="reader" class="scanner"><p class="small">Kamera wird vorbereitet …</p></div><div><p>Erlaube den Kamerazugriff und halte den QR-Code in das Kamerafeld. Alternativ kann der Code manuell eingegeben werden.</p><div class="manual"><input id="manualCode" placeholder="Code eingeben, z. B. SINNE-AUGE-2026"><button id="manualBtn" class="btn primary">Freischalten</button></div><div id="scanMsg" class="alert hidden"></div></div></div></section><div class="progress-wrap"><div class="progress"></div></div><section class="grid" id="levelList"></section><section class="grid two" style="margin-top:18px"><a id="endLevel" class="card level-card locked"><div><span class="status">gesperrt</span><h3>Endlevel: Abschlusstest</h3><p>Der Test wird freigeschaltet, sobald alle QR-Codes gescannt wurden.</p></div><strong>Alle Level nötig</strong></a><a class="card level-card" href="codes.html"><div><span class="status open">Lehrkraft</span><h3>QR-Codes vorbereiten</h3><p>Hier werden alle Codes zum Anzeigen, Drucken oder Abscannen erzeugt.</p></div><strong>Codes öffnen</strong></a></section></main></body></html>
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sinnesorgane · QR-Spielbrett</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/html5-qrcode" defer></script>
+  <script src="script.js" defer></script>
+</head>
+<body onload="initIndex()">
+  <main class="shell">
+    <div class="topbar">
+      <div class="brand">Sinnesorgane · QR-Spielbrett</div>
+      <nav class="nav">
+        <a class="btn light" href="codes.html">QR-Codes anzeigen</a>
+        <button class="btn danger" data-reset>Fortschritt zurücksetzen</button>
+      </nav>
+    </div>
+
+    <section class="hero">
+      <h1>Levelpfad der Sinnesorgane</h1>
+      <p>Klicke auf das aktuelle Level direkt auf dem Spielbrett. Danach öffnet sich der QR-Scanner. Sobald der passende QR-Code gescannt wurde, wird das jeweilige Level freigeschaltet und du gelangst zur passenden Seite mit Inhalt, Anleitung und Aufgaben. Am Ende wartet das Endlevel mit Abschlusstest.</p>
+    </section>
+
+    <section class="board-layout">
+      <article class="board-card hero">
+        <div class="board-header">
+          <div>
+            <h2>Spielbrett</h2>
+            <p>Die Level liegen direkt auf den runden Feldern der Weltenkarte.</p>
+          </div>
+          <div class="progress-text" id="progressText"></div>
+        </div>
+
+        <div class="map-board" aria-label="Spielbrett mit anklickbaren Leveln">
+          <div class="board-overlay"></div>
+          <div id="boardLevels"></div>
+          <button id="endNode" type="button" aria-label="Endlevel mit Abschlusstest">
+            <span class="node-level">Finale</span>
+            <strong>Krone</strong>
+            <small>Abschlusstest</small>
+          </button>
+        </div>
+      </article>
+
+      <aside class="side-panel info-card">
+        <h3>So funktioniert es</h3>
+        <p>Die Level werden nacheinander freigeschaltet. Immer nur das aktuell nächste Feld kann gescannt werden. Bereits freigeschaltete Felder lassen sich anschließend direkt wieder öffnen.</p>
+        <div class="legend">
+          <div class="legend-item"><span class="dot" style="background:#58c76a"></span><div><b>Freigeschaltet</b><span>Dieses Level wurde bereits gescannt und kann geöffnet werden.</span></div></div>
+          <div class="legend-item"><span class="dot" style="background:#ffd84d"></span><div><b>Aktuelles Level</b><span>Hier klicken, QR-Code fotografieren und damit das nächste Level freischalten.</span></div></div>
+          <div class="legend-item"><span class="dot" style="background:#94a3b8"></span><div><b>Noch gesperrt</b><span>Diese Felder werden erst später im Milestonesystem aktiv.</span></div></div>
+        </div>
+        <div class="action-row" style="margin-top:16px">
+          <a class="btn primary" href="codes.html">Lehrkraftseite öffnen</a>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <div class="modal" id="scanModal" aria-hidden="true">
+    <div class="modal-panel">
+      <div class="modal-head">
+        <div>
+          <h2 id="modalTitle">QR-Code scannen</h2>
+          <p id="modalHint">Scanne den passenden Code, um das ausgewählte Level freizuschalten.</p>
+        </div>
+        <button class="modal-close" id="closeModal">Schließen</button>
+      </div>
+      <div class="modal-grid">
+        <div>
+          <div class="scanner-box" id="modalReader"><p class="small">Scanner wird vorbereitet …</p></div>
+        </div>
+        <div>
+          <h3>Alternative: Code eingeben</h3>
+          <p class="small">Falls die Kamera nicht funktioniert, kann der QR-Code auch manuell eingegeben werden.</p>
+          <div class="input-wrap">
+            <input id="modalManualCode" placeholder="z. B. SINNE-AUGE-2026">
+            <button id="modalManualBtn" class="btn primary" type="button">Freischalten</button>
+          </div>
+          <div id="modalMsg" class="modal-alert hidden"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="toast" class="toast"></div>
+</body>
+</html>
