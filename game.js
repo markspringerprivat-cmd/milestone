@@ -928,12 +928,15 @@
       setEvaluationDots(index, totalSteps);
       await playEvaluationCue(imageSrc, runToken);
       if (runToken !== evaluationRunToken) return;
-      await wait(2000);
+      await wait(4000);
     }
 
     if (runToken !== evaluationRunToken) return;
     label.textContent = 'Auswertung';
     setEvaluationImage(image, EVALUATION_IMAGES.final, 'Finale Auswertung', true);
+    window.setTimeout(() => {
+      if (runToken === evaluationRunToken) image.classList.add('final-loop');
+    }, 1350);
     setEvaluationDots(results.length, totalSteps);
     if (action) {
       action.innerHTML = '';
@@ -941,7 +944,7 @@
     }
     await playFinalCue(runToken);
     if (runToken !== evaluationRunToken) return;
-    await wait(3000);
+    await wait(4000);
     if (runToken !== evaluationRunToken) return;
 
     const wrong = results.filter(result => !result).length;
