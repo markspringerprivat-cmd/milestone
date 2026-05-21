@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Sinnesorgane · QR-Spielbrett</title>
+  <link rel="stylesheet" href="style-game.css?v=4">
+  <script src="https://unpkg.com/html5-qrcode" defer></script>
+  <script src="script-game.js?v=4" defer></script>
+</head>
+<body onload="initIndex()">
+  <section class="board-screen" aria-label="Spielbrett">
+    <div class="map-board">
+      <div class="board-overlay"></div>
+      <div id="boardLevels"></div>
+      <button id="endNode" type="button" aria-label="Endlevel mit Abschlusstest">
+        <span class="node-level">Finale</span>
+        <strong>Krone</strong>
+        <small>Test</small>
+      </button>
+    </div>
+    <div class="scroll-cue">Nach unten für Hinweise</div>
+  </section>
+
+  <main id="info" class="info-section">
+    <section class="hero">
+      <h1>Sinnesorgane · QR-Level</h1>
+      <p>Die Felder werden nacheinander aktiv. Auf einem aktiven Feld kann ein beliebiger noch nicht verwendeter QR-Code gescannt werden. Das gescannte Sinnesorgan wird dann diesem Level zugeordnet.</p>
+    </section>
+
+    <section class="info-layout">
+      <article class="info-card">
+        <h2>Spielstand</h2>
+        <p id="progressText" class="progress-text">0 von 5 Level abgeschlossen</p>
+        <p>Nach dem Scannen öffnet sich eine kurze Abfrage. Starte danach das Level, bearbeite die Seite und klicke unten auf „Level fertig“. Danach wird das nächste Feld auf dem Spielbrett aktiv.</p>
+        <button class="btn danger reset-wide" data-reset>Spielbrett zurücksetzen</button>
+      </article>
+      <aside class="info-card">
+        <h3>Legende</h3>
+        <div class="legend">
+          <div class="legend-item"><span class="dot" style="background:#ffd84d"></span><div><b>Aktiv</b><span>Dieses Feld kann angeklickt und mit einem beliebigen QR-Code freigeschaltet werden.</span></div></div>
+          <div class="legend-item"><span class="dot" style="background:#94a3b8"></span><div><b>Gesperrt</b><span>Dieses Feld wird erst nach dem vorherigen Level aktiv.</span></div></div>
+          <div class="legend-item"><span class="dot" style="background:#dcfce7"></span><div><b>Fertig</b><span>Das Level wurde bearbeitet und abgeschlossen.</span></div></div>
+        </div>
+        <div class="action-row" style="margin-top:16px">
+          <a class="btn primary" href="codes.html">QR-Codes anzeigen</a>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <div class="modal" id="scanModal" aria-hidden="true">
+    <div class="modal-panel">
+      <div class="modal-head">
+        <div>
+          <h2 id="modalTitle">Level freischalten</h2>
+          <p id="modalHint">Scanne einen QR-Code, um dieses Feld mit einem Sinnesorgan zu verbinden.</p>
+        </div>
+        <button class="modal-close" id="closeModal">Schließen</button>
+      </div>
+      <div class="modal-grid">
+        <div>
+          <div class="scanner-box" id="modalReader"><p class="small">Scanner wird vorbereitet …</p></div>
+        </div>
+        <div>
+          <h3>Alternative: Code eingeben</h3>
+          <p class="small">Falls die Kamera nicht funktioniert, kann der QR-Code auch manuell eingegeben werden.</p>
+          <div class="input-wrap">
+            <input id="modalManualCode" placeholder="z. B. SINNE-AUGE-2026">
+            <button id="modalManualBtn" class="btn primary" type="button">Freischalten</button>
+          </div>
+          <div id="modalMsg" class="modal-alert hidden"></div>
+          <div id="scanConfirm" class="scan-confirm hidden">
+            <span></span>
+            <strong></strong>
+            <p>Dieses Sinnesorgan wurde dem aktuellen Level zugeordnet.</p>
+            <button id="startLevelBtn" class="btn finish" type="button">Level starten</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="toast" class="toast"></div>
+</body>
+</html>
