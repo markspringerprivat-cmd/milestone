@@ -537,15 +537,6 @@
       }, 450);
     });
 
-    el('battleBeginBtn')?.addEventListener('click', async () => {
-      if (!pendingBattleContext) return;
-      const ctx = pendingBattleContext;
-      pendingBattleContext = null;
-      hide(el('battleIntroModal'));
-      await playSound('fight');
-      window.setTimeout(() => { showEvaluationFlow(ctx.results, ctx.data, ctx.meta); }, 180);
-    });
-
     window.addEventListener('resize', () => { updateBoardBox(); renderBoard(); });
     el('boardImage')?.addEventListener('load', () => { updateBoardBox(); renderBoard(); });
     updateBoardBox(); renderBoard();
@@ -985,6 +976,20 @@
     }
     el('checkAnswerBtn')?.addEventListener('click', () => checkAnswer(data, meta));
     el('runAwayBtn')?.addEventListener('click', () => runAwayFromLevel(meta));
+    el('battleBeginBtn')?.addEventListener('click', async () => {
+      if (!pendingBattleContext) return;
+      const ctx = pendingBattleContext;
+      pendingBattleContext = null;
+      hide(el('battleIntroModal'));
+      await playSound('fight');
+      window.setTimeout(() => { showEvaluationFlow(ctx.results, ctx.data, ctx.meta); }, 180);
+    });
+    el('battleRunBtn')?.addEventListener('click', () => {
+      const ctx = pendingBattleContext;
+      pendingBattleContext = null;
+      hide(el('battleIntroModal'));
+      runAwayFromLevel(ctx?.meta || meta);
+    });
     el('outroResetBtn')?.addEventListener('click', resetGame);
   }
 
