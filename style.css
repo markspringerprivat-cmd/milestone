@@ -79,6 +79,12 @@ body[data-page="level"] input{background:rgba(255,255,255,.94)}
 .evaluation-dots span{width:9px;height:9px;border-radius:50%;background:rgba(29,37,51,.24)}
 .evaluation-dots span.active{background:#ffb300;box-shadow:0 0 0 5px rgba(255,179,0,.18)}
 .evaluation-action{margin-top:20px;display:flex;justify-content:center}
+
+.evaluation-img.final-clickable{cursor:pointer;filter:drop-shadow(0 18px 28px rgba(0,0,0,.22)) drop-shadow(0 0 16px rgba(255,213,79,.48))}
+.evaluation-img.final-reveal{animation:evaluationFinalReveal 1.25s ease-in forwards!important;cursor:default}
+.evaluation-img.outcome-step{animation:evaluationOutcomeAppear .65s cubic-bezier(.22,1,.36,1) both;filter:drop-shadow(0 18px 28px rgba(0,0,0,.22))}
+@keyframes evaluationFinalReveal{0%{opacity:1;transform:scale(1)}72%{opacity:.92;transform:scale(1.32)}100%{opacity:0;transform:scale(1.48)}}
+@keyframes evaluationOutcomeAppear{0%{opacity:0;transform:scale(.82) translateY(18px)}100%{opacity:1;transform:scale(1) translateY(0)}}
 @keyframes evaluationSequenceLeft{0%{opacity:0;transform:translate3d(-82px,0,0) scale(.9) rotate(-3deg)}26%{opacity:1;transform:translate3d(0,0,0) scale(1) rotate(0)}48%{transform:translate3d(-6px,0,0) rotate(-.8deg)}68%{transform:translate3d(6px,0,0) rotate(.8deg)}84%{transform:translate3d(-4px,0,0) rotate(-.45deg)}100%{opacity:1;transform:translate3d(0,0,0) scale(1) rotate(0)}}
 @keyframes evaluationSequenceRight{0%{opacity:0;transform:translate3d(82px,0,0) scale(.9) rotate(3deg)}26%{opacity:1;transform:translate3d(0,0,0) scale(1) rotate(0)}48%{transform:translate3d(6px,0,0) rotate(.8deg)}68%{transform:translate3d(-6px,0,0) rotate(-.8deg)}84%{transform:translate3d(4px,0,0) rotate(.45deg)}100%{opacity:1;transform:translate3d(0,0,0) scale(1) rotate(0)}}
 @keyframes evaluationSequenceTop{0%{opacity:0;transform:translate3d(0,-82px,0) scale(.9) rotate(2.4deg)}26%{opacity:1;transform:translate3d(0,0,0) scale(1) rotate(0)}48%{transform:translate3d(-5px,0,0) rotate(-.7deg)}68%{transform:translate3d(5px,0,0) rotate(.7deg)}84%{transform:translate3d(-3px,0,0) rotate(-.4deg)}100%{opacity:1;transform:translate3d(0,0,0) scale(1) rotate(0)}}
