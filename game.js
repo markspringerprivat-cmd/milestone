@@ -1145,12 +1145,9 @@
     }
 
     if (runToken !== evaluationRunToken) return;
-    label.textContent = 'Auswertung';
+    label.textContent = 'Finale Auswertung';
     setEvaluationImage(image, EVALUATION_IMAGES.final, 'Finale Auswertung', true);
-    setEvaluationStatus('');
-    window.setTimeout(() => {
-      if (runToken === evaluationRunToken) image.classList.add('final-loop');
-    }, 1350);
+    setEvaluationStatus('Tippe auf das Bild, um das Ergebnis aufzudecken.', '');
     setEvaluationDots(results.length, totalSteps);
     if (action) {
       action.innerHTML = '';
@@ -1158,32 +1155,73 @@
     }
     await playFinalCue(runToken);
     if (runToken !== evaluationRunToken) return;
-    await wait(4000);
-    if (runToken !== evaluationRunToken) return;
+    image.classList.add('final-loop', 'final-clickable');
+    image.setAttribute('role', 'button');
+    image.setAttribute('tabindex', '0');
+    image.setAttribute('aria-label', 'Ergebnis aufdecken');
 
     const wrong = results.filter(result => !result).length;
     const won = wrong < 2;
-    if (action) {
-      action.innerHTML = '<button id="showResultBtn" class="game-btn primary">Ergebnis anzeigen</button>';
-      show(action);
-      el('showResultBtn')?.addEventListener('click', async () => {
-        if (runToken !== evaluationRunToken) return;
-        prepareOutcomeSound();
-        stopSound('final');
-        stopBattleBackground();
-        await playSound(won ? 'win' : 'lose');
-        if (checkBtn) checkBtn.disabled = false;
-        hide(modal);
-        if (won) showWinFlow(data, meta, false);
-        else showLoseFlow(meta, false);
-      }, { once: true });
-    } else {
+    const revealOutcome = async () => {
+      if (runToken !== evaluationRunToken || image.dataset.revealing === '1') return;
+      image.dataset.revealing = '1';
+      image.classList.remove('final-loop', 'final-clickable');
+      image.classList.add('final-reveal');
+      setEvaluationStatus('');
+      stopSound('final');
       stopBattleBackground();
+      await wait(1250);
+      if (runToken !== evaluationRunToken) return;
+      image.className = 'evaluation-img outcome-step';
+      image.removeAttribute('role');
+      image.removeAttribute('tabindex');
+      image.removeAttribute('aria-label');
+      if (won) {
+        image.src = data.defeated;
+        image.alt = `${data.enemyName || data.label || 'Gegner'} besiegt`;
+        label.textContent = meta.isBoss ? `${data.enemyName || 'Boss'} besiegt!` : `${data.enemyName || data.label} besiegt!`;
+        setEvaluationStatus(meta.isBoss ? 'Das Königreich der Sinne ist gerettet.' : 'Du hast das Level geschafft.', 'ok');
+      } else {
+        image.src = 'held_verloren.webp';
+        image.alt = 'Besiegter Ritter';
+        label.textContent = 'Der Ritter wurde besiegt';
+        setEvaluationStatus('Versuche es erneut oder renne zurück zum Spielbrett.', 'bad');
+      }
+      const dots = el('evaluationDots');
+      if (dots) dots.innerHTML = '';
+      prepareOutcomeSound();
+      await playSound(won ? 'win' : 'lose');
       if (checkBtn) checkBtn.disabled = false;
-      hide(modal);
-      if (won) showWinFlow(data, meta);
-      else showLoseFlow(meta);
-    }
+      if (!action) {
+        hide(modal);
+        if (won) finishLevel(meta);
+        return;
+      }
+      if (won) {
+        action.innerHTML = '<button id="evaluationContinueBtn" class="game-btn primary">Weiter</button>';
+        show(action);
+        el('evaluationContinueBtn')?.addEventListener('click', () => {
+          hide(modal);
+          finishLevel(meta);
+        }, { once: true });
+      } else {
+        action.innerHTML = '<button id="evaluationRetryBtn" class="game-btn primary">Neuer Versuch</button><button id="evaluationEscapeBtn" class="game-btn muted">Wegrennen</button>';
+        show(action);
+        el('evaluationRetryBtn')?.addEventListener('click', () => {
+          hide(modal);
+          delete image.dataset.revealing;
+        });
+        el('evaluationEscapeBtn')?.addEventListener('click', () => runAwayFromLevel(meta), { once: true });
+      }
+    };
+
+    image.addEventListener('click', revealOutcome, { once: true });
+    image.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        revealOutcome();
+      }
+    }, { once: true });
   }
 
   function showWinFlow(data, meta, playOutcome = true) {
