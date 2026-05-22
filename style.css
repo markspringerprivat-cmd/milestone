@@ -190,3 +190,17 @@ body[data-page="level"] .content-card p{color:#23314a;margin-top:0}
   .scan-card .camera-box{min-height:145px!important}
   .scan-card .manual-box p{display:none}
 }
+
+
+/* Kampf-Start-Popup */
+.battle-intro-card{width:min(980px,100%);background:rgba(255,250,240,.74);display:flex;flex-direction:column;align-items:center;gap:20px;text-align:center;overflow:hidden}
+.battle-intro-layout{width:100%;display:grid;grid-template-columns:minmax(180px,1fr) minmax(140px,220px) minmax(180px,1fr);align-items:center;gap:12px}
+.battle-side{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
+.battle-actor-img{width:min(100%,320px);max-height:340px;object-fit:contain;display:block;background:transparent;filter:drop-shadow(0 16px 24px rgba(0,0,0,.18))}
+.battle-versus-wrap{display:flex;justify-content:center;align-items:center}
+.battle-versus-img{width:min(100%,190px);max-height:360px;object-fit:contain;display:block;background:transparent;filter:drop-shadow(0 16px 22px rgba(0,0,0,.22))}
+.battle-actor-name{display:inline-flex;align-items:center;justify-content:center;padding:10px 18px;border-radius:999px;background:rgba(255,255,255,.78);font-weight:950;font-size:clamp(1rem,2.6vw,1.5rem);color:#16233d;box-shadow:0 10px 22px rgba(0,0,0,.12)}
+.battle-intro-actions{display:flex;flex-direction:column;align-items:center;gap:12px}
+.battle-intro-actions h2{margin:0;font-size:clamp(1.6rem,4.4vw,2.65rem);color:#172033;text-shadow:0 2px 0 rgba(255,255,255,.45)}
+@media(max-width:860px){.battle-intro-card{padding:18px}.battle-intro-layout{grid-template-columns:1fr;gap:14px}.battle-versus-img{width:min(64vw,180px);max-height:210px}.battle-actor-img{max-height:250px}.battle-hero-side{order:1}.battle-versus-wrap{order:2}.battle-enemy-side{order:3}}
+@media(max-width:560px){.battle-intro-card{gap:16px;padding:16px}.battle-actor-name{font-size:1rem;padding:8px 14px}.battle-intro-actions h2{font-size:1.4rem}}

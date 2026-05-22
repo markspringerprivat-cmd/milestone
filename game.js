@@ -128,6 +128,7 @@
   let html5Scanner = null;
   let activeSlotForScan = null;
   let pendingLaunch = null;
+  let pendingBattleContext = null;
 
   const AUDIO_FILES = {
     background: 'background.mp3',
@@ -534,6 +535,15 @@
         if (pendingLaunch.type === 'boss') window.location.href = 'level.html?type=boss';
         else window.location.href = `level.html?sense=${encodeURIComponent(pendingLaunch.sense)}&slot=${pendingLaunch.slot}`;
       }, 450);
+    });
+
+    el('battleBeginBtn')?.addEventListener('click', async () => {
+      if (!pendingBattleContext) return;
+      const ctx = pendingBattleContext;
+      pendingBattleContext = null;
+      hide(el('battleIntroModal'));
+      await playSound('fight');
+      window.setTimeout(() => { showEvaluationFlow(ctx.results, ctx.data, ctx.meta); }, 180);
     });
 
     window.addEventListener('resize', () => { updateBoardBox(); renderBoard(); });
@@ -992,7 +1002,25 @@
     }
     if (feedback) hide(feedback);
     const results = answers.map((answer, qi) => Number(answer.value) === questions[qi].correct);
-    showEvaluationFlow(results, data, meta);
+    showBattleIntro(results, data, meta);
+  }
+
+  function showBattleIntro(results, data, meta) {
+    const modal = el('battleIntroModal');
+    if (!modal) {
+      showEvaluationFlow(results, data, meta);
+      return;
+    }
+    pendingBattleContext = { results, data, meta };
+    const enemyImage = el('battleEnemyImage');
+    if (enemyImage) {
+      enemyImage.src = data.enemy;
+      enemyImage.alt = data.enemyName || data.title || 'Gegner';
+    }
+    setText('battleEnemyName', data.enemyName || data.title || 'Gegner');
+    const title = el('battleIntroTitle');
+    if (title) title.textContent = `${meta.isBoss ? 'Finalkampf' : 'Kampf'} gegen ${data.enemyName || data.title}`;
+    show(modal);
   }
 
   let lastEvaluationImage = { correct: null, wrong: null };
