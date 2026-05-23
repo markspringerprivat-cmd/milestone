@@ -649,9 +649,9 @@
           hide(runner);
           renderBoard();
           openScanModal(index);
-        }, 500);
-      }, 1150);
-    }, 700);
+        }, 550);
+      }, 1450);
+    }, 850);
   }
 
   function updateBoardBox() {
@@ -1318,8 +1318,8 @@
         label.textContent = meta.isBoss ? `${data.enemyName || 'Boss'} besiegt!` : `${data.enemyName || data.label} besiegt!`;
         setEvaluationStatus(meta.isBoss ? 'Das Königreich der Sinne ist gerettet.' : 'Du hast das Level geschafft.', 'ok');
       } else {
-        label.textContent = 'Der Ritter wurde besiegt';
-        setEvaluationStatus('Versuche es erneut oder renne zurück zum Spielbrett.', 'bad');
+        label.textContent = 'Du wurdest besiegt.';
+        setEvaluationStatus('', 'bad');
       }
       const dots = el('evaluationDots');
       if (dots) dots.innerHTML = '';
