@@ -897,3 +897,176 @@ body.stage-popups .encounter-card, .modal.stage-popup .encounter-card{
     margin-top:18px!important;
   }
 }
+
+/* === MOBILE CLEANUP ROUND 2 === */
+/* Small, attached bubble over Sir Nervus on the start board */
+.board-guide-bubble{
+  display:inline-block!important;
+  width:auto!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  white-space:normal!important;
+}
+.map-token.guide-active .token-label.guide-only{
+  position:absolute!important;
+  left:108%!important;
+  top:54%!important;
+  transform:translateY(-50%)!important;
+  z-index:7!important;
+  white-space:nowrap!important;
+}
+
+/* Versus popup: bigger characters and bigger VS, lower third, slight overlap OK */
+.evaluation-card.unified-intro .battle-inline-layout{
+  align-items:end!important;
+}
+.evaluation-card.unified-intro .battle-inline-side.left{transform:translateX(10px)!important}
+.evaluation-card.unified-intro .battle-inline-side.right{transform:translateX(-10px)!important}
+.evaluation-card.unified-intro .battle-inline-versus{transform:translateY(-8px)!important}
+
+/* Evaluation scene: images should always start centered, never from the edge */
+.evaluation-card.unified-sequence .evaluation-stage{
+  position:relative!important;
+  width:min(100%,640px)!important;
+  overflow:hidden!important;
+}
+.evaluation-card.unified-sequence .evaluation-stage .evaluation-img,
+.evaluation-card.unified-sequence .evaluation-stage .evaluation-outcome-img{
+  position:absolute!important;
+  left:50%!important;
+  bottom:0!important;
+  top:auto!important;
+  right:auto!important;
+  margin:0!important;
+  transform:translateX(-50%) scale(1)!important;
+  transform-origin:center bottom!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+}
+.evaluation-card.unified-sequence .evaluation-stage .evaluation-img.preparing{
+  opacity:0!important;
+  animation:none!important;
+}
+.evaluation-card.unified-sequence .evaluation-img.answer-step.enter-left,
+.evaluation-card.unified-sequence .evaluation-img.answer-step.enter-right,
+.evaluation-card.unified-sequence .evaluation-img.answer-step.enter-top,
+.evaluation-card.unified-sequence .evaluation-img.answer-step.enter-bottom,
+.evaluation-card.unified-sequence .evaluation-img.answer-step.enter-zoom,
+.evaluation-card.unified-sequence .evaluation-img.answer-step.enter-center{
+  animation:evaluationCenterIn .55s cubic-bezier(.22,1,.36,1) both!important;
+}
+.evaluation-card.unified-sequence .evaluation-img.final-step.enter-left,
+.evaluation-card.unified-sequence .evaluation-img.final-step.enter-right,
+.evaluation-card.unified-sequence .evaluation-img.final-step.enter-top,
+.evaluation-card.unified-sequence .evaluation-img.final-step.enter-bottom,
+.evaluation-card.unified-sequence .evaluation-img.final-step.enter-zoom,
+.evaluation-card.unified-sequence .evaluation-img.final-step.enter-center-final{
+  animation:evaluationCenterIn .72s cubic-bezier(.22,1,.36,1) both!important;
+}
+.evaluation-card.unified-sequence .evaluation-outcome-img.outcome-step{
+  animation:evaluationOutcomeCentered .6s cubic-bezier(.22,1,.36,1) both!important;
+}
+.evaluation-card.unified-sequence .evaluation-outcome-img.won{transform:translateX(-50%) scale(1)!important}
+.evaluation-card.unified-sequence .evaluation-outcome-img.lost{transform:translateX(-50%) scale(1)!important}
+.evaluation-img.final-reveal{animation:evaluationFinalRevealCentered2 1.1s ease-in forwards!important}
+@keyframes evaluationCenterIn{
+  0%{opacity:0;transform:translateX(-50%) translateY(18px) scale(.88)}
+  100%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
+}
+@keyframes evaluationOutcomeCentered{
+  0%{opacity:0;transform:translateX(-50%) translateY(14px) scale(.86)}
+  100%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
+}
+@keyframes evaluationFinalRevealCentered2{
+  0%{opacity:1;transform:translateX(-50%) scale(1)}
+  72%{opacity:.9;transform:translateX(-50%) scale(1.24)}
+  100%{opacity:0;transform:translateX(-50%) scale(1.42)}
+}
+
+@media (max-width: 560px){
+  .board-guide-hero{
+    width:min(48vw,230px)!important;
+    left:-6%!important;
+    bottom:-1%!important;
+  }
+  .board-guide-bubble{
+    left:10%!important;
+    top:4.8%!important;
+    max-width:165px!important;
+    padding:10px 12px!important;
+    border-radius:18px!important;
+    font-size:.84rem!important;
+    line-height:1.18!important;
+    text-align:center!important;
+  }
+  .board-guide-bubble::after{
+    left:18px!important;
+    bottom:-10px!important;
+    border-width:10px 10px 0 0!important;
+  }
+  .map-token.guide-active .token-label.guide-only{
+    left:116%!important;
+    top:56%!important;
+    font-size:.72rem!important;
+    padding:6px 10px!important;
+  }
+
+  .evaluation-card.unified-intro{
+    min-height:min(92svh,780px)!important;
+    max-height:min(94svh,810px)!important;
+    padding:12px 10px 14px!important;
+  }
+  .evaluation-card.unified-intro .battle-inline-layout{
+    grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)!important;
+    gap:6px!important;
+    padding-top:min(16svh,80px)!important;
+    padding-bottom:0!important;
+  }
+  .evaluation-card.unified-intro .battle-inline-side.left{transform:translateX(20px)!important}
+  .evaluation-card.unified-intro .battle-inline-side.right{transform:translateX(-20px)!important}
+  .evaluation-card.unified-intro .battle-inline-actor{
+    width:min(46vw,190px)!important;
+    max-height:min(33svh,210px)!important;
+  }
+  .evaluation-card.unified-intro .battle-inline-versus{
+    width:min(26vw,122px)!important;
+    max-height:134px!important;
+    transform:translateY(-16px)!important;
+  }
+  .evaluation-card.unified-intro .battle-inline-name{
+    margin-top:-2px!important;
+  }
+  .evaluation-card.unified-intro .battle-inline-actions{
+    gap:12px!important;
+    padding-top:10px!important;
+  }
+  .evaluation-card.unified-intro .battle-inline-actions .game-btn{
+    width:100%!important;
+  }
+
+  .evaluation-card.unified-sequence{
+    min-height:min(92svh,790px)!important;
+    max-height:min(94svh,820px)!important;
+    padding:14px 12px 14px!important;
+  }
+  .evaluation-card.unified-sequence .evaluation-label{
+    margin-bottom:8px!important;
+  }
+  .evaluation-card.unified-sequence .evaluation-status{
+    margin-bottom:8px!important;
+  }
+  .evaluation-card.unified-sequence .evaluation-stage{
+    width:min(100%,100%)!important;
+    height:min(53svh,430px)!important;
+  }
+  .evaluation-card.unified-sequence .evaluation-stage .evaluation-img,
+  .evaluation-card.unified-sequence .evaluation-stage .evaluation-outcome-img{
+    width:min(100%,460px)!important;
+    height:min(43svh,345px)!important;
+  }
+  .evaluation-card.unified-sequence .evaluation-action{
+    margin-top:20px!important;
+    gap:14px!important;
+  }
+}

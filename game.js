@@ -1131,15 +1131,26 @@
 
   function setEvaluationImage(image, src, alt, finalStep = false) {
     if (!image) return;
-    const entryClass = finalStep ? randomFrom(FINAL_ENTRY_CLASSES) : randomFrom(EVALUATION_ENTRY_CLASSES);
-    image.className = 'evaluation-img';
+    const entryClass = finalStep ? 'enter-center-final' : 'enter-center';
+    image.className = 'evaluation-img preparing';
     image.style.animation = 'none';
-    image.src = src;
     image.alt = alt;
     image.decoding = 'async';
-    void image.offsetWidth;
-    image.style.animation = '';
-    image.className = `evaluation-img ${finalStep ? 'final-step' : 'answer-step'} ${entryClass}`;
+    image.dataset.evalSrc = src;
+
+    const apply = () => {
+      if (image.dataset.evalSrc !== src) return;
+      image.onload = null;
+      image.onerror = null;
+      void image.offsetWidth;
+      image.style.animation = '';
+      image.className = `evaluation-img ${finalStep ? 'final-step' : 'answer-step'} ${entryClass}`;
+    };
+
+    image.onload = apply;
+    image.onerror = apply;
+    image.src = src;
+    if (image.complete) apply();
   }
 
   function setEvaluationStatus(text, kind = '') {
@@ -1257,7 +1268,7 @@
     if (outcomeImage) {
       outcomeImage.src = won ? data.defeated : 'held_verloren.webp';
       outcomeImage.alt = won ? `${data.enemyName || data.label || 'Gegner'} besiegt` : 'Besiegter Ritter';
-      outcomeImage.className = 'evaluation-outcome-img hidden';
+      outcomeImage.className = `evaluation-outcome-img hidden ${won ? 'won' : 'lost'}`;
     }
 
     const revealOutcome = async () => {
@@ -1277,7 +1288,7 @@
       image.removeAttribute('role');
       image.removeAttribute('tabindex');
       image.removeAttribute('aria-label');
-      if (outcomeImage) outcomeImage.className = 'evaluation-outcome-img outcome-step';
+      if (outcomeImage) outcomeImage.className = `evaluation-outcome-img outcome-step ${won ? 'won' : 'lost'}`;
 
       if (won) {
         label.textContent = meta.isBoss ? `${data.enemyName || 'Boss'} besiegt!` : `${data.enemyName || data.label} besiegt!`;
