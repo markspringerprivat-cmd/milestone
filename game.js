@@ -1,58 +1,53 @@
 (() => {
   'use strict';
 
+  // ─── Spielwelt-Daten ───────────────────────────────────────────────────────
+
   const SENSES = {
     sehen: {
       id: 'sehen', label: 'Sehen', enemyName: 'Sehlina', code: 'SINNE-SEHEN', enemy: 'sehen.webp', defeated: 'sehen_besiegt.webp',
-      title: 'Level: Sehen', speech: '„Meine Illusionen blenden dich. Mal sehen, ob du den richtigen Reiz erkennst!“',
+      title: 'Level: Sehen', speech: '„Meine Illusionen blenden dich. Mal sehen, ob du den richtigen Reiz erkennst!"',
       intro: 'Hier geht es um das Auge, Lichtreize und die Verarbeitung von Sehinformationen.',
       content: ['Das Auge nimmt Lichtreize aus der Umgebung auf. Hornhaut und Linse bündeln das Licht, sodass auf der Netzhaut ein Bild entsteht.', 'Auf der Netzhaut sitzen Sinneszellen. Sie wandeln Licht in elektrische Signale um. Diese Signale gelangen über den Sehnerv zum Gehirn, wo sie verarbeitet und zu einem Bild zusammengesetzt werden.'],
       tasks: ['Beschreibe den Weg des Lichts durch das Auge.', 'Erkläre die Aufgabe von Netzhaut und Sehnerv.', 'Nenne eine Situation, in der gutes Sehen besonders wichtig ist.'],
-      quiz: { q: 'Wo werden Lichtreize im Auge in Nervensignale umgewandelt?', a: ['In der Linse', 'Auf der Netzhaut', 'In der Ohrmuschel'], correct: 1 }
     },
     hoeren: {
       id: 'hoeren', label: 'Hören', enemyName: 'Höhribert', code: 'SINNE-HOEREN', enemy: 'hoeren.webp', defeated: 'hoeren_besiegt.webp',
-      title: 'Level: Hören', speech: '„Ich verdrehe jede Schallwelle. Ob du trotzdem den richtigen Ton triffst?“',
+      title: 'Level: Hören', speech: '„Ich verdrehe jede Schallwelle. Ob du trotzdem den richtigen Ton triffst?"',
       intro: 'Hier geht es um das Ohr, Schallwellen und den Gleichgewichtssinn.',
       content: ['Das Ohr nimmt Schallwellen auf. Die Ohrmuschel leitet den Schall zum Trommelfell weiter. Dieses gerät in Schwingung.', 'Die Gehörknöchelchen verstärken die Schwingungen. In der Hörschnecke werden sie in Nervensignale umgewandelt. Außerdem ist das Innenohr wichtig für das Gleichgewicht.'],
       tasks: ['Ordne Außenohr, Mittelohr und Innenohr je eine Aufgabe zu.', 'Erkläre, wie Schall zu einem Nervensignal wird.', 'Beschreibe, warum das Ohr auch für Gleichgewicht wichtig ist.'],
-      quiz: { q: 'Welches Sinnesorgan ist auch am Gleichgewicht beteiligt?', a: ['Die Zunge', 'Die Nase', 'Das Ohr'], correct: 2 }
     },
     riechen: {
       id: 'riechen', label: 'Riechen', enemyName: 'Riechard', code: 'SINNE-RIECHEN', enemy: 'riechen.webp', defeated: 'riechen_besiegt.webp',
-      title: 'Level: Riechen', speech: '„Mein Nebel liegt in der Luft. Folge der Spur, wenn du dich traust!“',
+      title: 'Level: Riechen', speech: '„Mein Nebel liegt in der Luft. Folge der Spur, wenn du dich traust!"',
       intro: 'Hier geht es um die Nase, Geruchsstoffe und die Bedeutung des Riechens im Alltag.',
       content: ['Die Nase erkennt Geruchsstoffe in der Luft. Beim Einatmen gelangen Duftmoleküle zur Riechschleimhaut.', 'Dort sitzen Riechzellen, die passende Moleküle erkennen und Signale an das Gehirn senden. Gerüche können warnen, Erinnerungen auslösen und den Geschmack beeinflussen.'],
       tasks: ['Beschreibe, wie ein Geruch von der Luft bis ins Gehirn gelangt.', 'Nenne zwei Situationen, in denen der Geruchssinn schützt.', 'Erkläre, warum Essen bei Schnupfen anders schmecken kann.'],
-      quiz: { q: 'Warum schmeckt Essen bei Schnupfen oft schwächer?', a: ['Weil die Haut langsamer arbeitet', 'Weil Geruch und Geschmack zusammenwirken', 'Weil die Augen weniger Licht aufnehmen'], correct: 1 }
     },
     schmecken: {
       id: 'schmecken', label: 'Schmecken', enemyName: 'König Schmatz', code: 'SINNE-SCHMECKEN', enemy: 'schmecken.webp', defeated: 'schmecken_besiegt.webp',
-      title: 'Level: Schmecken', speech: '„Süß, sauer, salzig? Ich bringe alles durcheinander. Beweise deinen Geschmack!“',
+      title: 'Level: Schmecken', speech: '„Süß, sauer, salzig? Ich bringe alles durcheinander. Beweise deinen Geschmack!"',
       intro: 'Hier geht es um die Zunge, Geschmacksrichtungen und das Zusammenspiel der Sinne.',
       content: ['Auf der Zunge befinden sich Geschmacksknospen. Sie erkennen Stoffe aus der Nahrung und ermöglichen Geschmackswahrnehmungen.', 'Häufig unterscheidet man süß, sauer, salzig, bitter und umami. Geschmack entsteht aber nicht nur auf der Zunge: Geruch, Temperatur und Konsistenz wirken mit.'],
       tasks: ['Nenne die fünf häufig genannten Geschmacksrichtungen.', 'Erkläre, warum Geruch und Geschmack zusammenhängen.', 'Beschreibe ein Lebensmittel mit mehreren Sinneseindrücken.'],
-      quiz: { q: 'Welche Geschmacksrichtung gehört zu den häufig genannten Grundrichtungen?', a: ['Umami', 'Knusprig', 'Heiß'], correct: 0 }
     },
     fuehlen: {
       id: 'fuehlen', label: 'Fühlen', enemyName: 'Dr. Tastibald', code: 'SINNE-FUEHLEN', enemy: 'fuehlen.webp', defeated: 'fuehlen_besiegt.webp',
-      title: 'Level: Fühlen', speech: '„Meine Panzer fühlen alles. Spürst du, was Schutz wirklich bedeutet?“',
+      title: 'Level: Fühlen', speech: '„Meine Panzer fühlen alles. Spürst du, was Schutz wirklich bedeutet?"',
       intro: 'Hier geht es um die Haut, Berührung, Temperatur, Schmerz und Schutz.',
       content: ['Die Haut ist das größte Sinnesorgan des Körpers. Sie enthält Rezeptoren für Berührung, Druck, Wärme, Kälte und Schmerz.', 'Gleichzeitig schützt die Haut vor Verletzungen, Krankheitserregern und Austrocknung. Sie ist also Sinnesorgan und Schutzschicht zugleich.'],
       tasks: ['Nenne drei Reize, die die Haut wahrnehmen kann.', 'Erkläre, warum Schmerz eine Schutzfunktion hat.', 'Beschreibe, warum die Haut mehr ist als nur eine Hülle.'],
-      quiz: { q: 'Welche Funktion hat Schmerz?', a: ['Er warnt vor möglicher Gefahr', 'Er verbessert das Sehen', 'Er ersetzt den Geruchssinn'], correct: 0 }
     }
   };
 
   const BOSS = {
     id: 'boss', label: 'Boss', enemyName: 'Sinntron 3000', enemy: 'boss.webp', defeated: 'boss_besiegt.webp', title: 'Finale: Boss der Sinne',
-    speech: '„Alle Sinne gegen mich? Dann zeig, dass du das Königreich wirklich verstanden hast!“',
+    speech: '„Alle Sinne gegen mich? Dann zeig, dass du das Königreich wirklich verstanden hast!"',
     intro: 'Im finalen Level geht es um das Zusammenspiel aller Sinnesorgane.',
     content: ['Sinnesorgane nehmen Reize aus der Umwelt oder aus dem Körper auf. Das Gehirn verarbeitet diese Informationen und ordnet sie ein.', 'Viele Wahrnehmungen entstehen durch das Zusammenspiel mehrerer Sinne. Beim Essen wirken zum Beispiel Geschmack, Geruch, Temperatur, Konsistenz und Sehen zusammen.'],
     tasks: ['Erkläre, warum Sinnesorgane nicht völlig getrennt voneinander arbeiten.', 'Nenne ein Beispiel, in dem mehrere Sinne zusammenwirken.', 'Beschreibe, welche Rolle das Gehirn bei der Wahrnehmung spielt.'],
-    quiz: { q: 'Welche Aussage passt am besten?', a: ['Sinnesorgane arbeiten immer vollständig getrennt.', 'Nur die Zunge ist für Geschmack verantwortlich.', 'Das Gehirn verarbeitet Sinnesinformationen und ordnet sie ein.'], correct: 2 }
   };
-
 
   const QUESTION_BANK = {
     sehen: [
@@ -99,7 +94,6 @@
     ]
   };
 
-
   const EVALUATION_IMAGES = {
     correct: ['richtig_1.webp', 'richtig_2.webp', 'richtig_3.webp'],
     wrong: ['falsch_1.webp', 'falsch_2.webp', 'falsch_3.webp'],
@@ -118,10 +112,14 @@
   const BOSS_BACKGROUND = 'stage_all.webp';
   const POPUP_BACKGROUNDS = ['popup_gras.webp', 'popup_sand.webp', 'popup_eis.webp', 'popup_lava.webp', 'popup_himmel.webp'];
   const BOSS_POPUP_BACKGROUND = 'popup_all.webp';
+  const BOARD_RATIO = 1086 / 1448;
+
   const STORE = 'koenigreichSinneGameRebuildV1';
   const UNLOCKED_MODAL_STORE = 'koenigreichSinneShowUnlockedModalV1';
   const RETURN_MODAL_STORE = 'koenigreichSinneReturnModalV1';
-  const BOARD_RATIO = 1086 / 1448;
+  const SOUND_STORE = 'koenigreichSinneSoundMutedV1';
+
+  // ─── Kamera-Zustand ────────────────────────────────────────────────────────
 
   let scanStream = null;
   let scanTimer = null;
@@ -129,6 +127,8 @@
   let activeSlotForScan = null;
   let pendingLaunch = null;
   let pendingBattleContext = null;
+
+  // ─── Audio ─────────────────────────────────────────────────────────────────
 
   const AUDIO_FILES = {
     background: 'background.mp3',
@@ -148,26 +148,13 @@
     falsch_3: 'falsch_3.mp3',
     battle_background: 'battle_background.mp3'
   };
-  const SOUND_STORE = 'koenigreichSinneSoundMutedV1';
+
   const audio = {};
   const managedPlayers = {};
   const playerTokens = {};
   let audioReady = false;
-  let audioUnlocked = false;
   let soundMuted = localStorage.getItem(SOUND_STORE) === '1';
   let audioButton = null;
-
-  function isBoardVisible() {
-    return document.body.dataset.page === 'board' && !el('boardScreen')?.classList.contains('hidden');
-  }
-
-  function createManagedPlayer() {
-    const player = new Audio();
-    player.preload = 'auto';
-    player.setAttribute('playsinline', '');
-    player.playsInline = true;
-    return player;
-  }
 
   function volumeForKey(key) {
     if (key === 'background') return 0.04;
@@ -191,15 +178,8 @@
       a.preload = 'auto';
       a.setAttribute('playsinline', '');
       a.playsInline = true;
-      if (key === 'background') {
-        a.loop = true;
-        a.volume = volumeForKey(key);
-      } else if (key === 'battle_background') {
-        a.loop = true;
-        a.volume = volumeForKey(key);
-      } else {
-        a.volume = volumeForKey(key);
-      }
+      a.volume = volumeForKey(key);
+      if (key === 'background' || key === 'battle_background') a.loop = true;
       audio[key] = a;
     });
     managedPlayers.ui = createManagedPlayer();
@@ -207,6 +187,16 @@
     managedPlayers.outcome = createManagedPlayer();
     audioReady = true;
   }
+
+  function createManagedPlayer() {
+    const player = new Audio();
+    player.preload = 'auto';
+    player.setAttribute('playsinline', '');
+    player.playsInline = true;
+    return player;
+  }
+
+  // ─── Audio-Button ──────────────────────────────────────────────────────────
 
   function ensureAudioButton() {
     if (audioButton) return audioButton;
@@ -227,7 +217,7 @@
         stopManagedChannel('evaluation');
         stopManagedChannel('outcome');
       } else {
-        await unlockAudioFromGesture();
+        initAudio();
         if (isBoardVisible()) startBackgroundMusic(true);
       }
     });
@@ -243,16 +233,27 @@
     btn.setAttribute('aria-pressed', soundMuted ? 'true' : 'false');
   }
 
-  async function unlockAudioFromGesture() {
+  // ─── Hintergrundmusik ──────────────────────────────────────────────────────
+
+  function isBoardVisible() {
+    return document.body.dataset.page === 'board' && !el('boardScreen')?.classList.contains('hidden');
+  }
+
+  function startBackgroundMusic(restart = false) {
     initAudio();
-    audioUnlocked = true;
+    if (soundMuted || !isBoardVisible()) return Promise.resolve();
+    const bg = audio.background;
+    if (!bg) return Promise.resolve();
+    try {
+      bg.volume = volumeForKey('background');
+      if (restart) { bg.pause(); bg.currentTime = 0; }
+    } catch {}
+    return bg.play().catch(() => {});
   }
 
   function stopBackgroundMusic() {
-    initAudio();
-    const bg = audio.background;
-    if (!bg) return;
-    try { bg.pause(); } catch {}
+    if (!audioReady) return;
+    try { audio.background?.pause(); } catch {}
   }
 
   function startBattleBackground() {
@@ -260,37 +261,41 @@
     if (soundMuted) return;
     const bg = audio.battle_background;
     if (!bg) return;
-    try {
-      bg.pause();
-      bg.currentTime = 0;
-      bg.volume = volumeForKey('battle_background');
-    } catch {}
+    try { bg.pause(); bg.currentTime = 0; bg.volume = volumeForKey('battle_background'); } catch {}
     bg.play().catch(() => {});
   }
 
   function stopBattleBackground() {
-    initAudio();
+    if (!audioReady) return;
     const bg = audio.battle_background;
     if (!bg) return;
     try { bg.pause(); bg.currentTime = 0; } catch {}
   }
 
+  function scheduleBoardMusicResume() {
+    if (!isBoardVisible() || soundMuted) return;
+    const attempts = [0, 120, 350, 800, 1500, 2600];
+    attempts.forEach(delay => window.setTimeout(() => startBackgroundMusic(delay === 0), delay));
+    const resumeOnce = () => startBackgroundMusic(true);
+    window.addEventListener('pointerdown', resumeOnce, { once: true, passive: true });
+    window.addEventListener('touchstart', resumeOnce, { once: true, passive: true });
+    window.addEventListener('click', resumeOnce, { once: true });
+  }
+
+  // ─── Managed Audio-Channels ────────────────────────────────────────────────
+
   function stopManagedChannel(channel) {
-    initAudio();
     const player = managedPlayers[channel];
     if (!player) return;
-    try {
-      player.pause();
-      player.currentTime = 0;
-    } catch {}
+    try { player.pause(); player.currentTime = 0; } catch {}
   }
 
   async function playManagedSound(key, channel = channelForKey(key)) {
     initAudio();
-    if (soundMuted) return Promise.resolve();
+    if (soundMuted) return;
     const file = AUDIO_FILES[key];
     const player = managedPlayers[channel];
-    if (!file || !player) return Promise.resolve();
+    if (!file || !player) return;
 
     const token = (playerTokens[channel] || 0) + 1;
     playerTokens[channel] = token;
@@ -316,36 +321,21 @@
         await new Promise(resolve => window.setTimeout(resolve, 80));
         await attempt();
       }
-    } catch {
-      return Promise.resolve();
-    }
+    } catch {}
   }
 
   function playSound(key) {
     initAudio();
     if (soundMuted) return Promise.resolve();
-    const file = AUDIO_FILES[key];
-    if (!file) return Promise.resolve();
-    if (key === 'background') {
-      return audio.background?.play().catch(() => {}) || Promise.resolve();
-    }
-    if (key === 'battle_background') {
-      startBattleBackground();
-      return Promise.resolve();
-    }
+    if (!AUDIO_FILES[key]) return Promise.resolve();
+    if (key === 'background') return audio.background?.play().catch(() => {}) || Promise.resolve();
+    if (key === 'battle_background') { startBattleBackground(); return Promise.resolve(); }
     return playManagedSound(key);
   }
 
   function stopSound(key) {
-    initAudio();
-    if (key === 'background') {
-      stopBackgroundMusic();
-      return;
-    }
-    if (key === 'battle_background') {
-      stopBattleBackground();
-      return;
-    }
+    if (key === 'background') { stopBackgroundMusic(); return; }
+    if (key === 'battle_background') { stopBattleBackground(); return; }
     stopManagedChannel(channelForKey(key));
   }
 
@@ -354,18 +344,19 @@
     stopManagedChannel('outcome');
   }
 
+  // ─── Board-Rückkehr-Modal & Musik-Resume ──────────────────────────────────
+
   function markBoardMusicResume() {
     sessionStorage.setItem('resumeBoardMusic', '1');
     localStorage.setItem('koenigreichSinneResumeMusicV1', String(Date.now()));
   }
 
   function storeBoardReturnModal(type, meta = {}) {
-    const payload = {
+    localStorage.setItem(RETURN_MODAL_STORE, JSON.stringify({
       type,
       slot: Number.isInteger(meta.slot) ? meta.slot : null,
       isBoss: !!meta.isBoss
-    };
-    localStorage.setItem(RETURN_MODAL_STORE, JSON.stringify(payload));
+    }));
   }
 
   function readBoardReturnModal() {
@@ -380,50 +371,12 @@
     }
   }
 
-  function startBackgroundMusic(restart = false) {
-    initAudio();
-    if (soundMuted || !isBoardVisible()) return Promise.resolve();
-    const bg = audio.background;
-    if (!bg) return Promise.resolve();
-    try {
-      bg.volume = volumeForKey('background');
-      if (restart) {
-        bg.pause();
-        bg.currentTime = 0;
-      }
-    } catch {}
-    return bg.play().then(() => {
-      audioUnlocked = true;
-    }).catch(() => {
-      // Mobile Browser erlauben Audio manchmal erst nach der nächsten Nutzerinteraktion.
-    });
-  }
-
-  function scheduleBoardMusicResume() {
-    if (!isBoardVisible() || soundMuted) return;
-    const attempts = [0, 120, 350, 800, 1500, 2600];
-    attempts.forEach(delay => window.setTimeout(() => startBackgroundMusic(delay === 0), delay));
-    const resumeOnce = () => startBackgroundMusic(true);
-    window.addEventListener('pointerdown', resumeOnce, { once: true, passive: true });
-    window.addEventListener('touchstart', resumeOnce, { once: true, passive: true });
-    window.addEventListener('click', resumeOnce, { once: true });
-  }
-
-  function armAudioUnlock() {
-    initAudio();
-    ensureAudioButton();
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) {
-        stopBackgroundMusic();
-      } else if (isBoardVisible()) {
-        startBackgroundMusic(true);
-      }
-    });
-  }
+  // ─── Spielstand ────────────────────────────────────────────────────────────
 
   function defaultState() {
     return { started: false, slots: [null, null, null, null, null], completed: [false, false, false, false, false], bossCompleted: false, boardGuideSeen: false };
   }
+
   function getState() {
     try {
       const parsed = JSON.parse(localStorage.getItem(STORE));
@@ -433,25 +386,41 @@
       return defaultState();
     }
   }
+
   function setState(state) { localStorage.setItem(STORE, JSON.stringify(state)); }
   function resetGame() { localStorage.removeItem(STORE); window.location.href = 'index.html'; }
+
+  // ─── Hilfsfunktionen Spielzustand ─────────────────────────────────────────
+
   function senseList() { return Object.values(SENSES); }
   function usedSenseIds(state = getState()) { return state.slots.filter(Boolean); }
-  function completedCount(state = getState()) { return state.completed.filter(Boolean).length; }
   function currentSlot(state = getState()) { return state.completed.findIndex(done => !done); }
   function allLevelsDone(state = getState()) { return state.completed.every(Boolean); }
   function isBoardGuidePending(state = getState()) {
     return !!(state.started && !state.boardGuideSeen && !state.slots.some(Boolean) && !state.completed.some(Boolean) && !state.bossCompleted);
   }
+
   function codeToSense(text) {
     const raw = String(text || '').trim().toUpperCase();
     return senseList().find(s => raw.includes(s.code) || raw === s.id.toUpperCase() || raw.includes(s.label.toUpperCase())) || null;
   }
+
+  function getQuestions(data) {
+    return QUESTION_BANK[data.id] || [];
+  }
+
+  // ─── DOM-Hilfsfunktionen ──────────────────────────────────────────────────
+
   function qs(name) { return new URLSearchParams(window.location.search).get(name); }
   function el(id) { return document.getElementById(id); }
   function show(node) { node && node.classList.remove('hidden'); }
   function hide(node) { node && node.classList.add('hidden'); }
   function setText(id, text) { const n = el(id); if (n) n.textContent = text; }
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]));
+  }
+
+  // ─── Board-Menü ───────────────────────────────────────────────────────────
 
   function setBoardMenuOpen(open) {
     if (document.body.dataset.page !== 'board') return;
@@ -459,25 +428,37 @@
   }
 
   function toggleBoardMenu(open) {
-    const started = getState().started;
-    if (!started) return;
+    if (!getState().started) return;
     setBoardMenuOpen(typeof open === 'boolean' ? open : !document.body.classList.contains('board-menu-open'));
   }
 
+  // ─── Initialisierung ──────────────────────────────────────────────────────
+
   document.addEventListener('DOMContentLoaded', () => {
-    armAudioUnlock();
+    initAudio();
+    ensureAudioButton();
+
+    // Hintergrundmusik-Resume merken wenn man zum Board zurücknavigiert
     const rememberBoardReturn = event => {
-      const target = event.target.closest && event.target.closest('a[href="index.html"], button[data-board-return]');
-      if (target) markBoardMusicResume();
+      if (event.target.closest?.('a[href="index.html"], button[data-board-return]')) markBoardMusicResume();
     };
     document.addEventListener('pointerdown', rememberBoardReturn, true);
     document.addEventListener('touchstart', rememberBoardReturn, true);
     document.addEventListener('click', rememberBoardReturn, true);
+
+    // Musik pausieren/fortsetzen bei Tab-Wechsel
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) stopBackgroundMusic();
+      else if (isBoardVisible()) startBackgroundMusic(true);
+    });
+
     const page = document.body.dataset.page;
     if (page === 'board') initBoard();
     if (page === 'level') { stopBackgroundMusic(); initLevel(); }
     if (page === 'codes') { stopBackgroundMusic(); initCodes(); }
   });
+
+  // ─── Board ────────────────────────────────────────────────────────────────
 
   function initBoard() {
     const state = getState();
@@ -491,22 +472,17 @@
       show(intro); hide(board); hide(below); hide(el('openBoardMenuBtn')); setBoardMenuOpen(false);
     }
 
+    // Start-Button (mehrfache Event-Typen für mobile Zuverlässigkeit)
     const startBtn = el('startGameBtn');
-    let startAlreadyHandled = false;
+    let startHandled = false;
     const startGameNow = (event) => {
-      if (event) {
-        event.preventDefault();
-        event.stopPropagation();
-      }
-      if (startAlreadyHandled) return;
-      startAlreadyHandled = true;
+      if (event) { event.preventDefault(); event.stopPropagation(); }
+      if (startHandled) return;
+      startHandled = true;
       const s = getState();
       s.started = true;
       setState(s);
-      hide(intro);
-      show(board);
-      show(below);
-      show(el('openBoardMenuBtn'));
+      hide(intro); show(board); show(below); show(el('openBoardMenuBtn'));
       setBoardMenuOpen(false);
       updateBoardBox();
       renderBoard();
@@ -518,10 +494,19 @@
       startBtn.addEventListener('pointerup', startGameNow);
       startBtn.addEventListener('touchend', startGameNow, { passive: false });
     }
+
     el('resetGameBtn')?.addEventListener('click', resetGame);
     el('openBoardMenuBtn')?.addEventListener('click', () => toggleBoardMenu(true));
     el('closeBoardMenuBtn')?.addEventListener('click', () => toggleBoardMenu(false));
-    el('levelUnlockedContinueBtn')?.addEventListener('click', () => { const m = el('levelUnlockedModal'); hide(m); m?.classList.remove('stage-popup'); m?.style.removeProperty('--popup-bg'); startBackgroundMusic(true); });
+
+    el('levelUnlockedContinueBtn')?.addEventListener('click', () => {
+      const m = el('levelUnlockedModal');
+      hide(m);
+      m?.classList.remove('stage-popup');
+      m?.style.removeProperty('--popup-bg');
+      startBackgroundMusic(true);
+    });
+
     el('scanJumpBottomBtn')?.addEventListener('click', () => scrollScanModal('bottom'));
     el('scanJumpTopBtn')?.addEventListener('click', () => scrollScanModal('top'));
     el('toggleScannerBtn')?.addEventListener('click', toggleScannerPanel);
@@ -531,6 +516,7 @@
     el('manualCodeInput')?.addEventListener('keydown', e => { if (e.key === 'Enter') handleScanText(e.target.value); });
     el('randomUnlockBtn')?.addEventListener('click', handleRandomUnlock);
     el('encounterBackBtn')?.addEventListener('click', () => escapeFromBoardModal('encounter'));
+
     el('launchLevelBtn')?.addEventListener('click', async () => {
       if (!pendingLaunch) return;
       await playSound('fight');
@@ -543,7 +529,10 @@
 
     window.addEventListener('resize', () => { updateBoardBox(); renderBoard(); });
     el('boardImage')?.addEventListener('load', () => { updateBoardBox(); renderBoard(); });
-    updateBoardBox(); renderBoard(); renderBoardGuide();
+    updateBoardBox();
+    renderBoard();
+    renderBoardGuide();
+
     if (state.started) {
       const shouldResume = sessionStorage.getItem('resumeBoardMusic') === '1' || localStorage.getItem('koenigreichSinneResumeMusicV1');
       sessionStorage.removeItem('resumeBoardMusic');
@@ -584,32 +573,26 @@
 
   function showLevelUnlockedModalOnBoard(options = {}) {
     const modal = el('levelUnlockedModal');
-    if (!modal) {
-      startBackgroundMusic(true);
-      return;
-    }
-    const title = el('levelUnlockedTitle');
-    const text = el('levelUnlockedText');
-    const kicker = el('levelUnlockedKicker');
-    const image = modal.querySelector('.character-img');
+    if (!modal) { startBackgroundMusic(true); return; }
+
     const isEscape = options.type === 'escaped' || options.type === 'run';
-    if (title) title.textContent = isEscape ? 'Du bist entkommen' : 'Neues Level freigeschaltet';
-    if (text) text.textContent = isEscape ? 'Scanne einen neuen QR-Code, um es erneut zu versuchen.' : 'Weiter zum Spielbrett.';
+    setText('levelUnlockedTitle', isEscape ? 'Du bist entkommen' : 'Neues Level freigeschaltet');
+    setText('levelUnlockedText', isEscape ? 'Scanne einen neuen QR-Code, um es erneut zu versuchen.' : 'Weiter zum Spielbrett.');
+
+    const kicker = el('levelUnlockedKicker');
     if (kicker) { kicker.textContent = isEscape ? '' : 'Erfolg'; kicker.classList.toggle('hidden', isEscape); }
+
+    const image = modal.querySelector('.character-img');
     if (image) {
       image.src = isEscape ? 'held_entkommen.webp' : 'held_gewonnen.webp';
       image.alt = isEscape ? 'Held ist entkommen' : 'Held steckt die Flagge in den Boden';
     }
-    const bg = options.isBoss ? BOSS_POPUP_BACKGROUND : (Number.isInteger(options.slot) ? POPUP_BACKGROUNDS[options.slot] : null);
-    if (bg) {
-      modal.classList.add('stage-popup');
-      modal.style.setProperty('--popup-bg', `url("${bg}")`);
-    } else {
-      modal.classList.remove('stage-popup');
-      modal.style.removeProperty('--popup-bg');
-    }
+
+    setModalPopupBackground(modal, options.isBoss ? BOSS_POPUP_BACKGROUND : (Number.isInteger(options.slot) ? POPUP_BACKGROUNDS[options.slot] : null));
     show(modal);
   }
+
+  // ─── Board-Guide & Runner ─────────────────────────────────────────────────
 
   function renderBoardGuide() {
     const guide = el('boardGuide');
@@ -618,41 +601,39 @@
       guide.classList.remove('go-away');
       guide.classList.toggle('hidden', !isBoardGuidePending() || document.body.dataset.page !== 'board' || el('boardScreen')?.classList.contains('hidden'));
     }
-    if (runner) {
-      runner.classList.remove('running');
-      hide(runner);
-    }
+    if (runner) { runner.classList.remove('running'); hide(runner); }
   }
 
   function playBoardStartSequence(index) {
     const state = getState();
     state.boardGuideSeen = true;
     setState(state);
+
     const guide = el('boardGuide');
     const runner = el('boardRunner');
     guide?.classList.add('go-away');
+
     window.setTimeout(() => {
       hide(guide);
       if (runner) {
         runner.classList.remove('hidden', 'running');
-        runner.style.left = '18%';
-        runner.style.top = '104%';
+        runner.style.opacity = '1';
+        runner.style.left = '12%';
+        runner.style.top = '110%';
         runner.style.setProperty('--target-left', `${LEVEL_POSITIONS[index].x}%`);
         runner.style.setProperty('--target-top', `${LEVEL_POSITIONS[index].y}%`);
         void runner.offsetWidth;
-        runner.classList.add('running');
+        window.requestAnimationFrame(() => window.requestAnimationFrame(() => runner.classList.add('running')));
       }
       playSound('levelstart');
       window.setTimeout(() => {
         stopBackgroundMusic();
-        window.setTimeout(() => {
-          hide(runner);
-          renderBoard();
-          openScanModal(index);
-        }, 550);
-      }, 1450);
+        window.setTimeout(() => { hide(runner); renderBoard(); openScanModal(index); }, 650);
+      }, 2250);
     }, 850);
   }
+
+  // ─── Board-Rendering ──────────────────────────────────────────────────────
 
   function updateBoardBox() {
     const screen = el('boardScreen');
@@ -661,11 +642,8 @@
     const w = screen.clientWidth;
     const h = screen.clientHeight;
     let iw, ih;
-    if (w / h > BOARD_RATIO) {
-      iw = w; ih = w / BOARD_RATIO;
-    } else {
-      ih = h; iw = h * BOARD_RATIO;
-    }
+    if (w / h > BOARD_RATIO) { iw = w; ih = w / BOARD_RATIO; }
+    else { ih = h; iw = h * BOARD_RATIO; }
     inner.style.width = `${iw}px`;
     inner.style.height = `${ih}px`;
   }
@@ -707,7 +685,7 @@
     boss.addEventListener('click', handleBossClick);
     inner.appendChild(boss);
 
-    renderProgress();
+    renderProgress(state);
   }
 
   function tokenHtml(number, assigned, done, active, guidePending = false) {
@@ -715,19 +693,14 @@
       const label = assigned ? SENSES[assigned].label : `Level ${number}`;
       return `<img class="done-flag-token" src="flag_complete.webp" alt="${escapeHtml(label)} abgeschlossen">`;
     }
-    if (guidePending) {
-      return `<span class="token-label guide-only">Level ${number}</span>`;
-    }
-    if (active) {
-      return `<img class="hero-token" src="held.webp" alt="Held"><span class="token-label">Level ${number}</span>`;
-    }
+    if (guidePending) return `<span class="token-label guide-only">Level ${number}</span>`;
+    if (active) return `<img class="hero-token" src="held.webp" alt="Held"><span class="token-label">Level ${number}</span>`;
     return `<img class="lock-token" src="lock.png" alt="Schloss"><span class="token-label">Level ${number}</span>`;
   }
 
-  function renderProgress() {
+  function renderProgress(state = getState()) {
     const summary = el('progressSummary');
     if (!summary) return;
-    const state = getState();
     summary.innerHTML = '';
     LEVEL_POSITIONS.forEach((_, index) => {
       const assigned = state.slots[index];
@@ -743,24 +716,19 @@
     summary.appendChild(boss);
   }
 
+  // ─── Board-Interaktion ────────────────────────────────────────────────────
+
   function handleNodeClick(index) {
     const state = getState();
     const active = currentSlot(state);
     setBoardMenuOpen(false);
     if (state.completed[index]) {
-      const sense = state.slots[index];
-      window.location.href = `level.html?sense=${encodeURIComponent(sense)}&slot=${index}`;
+      window.location.href = `level.html?sense=${encodeURIComponent(state.slots[index])}&slot=${index}`;
       return;
     }
     if (index !== active) return;
-    if (state.slots[index]) {
-      showEncounter(state.slots[index], index);
-      return;
-    }
-    if (index === 0 && isBoardGuidePending(state)) {
-      playBoardStartSequence(index);
-      return;
-    }
+    if (state.slots[index]) { showEncounter(state.slots[index], index); return; }
+    if (index === 0 && isBoardGuidePending(state)) { playBoardStartSequence(index); return; }
     stopBackgroundMusic();
     playSound('levelstart');
     openScanModal(index);
@@ -769,31 +737,33 @@
   function handleBossClick() {
     setBoardMenuOpen(false);
     const state = getState();
-    if (state.bossCompleted) return;
-    if (!allLevelsDone(state)) return;
+    if (state.bossCompleted || !allLevelsDone(state)) return;
     stopBackgroundMusic();
     playSound('levelstart');
     showBossEncounter();
   }
 
-  function setStagePopupState(slot, isBoss = false) {
-    const bg = isBoss ? BOSS_POPUP_BACKGROUND : (Number.isInteger(slot) ? POPUP_BACKGROUNDS[slot] : null);
-    ['scanModal', 'encounterModal'].forEach(id => {
-      const modal = el(id);
-      if (!modal) return;
-      if (bg) {
-        modal.classList.add('stage-popup');
-        modal.style.setProperty('--popup-bg', `url("${bg}")`);
-      } else {
-        modal.classList.remove('stage-popup');
-        modal.style.removeProperty('--popup-bg');
-      }
-    });
+  // ─── Popup-Hintergründe ───────────────────────────────────────────────────
+
+  function setModalPopupBackground(modal, bg) {
+    if (!modal) return;
+    if (bg) {
+      modal.classList.add('stage-popup');
+      modal.style.setProperty('--popup-bg', `url("${bg}")`);
+    } else {
+      modal.classList.remove('stage-popup');
+      modal.style.removeProperty('--popup-bg');
+    }
   }
 
-  function scanCard() {
-    return document.querySelector('#scanModal .scan-card');
+  function setStagePopupState(slot, isBoss = false) {
+    const bg = isBoss ? BOSS_POPUP_BACKGROUND : (Number.isInteger(slot) ? POPUP_BACKGROUNDS[slot] : null);
+    ['scanModal', 'encounterModal'].forEach(id => setModalPopupBackground(el(id), bg));
   }
+
+  // ─── QR-Scan-Modal ────────────────────────────────────────────────────────
+
+  function scanCard() { return document.querySelector('#scanModal .scan-card'); }
 
   function scrollScanModal(direction) {
     const card = scanCard();
@@ -806,8 +776,7 @@
     if (!card) return;
     const collapsed = card.classList.toggle('scanner-collapsed');
     setText('toggleScannerBtn', collapsed ? 'Scanner ausklappen' : 'Scanner einklappen');
-    if (collapsed) window.setTimeout(() => scrollScanModal('bottom'), 80);
-    else window.setTimeout(() => scrollScanModal('top'), 80);
+    window.setTimeout(() => scrollScanModal(collapsed ? 'bottom' : 'top'), 80);
   }
 
   function openScanModal(slot) {
@@ -819,7 +788,7 @@
     setText('scanMessage', '');
     hide(el('scanMessage'));
     const input = el('manualCodeInput'); if (input) input.value = '';
-    const card = document.querySelector('#scanModal .scan-card');
+    const card = scanCard();
     card?.classList.remove('scanner-collapsed');
     setText('toggleScannerBtn', 'Scanner einklappen');
     if (card) card.scrollTop = 0;
@@ -839,30 +808,28 @@
     const reader = el('qrReader');
     if (info) info.textContent = 'Kamera wird vorbereitet …';
 
-    // Erste Wahl: html5-qrcode. Diese Bibliothek funktioniert in deutlich mehr mobilen Browsern
-    // als die native BarcodeDetector-API. Falls sie nicht geladen wird, gibt es unten Fallbacks.
+    // Bevorzugt html5-qrcode (breitere mobile Browser-Unterstützung)
     if (reader && typeof Html5Qrcode !== 'undefined') {
       try {
         reader.innerHTML = '<p id="cameraInfo" class="camera-info">Kamera wird vorbereitet …</p>';
         html5Scanner = new Html5Qrcode('qrReader');
-        const config = { fps: 10, qrbox: { width: 240, height: 240 }, aspectRatio: 1.0 };
         await html5Scanner.start(
           { facingMode: 'environment' },
-          config,
+          { fps: 10, qrbox: { width: 240, height: 240 }, aspectRatio: 1.0 },
           decodedText => handleScanText(decodedText),
           () => {}
         );
         const liveInfo = el('cameraInfo');
         if (liveInfo) liveInfo.textContent = 'Kamera aktiv. QR-Code vor die Kamera halten.';
         return;
-      } catch (err) {
+      } catch {
         if (reader) reader.innerHTML = '<p id="cameraInfo" class="camera-info">Kamera konnte nicht gestartet werden. Bitte Berechtigung prüfen oder Code manuell eingeben.</p>';
         const card = scanCard(); card?.classList.add('scanner-collapsed'); setText('toggleScannerBtn', 'Scanner ausklappen');
         return;
       }
     }
 
-    // Fallback für Browser mit nativer QR-Erkennung.
+    // Fallback: native BarcodeDetector-API
     const video = document.createElement('video');
     video.className = 'camera-video';
     video.playsInline = true;
@@ -876,11 +843,13 @@
       infoEl.textContent = 'Kamera wird vorbereitet …';
       reader.appendChild(infoEl);
     }
+
     if (!('mediaDevices' in navigator) || !navigator.mediaDevices.getUserMedia) {
       const i = el('cameraInfo'); if (i) i.textContent = 'Kamera nicht verfügbar. Bitte Code manuell eingeben.';
       const card = scanCard(); card?.classList.add('scanner-collapsed'); setText('toggleScannerBtn', 'Scanner ausklappen');
       return;
     }
+
     try {
       scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false });
       video.srcObject = scanStream;
@@ -896,8 +865,8 @@
         if (!video.videoWidth) return;
         try {
           const codes = await detector.detect(video);
-          if (codes && codes.length) handleScanText(codes[0].rawValue || codes[0].rawData || '');
-        } catch { /* ignore frame errors */ }
+          if (codes?.length) handleScanText(codes[0].rawValue || codes[0].rawData || '');
+        } catch {}
       }, 450);
     } catch {
       const i = el('cameraInfo'); if (i) i.textContent = 'Kamera konnte nicht gestartet werden. Bitte Berechtigung prüfen oder Code manuell eingeben.';
@@ -920,6 +889,29 @@
     if (reader) reader.innerHTML = '<p id="cameraInfo" class="camera-info">Kamera wird vorbereitet …</p>';
   }
 
+  // ─── Code-Eingabe & Sense-Freischaltung ───────────────────────────────────
+
+  function handleScanText(text) {
+    const msg = el('scanMessage');
+    const sense = codeToSense(text);
+    if (!sense) {
+      if (msg) { msg.className = 'message bad'; msg.textContent = 'Dieser Code passt zu keinem Sinnes-Level.'; show(msg); }
+      return;
+    }
+    unlockSenseForActiveSlot(sense);
+  }
+
+  function handleRandomUnlock() {
+    const state = getState();
+    const available = senseList().filter(sense => !usedSenseIds(state).includes(sense.id));
+    const msg = el('scanMessage');
+    if (!available.length) {
+      if (msg) { msg.className = 'message bad'; msg.textContent = 'Es ist kein zufälliger Gegner mehr verfügbar.'; show(msg); }
+      return;
+    }
+    unlockSenseForActiveSlot(available[Math.floor(Math.random() * available.length)]);
+  }
+
   function unlockSenseForActiveSlot(sense) {
     if (!sense) return false;
     const msg = el('scanMessage');
@@ -938,27 +930,7 @@
     return true;
   }
 
-  function handleRandomUnlock() {
-    const state = getState();
-    const available = senseList().filter(sense => !usedSenseIds(state).includes(sense.id));
-    const msg = el('scanMessage');
-    if (!available.length) {
-      if (msg) { msg.className = 'message bad'; msg.textContent = 'Es ist kein zufälliger Gegner mehr verfügbar.'; show(msg); }
-      return;
-    }
-    const sense = available[Math.floor(Math.random() * available.length)];
-    unlockSenseForActiveSlot(sense);
-  }
-
-  function handleScanText(text) {
-    const msg = el('scanMessage');
-    const sense = codeToSense(text);
-    if (!sense) {
-      if (msg) { msg.className = 'message bad'; msg.textContent = 'Dieser Code passt zu keinem Sinnes-Level.'; show(msg); }
-      return;
-    }
-    unlockSenseForActiveSlot(sense);
-  }
+  // ─── Encounter-Modals ─────────────────────────────────────────────────────
 
   function showEncounter(senseId, slot) {
     const sense = SENSES[senseId];
@@ -983,6 +955,8 @@
     show(el('encounterModal'));
   }
 
+  // ─── Level ────────────────────────────────────────────────────────────────
+
   function initLevel() {
     const type = qs('type');
     const isBoss = type === 'boss';
@@ -995,13 +969,11 @@
       renderLevel(BOSS, { isBoss: true, slot: null });
       return;
     }
-
     if (!Number.isInteger(slot) || slot < 0 || slot > 4 || !SENSES[senseId] || state.slots[slot] !== senseId) {
       window.location.replace('index.html'); return;
     }
     renderLevel(SENSES[senseId], { isBoss: false, slot });
   }
-
 
   function applyStageBackground(meta) {
     const bg = meta.isBoss ? BOSS_BACKGROUND : STAGE_BACKGROUNDS[meta.slot] || STAGE_BACKGROUNDS[0];
@@ -1022,6 +994,7 @@
     if (content) content.innerHTML = data.content.map(p => `<p>${escapeHtml(p)}</p>`).join('');
     const tasks = el('levelTasks');
     if (tasks) tasks.innerHTML = data.tasks.map((t, i) => `<div class="task"><b>Aufgabe ${i + 1}</b>${escapeHtml(t)}</div>`).join('');
+
     const questions = getQuestions(data);
     setText('quizQuestion', 'Beantworte alle fünf Fragen richtig, um das Level abzuschließen.');
     const options = el('quizOptions');
@@ -1033,15 +1006,18 @@
         </article>
       `).join('');
     }
+
     el('checkAnswerBtn')?.addEventListener('click', () => checkAnswer(data, meta));
     el('runAwayBtn')?.addEventListener('click', () => runAwayFromLevel(meta));
+
+    // battleIntroModal-Buttons (statisch im HTML, als Fallback falls showBattleIntro den Modal direkt nutzt)
     el('battleBeginBtn')?.addEventListener('click', async () => {
       if (!pendingBattleContext) return;
       const ctx = pendingBattleContext;
       pendingBattleContext = null;
       hide(el('battleIntroModal'));
       await playSound('fight');
-      window.setTimeout(() => { showEvaluationFlow(ctx.results, ctx.data, ctx.meta); }, 180);
+      window.setTimeout(() => showEvaluationFlow(ctx.results, ctx.data, ctx.meta), 180);
     });
     el('battleRunBtn')?.addEventListener('click', () => {
       const ctx = pendingBattleContext;
@@ -1049,12 +1025,11 @@
       hide(el('battleIntroModal'));
       runAwayFromLevel(ctx?.meta || meta);
     });
+
     el('outroResetBtn')?.addEventListener('click', resetGame);
   }
 
-  function getQuestions(data) {
-    return QUESTION_BANK[data.id] || (data.quiz ? [data.quiz] : []);
-  }
+  // ─── Quiz & Kampfablauf ───────────────────────────────────────────────────
 
   function checkAnswer(data, meta) {
     const feedback = el('quizFeedback');
@@ -1069,22 +1044,17 @@
     showBattleIntro(results, data, meta);
   }
 
+  function popupBgForMeta(meta) {
+    return meta?.isBoss ? BOSS_POPUP_BACKGROUND : (Number.isInteger(meta?.slot) ? POPUP_BACKGROUNDS[meta.slot] : null);
+  }
+
   function showBattleIntro(results, data, meta) {
     const modal = el('evaluationModal');
     const card = modal?.querySelector('.evaluation-card');
-    if (!modal || !card) {
-      showEvaluationFlow(results, data, meta);
-      return;
-    }
+    if (!modal || !card) { showEvaluationFlow(results, data, meta); return; }
+
     pendingBattleContext = { results, data, meta };
-    const bg = meta?.isBoss ? BOSS_POPUP_BACKGROUND : (Number.isInteger(meta?.slot) ? POPUP_BACKGROUNDS[meta.slot] : null);
-    if (bg) {
-      modal.classList.add('stage-popup');
-      modal.style.setProperty('--popup-bg', `url("${bg}")`);
-    } else {
-      modal.classList.remove('stage-popup');
-      modal.style.removeProperty('--popup-bg');
-    }
+    setModalPopupBackground(modal, popupBgForMeta(meta));
     card.className = 'modal-card evaluation-card unified-popup unified-intro';
     card.innerHTML = `
       <div class="battle-inline-layout">
@@ -1106,13 +1076,15 @@
       </div>
     `;
     show(modal);
+
     el('unifiedBattleBeginBtn')?.addEventListener('click', async () => {
       if (!pendingBattleContext) return;
       const ctx = pendingBattleContext;
       pendingBattleContext = null;
       await playSound('fight');
-      window.setTimeout(() => { showEvaluationFlow(ctx.results, ctx.data, ctx.meta); }, 120);
+      window.setTimeout(() => showEvaluationFlow(ctx.results, ctx.data, ctx.meta), 120);
     }, { once: true });
+
     el('unifiedBattleRunBtn')?.addEventListener('click', () => {
       const ctx = pendingBattleContext;
       pendingBattleContext = null;
@@ -1121,14 +1093,14 @@
     }, { once: true });
   }
 
+  // ─── Auswertungssequenz ───────────────────────────────────────────────────
+
   let lastEvaluationImage = { correct: null, wrong: null };
   let evaluationRunToken = 0;
   const EVALUATION_ENTRY_CLASSES = ['enter-left', 'enter-right', 'enter-top', 'enter-bottom', 'enter-zoom'];
   const FINAL_ENTRY_CLASSES = ['enter-zoom', 'enter-top', 'enter-bottom'];
 
-  function randomFrom(list) {
-    return list[Math.floor(Math.random() * list.length)];
-  }
+  function randomFrom(list) { return list[Math.floor(Math.random() * list.length)]; }
 
   function randomFromNoRepeat(list, group) {
     const previous = lastEvaluationImage[group];
@@ -1138,20 +1110,11 @@
     return picked;
   }
 
-  function wait(ms) {
-    return new Promise(resolve => window.setTimeout(resolve, ms));
-  }
+  function wait(ms) { return new Promise(resolve => window.setTimeout(resolve, ms)); }
 
   function nextPaint(frames = 2) {
     return new Promise(resolve => {
-      const step = () => {
-        if (frames <= 0) {
-          resolve();
-          return;
-        }
-        frames -= 1;
-        window.requestAnimationFrame(step);
-      };
+      const step = () => { if (--frames <= 0) { resolve(); return; } window.requestAnimationFrame(step); };
       window.requestAnimationFrame(step);
     });
   }
@@ -1174,18 +1137,17 @@
     if (!status) return;
     status.textContent = text || '';
     status.className = `evaluation-status${kind ? ' ' + kind : ''}`;
-    if (text) show(status);
-    else hide(status);
-  }
-
-  function soundKeyForEvaluationImage(src) {
-    return String(src || '').replace(/\.(webp|png|jpg|jpeg)$/i, '');
+    if (text) show(status); else hide(status);
   }
 
   function setEvaluationDots(activeIndex, total) {
     const dots = el('evaluationDots');
     if (!dots) return;
     dots.innerHTML = Array.from({ length: total }, (_, i) => `<span class="${i === activeIndex ? 'active' : ''}"></span>`).join('');
+  }
+
+  function soundKeyForEvaluationImage(src) {
+    return String(src || '').replace(/\.(webp|png|jpg|jpeg)$/i, '');
   }
 
   async function playEvaluationCue(imageSrc, runToken) {
@@ -1223,35 +1185,29 @@
   async function showEvaluationFlow(results, data, meta) {
     const modal = el('evaluationModal');
     if (!ensureEvaluationSequenceShell()) {
-      const wrong = results.filter(result => !result).length;
-      if (wrong >= 2) showLoseFlow(meta);
-      else showWinFlow(data, meta);
+      const wrong = results.filter(r => !r).length;
+      if (wrong >= 2) showLoseFlow(meta); else showWinFlow(data, meta);
       return;
     }
     const image = el('evaluationImage');
     const label = el('evaluationLabel');
     if (!modal || !image || !label) {
-      const wrong = results.filter(result => !result).length;
-      if (wrong >= 2) showLoseFlow(meta);
-      else showWinFlow(data, meta);
+      const wrong = results.filter(r => !r).length;
+      if (wrong >= 2) showLoseFlow(meta); else showWinFlow(data, meta);
       return;
     }
-    const bg = meta?.isBoss ? BOSS_POPUP_BACKGROUND : (Number.isInteger(meta?.slot) ? POPUP_BACKGROUNDS[meta.slot] : null);
-    if (bg) {
-      modal.classList.add('stage-popup');
-      modal.style.setProperty('--popup-bg', `url("${bg}")`);
-    } else {
-      modal.classList.remove('stage-popup');
-      modal.style.removeProperty('--popup-bg');
-    }
+
+    setModalPopupBackground(modal, popupBgForMeta(meta));
     const action = el('evaluationAction');
     const outcomeLayer = el('evaluationOutcomeImage');
     const checkBtn = el('checkAnswerBtn');
+
     if (checkBtn) checkBtn.disabled = true;
     if (action) { action.innerHTML = ''; hide(action); }
     if (outcomeLayer) { outcomeLayer.className = 'evaluation-outcome-img hidden'; outcomeLayer.removeAttribute('src'); outcomeLayer.alt = 'Ergebnis'; }
     show(modal);
     startBattleBackground();
+
     const runToken = ++evaluationRunToken;
     const totalSteps = results.length + 1;
 
@@ -1276,27 +1232,24 @@
     setEvaluationImage(image, EVALUATION_IMAGES.final, 'Finale Auswertung', true);
     setEvaluationStatus('Tippe auf das Bild, um das Ergebnis aufzudecken.', '');
     setEvaluationDots(results.length, totalSteps);
-    if (action) {
-      action.innerHTML = '';
-      hide(action);
-    }
+    if (action) { action.innerHTML = ''; hide(action); }
     await playFinalCue(runToken);
     if (runToken !== evaluationRunToken) return;
+
     image.classList.add('final-loop', 'final-clickable');
     image.setAttribute('role', 'button');
     image.setAttribute('tabindex', '0');
     image.setAttribute('aria-label', 'Ergebnis aufdecken');
 
-    const wrong = results.filter(result => !result).length;
+    const wrong = results.filter(r => !r).length;
     const won = wrong < 2;
     const outcomeImage = el('evaluationOutcomeImage');
-    const outcomeSrc = won ? data.defeated : 'held_verloren.webp';
-    const outcomeAlt = won ? `${data.enemyName || data.label || 'Gegner'} besiegt` : 'Besiegter Ritter';
     if (outcomeImage) {
-      outcomeImage.src = outcomeSrc;
-      outcomeImage.alt = outcomeAlt;
+      outcomeImage.src = won ? data.defeated : 'held_verloren.webp';
+      outcomeImage.alt = won ? `${data.enemyName || data.label || 'Gegner'} besiegt` : 'Besiegter Ritter';
       outcomeImage.className = 'evaluation-outcome-img hidden';
     }
+
     const revealOutcome = async () => {
       if (runToken !== evaluationRunToken || image.dataset.revealing === '1') return;
       image.dataset.revealing = '1';
@@ -1309,11 +1262,13 @@
       stopBattleBackground();
       await wait(1250);
       if (runToken !== evaluationRunToken) return;
+
       image.className = 'evaluation-img hidden';
       image.removeAttribute('role');
       image.removeAttribute('tabindex');
       image.removeAttribute('aria-label');
       if (outcomeImage) outcomeImage.className = 'evaluation-outcome-img outcome-step';
+
       if (won) {
         label.textContent = meta.isBoss ? `${data.enemyName || 'Boss'} besiegt!` : `${data.enemyName || data.label} besiegt!`;
         setEvaluationStatus(meta.isBoss ? 'Das Königreich der Sinne ist gerettet.' : 'Du hast das Level geschafft.', 'ok');
@@ -1321,31 +1276,27 @@
         label.textContent = 'Du wurdest besiegt.';
         setEvaluationStatus('', 'bad');
       }
+
       const dots = el('evaluationDots');
       if (dots) dots.innerHTML = '';
       prepareOutcomeSound();
       await playSound(won ? 'win' : 'lose');
       if (checkBtn) checkBtn.disabled = false;
-      if (!action) {
-        hide(modal);
-        if (won) finishLevel(meta);
-        return;
-      }
+
+      if (!action) { hide(modal); if (won) finishLevel(meta); return; }
+
       if (won) {
         action.innerHTML = '<button id="evaluationContinueBtn" class="game-btn primary">Weiter</button>';
         show(action);
-        el('evaluationContinueBtn')?.addEventListener('click', () => {
-          hide(modal);
-          finishLevel(meta);
-        }, { once: true });
+        el('evaluationContinueBtn')?.addEventListener('click', () => { hide(modal); finishLevel(meta); }, { once: true });
       } else {
         action.innerHTML = '<button id="evaluationRetryBtn" class="game-btn primary">Neuer Versuch</button><button id="evaluationEscapeBtn" class="game-btn muted">Wegrennen</button>';
         show(action);
         el('evaluationRetryBtn')?.addEventListener('click', () => {
           hide(modal);
           delete image.dataset.revealing;
-          const outcomeImage = el('evaluationOutcomeImage');
-          if (outcomeImage) outcomeImage.className = 'evaluation-outcome-img hidden';
+          const oi = el('evaluationOutcomeImage');
+          if (oi) oi.className = 'evaluation-outcome-img hidden';
         });
         el('evaluationEscapeBtn')?.addEventListener('click', () => runAwayFromLevel(meta), { once: true });
       }
@@ -1353,14 +1304,13 @@
 
     image.addEventListener('click', revealOutcome, { once: true });
     image.addEventListener('keydown', event => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        revealOutcome();
-      }
+      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); revealOutcome(); }
     }, { once: true });
   }
 
-  function showWinFlow(data, meta, playOutcome = true) {
+  // ─── Win/Lose-Flows (resultModal) ─────────────────────────────────────────
+
+  function showWinFlow(data, meta) {
     const modal = el('resultModal');
     modal?.querySelector('.encounter-card')?.classList.remove('outcome-clean', 'outcome-hero');
     el('resultImage').src = data.defeated;
@@ -1371,13 +1321,10 @@
     const buttons = el('resultButtons');
     buttons.innerHTML = '<button id="continueWinBtn" class="game-btn primary">Weiter</button>';
     show(modal);
-    if (playOutcome) {
-      prepareOutcomeSound();
-      playSound('win');
-    }
+    prepareOutcomeSound();
+    playSound('win');
     el('continueWinBtn').addEventListener('click', () => {
-      if (meta.isBoss) showHeroWon(meta);
-      else finishLevel(meta);
+      if (meta.isBoss) showHeroWon(meta); else finishLevel(meta);
     });
   }
 
@@ -1394,6 +1341,26 @@
     buttons.innerHTML = '<button id="finishLevelBtn" class="game-btn primary">Weiter</button>';
     el('finishLevelBtn').addEventListener('click', () => finishLevel(meta));
   }
+
+  function showLoseFlow(meta) {
+    const modal = el('resultModal');
+    modal?.querySelector('.encounter-card')?.classList.remove('outcome-hero');
+    modal?.querySelector('.encounter-card')?.classList.add('outcome-clean');
+    el('resultImage').src = 'held_verloren.webp';
+    el('resultImage').alt = 'Held verloren';
+    setText('resultKicker', '');
+    setText('resultTitle', '');
+    setText('resultText', '');
+    const buttons = el('resultButtons');
+    buttons.innerHTML = '<button id="retryBtn" class="game-btn primary">Neuer Versuch</button><button id="escapeBtn" class="game-btn muted">Wegrennen</button>';
+    show(modal);
+    prepareOutcomeSound();
+    playSound('lose');
+    el('retryBtn')?.addEventListener('click', () => hide(modal));
+    el('escapeBtn')?.addEventListener('click', () => runAwayFromLevel(meta));
+  }
+
+  // ─── Level abschließen / Flucht ───────────────────────────────────────────
 
   function runAwayFromLevel(meta) {
     const state = getState();
@@ -1422,25 +1389,7 @@
     window.location.href = 'index.html';
   }
 
-  function showLoseFlow(meta, playOutcome = true) {
-    const modal = el('resultModal');
-    modal?.querySelector('.encounter-card')?.classList.remove('outcome-hero');
-    modal?.querySelector('.encounter-card')?.classList.add('outcome-clean');
-    el('resultImage').src = 'held_verloren.webp';
-    el('resultImage').alt = 'Held verloren';
-    setText('resultKicker', '');
-    setText('resultTitle', '');
-    setText('resultText', '');
-    const buttons = el('resultButtons');
-    buttons.innerHTML = '<button id="retryBtn" class="game-btn primary">Neuer Versuch</button><button id="escapeBtn" class="game-btn muted">Wegrennen</button>';
-    show(modal);
-    if (playOutcome) {
-      prepareOutcomeSound();
-      playSound('lose');
-    }
-    el('retryBtn')?.addEventListener('click', () => hide(modal));
-    el('escapeBtn')?.addEventListener('click', () => runAwayFromLevel(meta));
-  }
+  // ─── QR-Code-Seite ────────────────────────────────────────────────────────
 
   function initCodes() {
     el('printCodesBtn')?.addEventListener('click', () => window.print());
@@ -1453,9 +1402,5 @@
       card.innerHTML = `<h2>${sense.label}</h2><img src="qr_${sense.id}.png" alt="QR-Code ${sense.label}"><div class="code">${sense.code}</div>`;
       grid.appendChild(card);
     });
-  }
-
-  function escapeHtml(str) {
-    return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]));
   }
 })();
