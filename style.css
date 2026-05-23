@@ -488,3 +488,177 @@ body.stage-popups .evaluation-card.unified-popup::after,
     height:clamp(100px,24vw,144px) !important;
   }
 }
+
+
+/* --- current tuning from latest optimized build: larger lower-third actors and buttons near bottom --- */
+.evaluation-card.unified-intro{
+  justify-content:flex-end !important;
+  padding:18px 18px 16px !important;
+}
+.evaluation-card.unified-intro .battle-inline-layout{
+  width:100%;
+  flex:1 1 auto;
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) !important;
+  align-items:end !important;
+  justify-items:center !important;
+  gap:56px !important;
+  margin-top:auto !important;
+  padding-top:min(10svh,72px);
+  padding-bottom:8px;
+}
+.evaluation-card.unified-intro .battle-inline-side{
+  align-self:end;
+  gap:14px;
+}
+.evaluation-card.unified-intro .battle-inline-actor{
+  width:min(320px,32vw) !important;
+  max-height:min(36svh,330px) !important;
+  object-fit:contain;
+  object-position:center bottom;
+}
+.evaluation-card.unified-intro .battle-inline-name{
+  font-size:clamp(1rem,2.4vw,1.28rem) !important;
+  padding:9px 18px !important;
+}
+.evaluation-card.unified-intro .battle-inline-versus-wrap{
+  align-self:center;
+}
+.evaluation-card.unified-intro .battle-inline-versus{
+  width:min(220px,24vw) !important;
+  max-height:min(30svh,250px) !important;
+}
+.evaluation-card.unified-intro .battle-inline-actions{
+  width:100%;
+  margin-top:auto !important;
+  padding-top:8px;
+  padding-bottom:2px;
+  gap:14px !important;
+}
+.evaluation-card.unified-intro .battle-inline-actions .game-btn{
+  width:min(100%,720px);
+}
+
+.evaluation-card.unified-sequence .evaluation-label{
+  font-size:clamp(1.2rem,3.8vw,2.05rem) !important;
+  min-height:62px !important;
+  margin-bottom:8px !important;
+}
+.evaluation-card.unified-sequence .evaluation-status{
+  font-size:clamp(1.25rem,4.4vw,2.05rem) !important;
+  font-weight:950 !important;
+  min-height:56px !important;
+  margin-bottom:10px !important;
+}
+.evaluation-card.unified-sequence .evaluation-action{
+  min-height:76px !important;
+  margin-top:14px !important;
+  margin-bottom:10px !important;
+  gap:14px !important;
+}
+.evaluation-card.unified-sequence .evaluation-stage{
+  width:min(100%,650px) !important;
+  height:min(60svh,560px) !important;
+  margin-top:auto !important;
+}
+.evaluation-card.unified-sequence .evaluation-stage .evaluation-img,
+.evaluation-card.unified-sequence .evaluation-stage .evaluation-outcome-img{
+  left:50% !important;
+  top:64% !important;
+  transform:translate(-50%,-50%) !important;
+  object-fit:contain;
+  object-position:center bottom;
+}
+.evaluation-card.unified-sequence .evaluation-stage .evaluation-img{
+  width:min(100%,570px) !important;
+  height:min(54svh,455px) !important;
+}
+.evaluation-card.unified-sequence .evaluation-outcome-img{
+  width:min(100%,570px) !important;
+  height:min(54svh,455px) !important;
+}
+
+@media (max-width:860px){
+  .evaluation-card.unified-intro .battle-inline-layout{
+    gap:34px !important;
+    padding-top:min(7svh,48px);
+  }
+  .evaluation-card.unified-intro .battle-inline-actor{
+    width:min(40vw,220px) !important;
+    max-height:min(34svh,230px) !important;
+  }
+  .evaluation-card.unified-intro .battle-inline-versus{
+    width:min(22vw,150px) !important;
+    max-height:170px !important;
+  }
+  .evaluation-card.unified-sequence .evaluation-label{
+    font-size:clamp(1.1rem,4.6vw,1.7rem) !important;
+    min-height:52px !important;
+  }
+  .evaluation-card.unified-sequence .evaluation-status{
+    font-size:clamp(1.14rem,5vw,1.62rem) !important;
+    min-height:50px !important;
+  }
+  .evaluation-card.unified-sequence .evaluation-action{
+    min-height:70px !important;
+    margin-top:12px !important;
+  }
+  .evaluation-card.unified-sequence .evaluation-stage{
+    height:min(56svh,470px) !important;
+  }
+  .evaluation-card.unified-sequence .evaluation-stage .evaluation-img,
+  .evaluation-card.unified-sequence .evaluation-stage .evaluation-outcome-img{
+    width:min(100%,470px) !important;
+    height:min(44svh,360px) !important;
+    top:64% !important;
+  }
+}
+
+@media (max-width:560px){
+  .evaluation-card.unified-intro{
+    padding:14px 12px 14px !important;
+  }
+  .evaluation-card.unified-intro .battle-inline-layout{
+    gap:24px !important;
+    padding-top:min(6svh,34px);
+    padding-bottom:4px;
+  }
+  .evaluation-card.unified-intro .battle-inline-actor{
+    width:min(42vw,176px) !important;
+    max-height:min(30svh,190px) !important;
+  }
+  .evaluation-card.unified-intro .battle-inline-name{
+    font-size:.92rem !important;
+    padding:8px 14px !important;
+  }
+  .evaluation-card.unified-intro .battle-inline-versus{
+    width:min(24vw,112px) !important;
+    max-height:132px !important;
+  }
+  .evaluation-card.unified-sequence .evaluation-label{
+    font-size:1.02rem !important;
+    min-height:46px !important;
+    margin-bottom:6px !important;
+  }
+  .evaluation-card.unified-sequence .evaluation-status{
+    font-size:1.18rem !important;
+    min-height:44px !important;
+    margin-bottom:8px !important;
+  }
+  .evaluation-card.unified-sequence .evaluation-action{
+    min-height:72px !important;
+    margin-top:14px !important;
+    margin-bottom:8px !important;
+    gap:12px !important;
+  }
+  .evaluation-card.unified-sequence .evaluation-stage{
+    width:100% !important;
+    height:min(50svh,410px) !important;
+  }
+  .evaluation-card.unified-sequence .evaluation-stage .evaluation-img,
+  .evaluation-card.unified-sequence .evaluation-stage .evaluation-outcome-img{
+    width:min(100%,390px) !important;
+    height:min(38svh,315px) !important;
+    top:65% !important;
+  }
+}
