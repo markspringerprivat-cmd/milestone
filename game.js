@@ -611,6 +611,7 @@
 
     const guide = el('boardGuide');
     const runner = el('boardRunner');
+    const target = LEVEL_POSITIONS[index] || LEVEL_POSITIONS[0];
     guide?.classList.add('go-away');
 
     window.setTimeout(() => {
@@ -618,18 +619,27 @@
       if (runner) {
         runner.classList.remove('hidden', 'running');
         runner.style.opacity = '1';
-        runner.style.left = '12%';
-        runner.style.top = '110%';
-        runner.style.setProperty('--target-left', `${LEVEL_POSITIONS[index].x}%`);
-        runner.style.setProperty('--target-top', `${LEVEL_POSITIONS[index].y}%`);
+        // Von knapp unterhalb des sichtbaren Spielfeldrands einlaufen lassen,
+        // damit Sir Nervus wirklich sichtbar von unten ins Grasland kommt.
+        runner.style.left = `${Math.max(42, target.x - 1.2)}%`;
+        runner.style.top = '101.5%';
+        runner.style.setProperty('--target-left', `${target.x}%`);
+        runner.style.setProperty('--target-top', `${target.y}%`);
         void runner.offsetWidth;
-        window.requestAnimationFrame(() => window.requestAnimationFrame(() => runner.classList.add('running')));
+        window.requestAnimationFrame(() => {
+          window.requestAnimationFrame(() => runner.classList.add('running'));
+        });
       }
       playSound('levelstart');
+      // Erst laufen lassen, dann kurz warten, danach QR-Popup öffnen.
       window.setTimeout(() => {
         stopBackgroundMusic();
-        window.setTimeout(() => { hide(runner); renderBoard(); openScanModal(index); }, 650);
-      }, 2250);
+        window.setTimeout(() => {
+          hide(runner);
+          renderBoard();
+          openScanModal(index);
+        }, 500);
+      }, 1700);
     }, 850);
   }
 
