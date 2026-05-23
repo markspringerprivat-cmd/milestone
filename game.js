@@ -374,7 +374,7 @@
   // ─── Spielstand ────────────────────────────────────────────────────────────
 
   function defaultState() {
-    return { started: false, slots: [null, null, null, null, null], completed: [false, false, false, false, false], bossCompleted: false, boardGuideSeen: false };
+    return { started: false, slots: [null, null, null, null, null], completed: [false, false, false, false, false], bossCompleted: false, boardGuideSeen: false, heroNode: null };
   }
 
   function getState() {
@@ -395,6 +395,9 @@
   function senseList() { return Object.values(SENSES); }
   function usedSenseIds(state = getState()) { return state.slots.filter(Boolean); }
   function currentSlot(state = getState()) { return state.completed.findIndex(done => !done); }
+  function getHeroNode(state = getState()) {
+    return Number.isInteger(state.heroNode) && state.heroNode >= 0 && state.heroNode < LEVEL_POSITIONS.length ? state.heroNode : null;
+  }
   function allLevelsDone(state = getState()) { return state.completed.every(Boolean); }
   function isBoardGuidePending(state = getState()) {
     return !!(state.started && !state.boardGuideSeen && !state.slots.some(Boolean) && !state.completed.some(Boolean) && !state.bossCompleted);
@@ -481,6 +484,7 @@
       startHandled = true;
       const s = getState();
       s.started = true;
+      s.heroNode = null;
       setState(s);
       hide(intro); show(board); show(below); show(el('openBoardMenuBtn'));
       setBoardMenuOpen(false);
@@ -619,10 +623,9 @@
       if (runner) {
         runner.classList.remove('hidden', 'running');
         runner.style.opacity = '1';
-        // Von knapp unterhalb des sichtbaren Spielfeldrands einlaufen lassen,
-        // damit Sir Nervus wirklich sichtbar von unten ins Grasland kommt.
-        runner.style.left = `${Math.max(42, target.x - 1.2)}%`;
-        runner.style.top = '101.5%';
+        // Von knapp innerhalb des unteren Spielfeldrands sichtbar einfliegen lassen.
+        runner.style.left = `${Math.max(42, target.x - 1.4)}%`;
+        runner.style.top = '95.8%';
         runner.style.setProperty('--target-left', `${target.x}%`);
         runner.style.setProperty('--target-top', `${target.y}%`);
         void runner.offsetWidth;
@@ -631,16 +634,53 @@
         });
       }
       playSound('levelstart');
-      // Erst laufen lassen, dann kurz warten, danach QR-Popup öffnen.
       window.setTimeout(() => {
+        const nextState = getState();
+        nextState.heroNode = index;
+        setState(nextState);
         stopBackgroundMusic();
         window.setTimeout(() => {
           hide(runner);
           renderBoard();
           openScanModal(index);
         }, 500);
-      }, 1700);
+      }, 1650);
     }, 850);
+  }
+
+  function playBoardTravelSequence(fromIndex, toIndex, onArrive) {
+    const runner = el('boardRunner');
+    const from = LEVEL_POSITIONS[fromIndex] || LEVEL_POSITIONS[toIndex] || LEVEL_POSITIONS[0];
+    const target = LEVEL_POSITIONS[toIndex] || from;
+    if (!runner) {
+      const state = getState();
+      state.heroNode = toIndex;
+      setState(state);
+      renderBoard();
+      onArrive?.();
+      return;
+    }
+
+    runner.classList.remove('hidden', 'running');
+    runner.style.opacity = '1';
+    runner.style.left = `${from.x}%`;
+    runner.style.top = `${from.y}%`;
+    runner.style.setProperty('--target-left', `${target.x}%`);
+    runner.style.setProperty('--target-top', `${target.y}%`);
+    void runner.offsetWidth;
+    playSound('levelstart');
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => runner.classList.add('running'));
+    });
+
+    window.setTimeout(() => {
+      const state = getState();
+      state.heroNode = toIndex;
+      setState(state);
+      hide(runner);
+      renderBoard();
+      window.setTimeout(() => onArrive?.(), 450);
+    }, 1200);
   }
 
   // ─── Board-Rendering ──────────────────────────────────────────────────────
@@ -664,18 +704,20 @@
     inner.innerHTML = '';
     const state = getState();
     const active = currentSlot(state);
+    const heroNode = getHeroNode(state);
 
     LEVEL_POSITIONS.forEach((pos, index) => {
       const assigned = state.slots[index];
       const done = state.completed[index];
       const isActive = index === active && !done;
       const guidePending = isBoardGuidePending(state) && index === 0 && isActive && !assigned;
+      const heroHere = heroNode === index;
       const token = document.createElement('button');
       token.type = 'button';
-      token.className = `map-token ${guidePending ? 'guide-active' : done ? 'done' : isActive ? 'hero-active' : 'locked'}`;
+      token.className = `map-token ${guidePending ? 'guide-active' : heroHere ? 'hero-active standing' : done ? 'done' : isActive ? 'available' : 'locked'}`;
       token.style.left = `${pos.x}%`;
       token.style.top = `${pos.y}%`;
-      token.innerHTML = tokenHtml(index + 1, assigned, done, isActive, guidePending);
+      token.innerHTML = tokenHtml(index + 1, assigned, done, isActive, guidePending, heroHere);
       token.addEventListener('click', () => handleNodeClick(index));
       inner.appendChild(token);
     });
@@ -698,13 +740,14 @@
     renderProgress(state);
   }
 
-  function tokenHtml(number, assigned, done, active, guidePending = false) {
+  function tokenHtml(number, assigned, done, active, guidePending = false, heroHere = false) {
+    if (heroHere) return `<img class="hero-token" src="held.webp" alt="Sir Nervus"><span class="token-label">Level ${number}</span>`;
     if (done) {
       const label = assigned ? SENSES[assigned].label : `Level ${number}`;
       return `<img class="done-flag-token" src="flag_complete.webp" alt="${escapeHtml(label)} abgeschlossen">`;
     }
     if (guidePending) return `<span class="token-label guide-only">Level ${number}</span>`;
-    if (active) return `<img class="hero-token" src="held.webp" alt="Held"><span class="token-label">Level ${number}</span>`;
+    if (active) return `<span class="token-label open-level-pill">Level ${number}</span>`;
     return `<img class="lock-token" src="lock.png" alt="Schloss"><span class="token-label">Level ${number}</span>`;
   }
 
@@ -731,6 +774,7 @@
   function handleNodeClick(index) {
     const state = getState();
     const active = currentSlot(state);
+    const heroNode = getHeroNode(state);
     setBoardMenuOpen(false);
     if (state.completed[index]) {
       window.location.href = `level.html?sense=${encodeURIComponent(state.slots[index])}&slot=${index}`;
@@ -740,7 +784,15 @@
     if (state.slots[index]) { showEncounter(state.slots[index], index); return; }
     if (index === 0 && isBoardGuidePending(state)) { playBoardStartSequence(index); return; }
     stopBackgroundMusic();
+    if (Number.isInteger(heroNode) && heroNode !== index) {
+      playBoardTravelSequence(heroNode, index, () => openScanModal(index));
+      return;
+    }
     playSound('levelstart');
+    const nextState = getState();
+    nextState.heroNode = index;
+    setState(nextState);
+    renderBoard();
     openScanModal(index);
   }
 
@@ -1404,6 +1456,7 @@
       return;
     }
     state.completed[meta.slot] = true;
+    state.heroNode = meta.slot;
     setState(state);
     storeBoardReturnModal('unlocked', meta);
     markBoardMusicResume();
