@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Königreich der Sinne</title>
-  <link rel="stylesheet" href="style.css?v=finalclick2">
-  <script src="game.js?v=finalclick2" defer></script>
+  <link rel="stylesheet" href="style.css?v=unified1">
+  <script src="game.js?v=unified1" defer></script>
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" async></script>
 </head>
 <body data-page="board">
@@ -20,6 +20,13 @@
 
     <section id="boardScreen" class="board-screen hidden" aria-label="Spielbrett">
       <img id="boardImage" src="board.webp" alt="Spielbrett der Sinnesorgane" class="board-image">
+      <div id="boardGuide" class="board-guide hidden" aria-hidden="true">
+        <img src="held.webp" alt="Sir Nervus" class="board-guide-hero">
+        <div class="board-guide-bubble">Lass uns das Königreich retten.</div>
+      </div>
+      <div id="boardRunner" class="board-runner hidden" aria-hidden="true">
+        <img src="held.webp" alt="Sir Nervus läuft zum ersten Level" class="board-runner-img">
+      </div>
       <div id="mapInner" class="map-inner" aria-label="Levelpunkte auf dem Spielbrett"></div>
     </section>
 

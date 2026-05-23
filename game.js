@@ -422,7 +422,7 @@
   }
 
   function defaultState() {
-    return { started: false, slots: [null, null, null, null, null], completed: [false, false, false, false, false], bossCompleted: false };
+    return { started: false, slots: [null, null, null, null, null], completed: [false, false, false, false, false], bossCompleted: false, boardGuideSeen: false };
   }
   function getState() {
     try {
@@ -440,6 +440,9 @@
   function completedCount(state = getState()) { return state.completed.filter(Boolean).length; }
   function currentSlot(state = getState()) { return state.completed.findIndex(done => !done); }
   function allLevelsDone(state = getState()) { return state.completed.every(Boolean); }
+  function isBoardGuidePending(state = getState()) {
+    return !!(state.started && !state.boardGuideSeen && !state.slots.some(Boolean) && !state.completed.some(Boolean) && !state.bossCompleted);
+  }
   function codeToSense(text) {
     const raw = String(text || '').trim().toUpperCase();
     return senseList().find(s => raw.includes(s.code) || raw === s.id.toUpperCase() || raw.includes(s.label.toUpperCase())) || null;
@@ -507,6 +510,7 @@
       setBoardMenuOpen(false);
       updateBoardBox();
       renderBoard();
+      renderBoardGuide();
       startBackgroundMusic(true);
     };
     if (startBtn) {
@@ -539,7 +543,7 @@
 
     window.addEventListener('resize', () => { updateBoardBox(); renderBoard(); });
     el('boardImage')?.addEventListener('load', () => { updateBoardBox(); renderBoard(); });
-    updateBoardBox(); renderBoard();
+    updateBoardBox(); renderBoard(); renderBoardGuide();
     if (state.started) {
       const shouldResume = sessionStorage.getItem('resumeBoardMusic') === '1' || localStorage.getItem('koenigreichSinneResumeMusicV1');
       sessionStorage.removeItem('resumeBoardMusic');
@@ -605,6 +609,45 @@
       modal.style.removeProperty('--popup-bg');
     }
     show(modal);
+  }
+
+  function renderBoardGuide() {
+    const guide = el('boardGuide');
+    const runner = el('boardRunner');
+    if (guide) {
+      guide.classList.remove('go-away');
+      guide.classList.toggle('hidden', !isBoardGuidePending() || document.body.dataset.page !== 'board' || el('boardScreen')?.classList.contains('hidden'));
+    }
+    if (runner) {
+      runner.classList.remove('running');
+      hide(runner);
+    }
+  }
+
+  function playBoardStartSequence(index) {
+    const state = getState();
+    state.boardGuideSeen = true;
+    setState(state);
+    const guide = el('boardGuide');
+    const runner = el('boardRunner');
+    guide?.classList.add('go-away');
+    if (runner) {
+      runner.classList.remove('hidden', 'running');
+      runner.style.left = '14%';
+      runner.style.top = '88%';
+      runner.style.setProperty('--target-left', `${LEVEL_POSITIONS[index].x}%`);
+      runner.style.setProperty('--target-top', `${LEVEL_POSITIONS[index].y}%`);
+      void runner.offsetWidth;
+      runner.classList.add('running');
+    }
+    window.setTimeout(() => {
+      hide(guide);
+      hide(runner);
+      stopBackgroundMusic();
+      playSound('levelstart');
+      renderBoard();
+      openScanModal(index);
+    }, 980);
   }
 
   function updateBoardBox() {
@@ -704,6 +747,10 @@
     if (index !== active) return;
     if (state.slots[index]) {
       showEncounter(state.slots[index], index);
+      return;
+    }
+    if (index === 0 && isBoardGuidePending(state)) {
+      playBoardStartSequence(index);
       return;
     }
     stopBackgroundMusic();
@@ -1011,21 +1058,55 @@
   }
 
   function showBattleIntro(results, data, meta) {
-    const modal = el('battleIntroModal');
-    if (!modal) {
+    const modal = el('evaluationModal');
+    const card = modal?.querySelector('.evaluation-card');
+    if (!modal || !card) {
       showEvaluationFlow(results, data, meta);
       return;
     }
     pendingBattleContext = { results, data, meta };
-    const enemyImage = el('battleEnemyImage');
-    if (enemyImage) {
-      enemyImage.src = data.enemy;
-      enemyImage.alt = data.enemyName || data.title || 'Gegner';
+    const bg = meta?.isBoss ? BOSS_POPUP_BACKGROUND : (Number.isInteger(meta?.slot) ? POPUP_BACKGROUNDS[meta.slot] : null);
+    if (bg) {
+      modal.classList.add('stage-popup');
+      modal.style.setProperty('--popup-bg', `url("${bg}")`);
+    } else {
+      modal.classList.remove('stage-popup');
+      modal.style.removeProperty('--popup-bg');
     }
-    setText('battleEnemyName', data.enemyName || data.title || 'Gegner');
-    const title = el('battleIntroTitle');
-    if (title) title.textContent = 'Der Kampf beginnt!';
+    card.className = 'modal-card evaluation-card unified-popup unified-intro';
+    card.innerHTML = `
+      <div class="battle-inline-layout">
+        <div class="battle-inline-side left">
+          <img class="battle-inline-actor pulse" src="held.webp" alt="Sir Nervus">
+          <div class="battle-inline-name">Sir Nervus</div>
+        </div>
+        <div class="battle-inline-versus-wrap">
+          <img class="battle-inline-versus wobble" src="versus_final.png" alt="Versus">
+        </div>
+        <div class="battle-inline-side right">
+          <img class="battle-inline-actor pulse" src="${data.enemy}" alt="${escapeHtml(data.enemyName || data.title || 'Gegner')}">
+          <div class="battle-inline-name">${escapeHtml(data.enemyName || data.title || 'Gegner')}</div>
+        </div>
+      </div>
+      <div class="battle-inline-actions">
+        <button id="unifiedBattleBeginBtn" class="game-btn primary" type="button">Kampf beginnen</button>
+        <button id="unifiedBattleRunBtn" class="game-btn muted" type="button">Wegrennen</button>
+      </div>
+    `;
     show(modal);
+    el('unifiedBattleBeginBtn')?.addEventListener('click', async () => {
+      if (!pendingBattleContext) return;
+      const ctx = pendingBattleContext;
+      pendingBattleContext = null;
+      await playSound('fight');
+      window.setTimeout(() => { showEvaluationFlow(ctx.results, ctx.data, ctx.meta); }, 120);
+    }, { once: true });
+    el('unifiedBattleRunBtn')?.addEventListener('click', () => {
+      const ctx = pendingBattleContext;
+      pendingBattleContext = null;
+      hide(modal);
+      runAwayFromLevel(ctx?.meta || meta);
+    }, { once: true });
   }
 
   let lastEvaluationImage = { correct: null, wrong: null };
@@ -1109,8 +1190,29 @@
     await playSound('final');
   }
 
+  function ensureEvaluationSequenceShell() {
+    const modal = el('evaluationModal');
+    const card = modal?.querySelector('.evaluation-card');
+    if (!card) return false;
+    card.className = 'modal-card evaluation-card unified-popup unified-sequence';
+    card.innerHTML = `
+      <div class="evaluation-label" id="evaluationLabel">Frage 1</div>
+      <img id="evaluationImage" class="evaluation-img" alt="Auswertung">
+      <div id="evaluationStatus" class="evaluation-status hidden" aria-live="polite"></div>
+      <div id="evaluationDots" class="evaluation-dots" aria-hidden="true"></div>
+      <div id="evaluationAction" class="evaluation-action hidden"></div>
+    `;
+    return true;
+  }
+
   async function showEvaluationFlow(results, data, meta) {
     const modal = el('evaluationModal');
+    if (!ensureEvaluationSequenceShell()) {
+      const wrong = results.filter(result => !result).length;
+      if (wrong >= 2) showLoseFlow(meta);
+      else showWinFlow(data, meta);
+      return;
+    }
     const image = el('evaluationImage');
     const label = el('evaluationLabel');
     if (!modal || !image || !label) {
@@ -1118,6 +1220,14 @@
       if (wrong >= 2) showLoseFlow(meta);
       else showWinFlow(data, meta);
       return;
+    }
+    const bg = meta?.isBoss ? BOSS_POPUP_BACKGROUND : (Number.isInteger(meta?.slot) ? POPUP_BACKGROUNDS[meta.slot] : null);
+    if (bg) {
+      modal.classList.add('stage-popup');
+      modal.style.setProperty('--popup-bg', `url("${bg}")`);
+    } else {
+      modal.classList.remove('stage-popup');
+      modal.style.removeProperty('--popup-bg');
     }
     const action = el('evaluationAction');
     const checkBtn = el('checkAnswerBtn');
