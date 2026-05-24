@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Kampf · Königreich der Sinne</title>
+  <link rel="stylesheet" href="style.css?v=v4_battle_page_test_20260524">
+  <link rel="stylesheet" href="v4.css?v=v4_battle_page_test_20260524">
+  <script src="app-v4.js?v=v4_battle_page_test_20260524" defer></script>
+</head>
+<body data-page="battle" data-battle-mode="intro">
+  <main class="battle-page" aria-label="Kampfseite">
+    <section class="battle-card">
+      <div id="battleIntroScene" class="battle-scene battle-intro-scene">
+        <div id="battleTitle" class="battle-title">Kampf gegen Gegner</div>
+        <div class="battle-versus-layout">
+          <div class="battle-side hero">
+            <img id="battleHero" class="battle-actor" src="held.webp" alt="Sir Nervus">
+            <div class="battle-name">Sir Nervus</div>
+          </div>
+          <img class="battle-versus" src="versus_final.webp" alt="Versus">
+          <div class="battle-side enemy">
+            <img id="battleEnemy" class="battle-actor" alt="Gegner">
+            <div id="battleEnemyName" class="battle-name">Gegner</div>
+          </div>
+        </div>
+        <div class="battle-buttons">
+          <button id="battleStartBtn" class="game-btn primary" type="button">Kampf starten</button>
+          <button id="battleBackBtn" class="game-btn secondary" type="button">Zurück</button>
+        </div>
+      </div>
+
+      <div id="battleSequenceScene" class="battle-scene battle-sequence hidden">
+        <div class="battle-top">
+          <div id="sequenceDots" class="battle-dots" aria-hidden="true"></div>
+          <div id="sequenceLabel" class="battle-label">Frage 1</div>
+          <div id="sequenceStatus" class="battle-status"></div>
+        </div>
+        <div class="battle-stage">
+          <img id="outcomeImage" class="battle-outcome" alt="Ergebnis">
+          <img id="sequenceImage" class="battle-seq-img" alt="Auswertung">
+        </div>
+        <div id="battleAction" class="battle-action"></div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
