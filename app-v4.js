@@ -5,7 +5,7 @@
   const BATTLE_STORE = 'koenigreichSinneV4Battle';
   const RETURN_STORE = 'koenigreichSinneV4BoardReturn';
   const SOUND_STORE = 'koenigreichSinneV4Muted';
-  const STATE_VERSION = 'v4_12levels_1';
+  const STATE_VERSION = 'v4_12levels_minigame_1';
 
   const SENSES = {
     sehen: {
@@ -255,7 +255,7 @@
     $('scanJumpBottomBtn')?.addEventListener('click', () => $('randomUnlockBtn')?.scrollIntoView({ behavior:'smooth', block:'center' }));
     $('scanJumpTopBtn')?.addEventListener('click', () => $('scanTitle')?.scrollIntoView({ behavior:'smooth', block:'start' }));
     $('launchLevelBtn')?.addEventListener('click', handleLaunchLevel);
-    $('encounterBackBtn')?.addEventListener('click', () => escapeToBoard(window.pendingLaunch?.meta));
+    $('encounterBackBtn')?.addEventListener('click', handleEncounterBack);
     $('levelUnlockedContinueBtn')?.addEventListener('click', () => { hide($('levelUnlockedModal')); playSound('background', { loop:true }); });
     window.addEventListener('resize', updateMapGeometry);
     setTimeout(() => applyReturnModal(), 150);
@@ -397,22 +397,49 @@
     if (!data) return;
     const meta = { isBoss, slot:index, senseId:id };
     window.pendingLaunch = { url:isBoss ? `level.html?type=boss&slot=${index}` : `level.html?sense=${encodeURIComponent(id)}&slot=${index}`, meta };
-    const modal = $('encounterModal'); applyStagePopup(modal, meta);
+    const modal = $('encounterModal'); applyStagePopup(modal, meta); modal?.classList.remove('test-placeholder-modal');
     $('launchLevelBtn').textContent = isBoss ? 'Finale starten' : 'Level starten';
+    $('encounterBackBtn').textContent = 'Wegrennen';
     $('encounterImage').src=data.enemy; $('encounterImage').alt=data.enemyName; $('encounterKicker').textContent=isBoss ? 'Finale freigeschaltet' : 'Level freigeschaltet'; $('encounterTitle').textContent=data.enemyName; $('encounterSpeech').textContent=data.speech; show(modal);
   }
 
   function showPlaceholder(index) {
     const meta = { isBoss:false, slot:index, placeholder:true };
+    const modal = $('encounterModal');
+    applyStagePopup(modal, meta);
+    modal?.classList.toggle('test-placeholder-modal', index === 1);
+
+    if (index === 1) {
+      window.pendingLaunch = { placeholder:true, minigame:true, slot:index, meta };
+      $('launchLevelBtn').textContent = 'Weiter';
+      $('encounterBackBtn').textContent = 'Spiel starten';
+      $('encounterImage').src = ASSETS.hero;
+      $('encounterImage').alt = 'Sir Nervus';
+      $('encounterKicker').textContent = '';
+      $('encounterTitle').textContent = 'Test';
+      $('encounterSpeech').textContent = '';
+      show(modal);
+      return;
+    }
+
     window.pendingLaunch = { placeholder:true, slot:index, meta };
-    const modal = $('encounterModal'); applyStagePopup(modal, meta);
     $('launchLevelBtn').textContent = index === LEVEL_COUNT - 1 ? 'Zum Finale' : 'Weiter';
+    $('encounterBackBtn').textContent = 'Wegrennen';
     $('encounterImage').src = ASSETS.winHero;
     $('encounterImage').alt = 'Sir Nervus macht weiter';
     $('encounterKicker').textContent = 'Zwischenstation';
     $('encounterTitle').textContent = `Level ${index + 1}`;
     $('encounterSpeech').textContent = index === LEVEL_COUNT - 1 ? 'Das Königreich ist gerettet. Weiter zum Abschluss!' : 'Kurze Rast geschafft. Weiter zum nächsten Feld!';
     show(modal);
+  }
+
+  function handleEncounterBack() {
+    if (window.pendingLaunch?.minigame) {
+      hide($('encounterModal'));
+      location.href = `minigame.html?slot=${window.pendingLaunch.slot}`;
+      return;
+    }
+    escapeToBoard(window.pendingLaunch?.meta);
   }
 
   function handleLaunchLevel() {
@@ -660,6 +687,87 @@
     location.href='index.html';
   }
 
+
+
+  function initMiniGame() {
+    addSpeaker();
+    stopSound('background');
+    const hero = $('miniHero');
+    const leftBtn = $('miniLeftBtn');
+    const rightBtn = $('miniRightBtn');
+    const jumpBtn = $('miniJumpBtn');
+    const settingsBtn = $('miniSettingsBtn');
+    const menu = $('miniMenu');
+    const closeMenu = $('miniCloseMenuBtn');
+    const boardBtn = $('miniBackBoardBtn');
+    if (!hero) return;
+
+    let x = 50;
+    let velocity = 0;
+    let direction = 1;
+    let jumping = false;
+    let jumpY = 0;
+    let jumpVelocity = 0;
+    let last = performance.now();
+
+    function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
+    function applyHero() {
+      hero.style.left = `${x}%`;
+      hero.style.transform = `translateX(-50%) translateY(${-jumpY}px) scaleX(${direction})`;
+    }
+    function setVelocity(v) {
+      velocity = v;
+      if (v !== 0) {
+        direction = v > 0 ? 1 : -1;
+        hero.classList.add('walking');
+      } else {
+        hero.classList.remove('walking');
+      }
+    }
+    function bindHold(btn, v) {
+      if (!btn) return;
+      const start = (ev) => { ev.preventDefault(); setVelocity(v); };
+      const stop = (ev) => { ev?.preventDefault?.(); if (velocity === v) setVelocity(0); };
+      btn.addEventListener('pointerdown', start);
+      btn.addEventListener('pointerup', stop);
+      btn.addEventListener('pointercancel', stop);
+      btn.addEventListener('pointerleave', stop);
+      btn.addEventListener('touchstart', start, { passive:false });
+      btn.addEventListener('touchend', stop, { passive:false });
+    }
+    bindHold(leftBtn, -1);
+    bindHold(rightBtn, 1);
+    jumpBtn?.addEventListener('click', () => {
+      if (jumping) return;
+      jumping = true;
+      jumpVelocity = 760;
+      hero.classList.add('jumping');
+    });
+    settingsBtn?.addEventListener('click', () => show(menu));
+    closeMenu?.addEventListener('click', () => hide(menu));
+    boardBtn?.addEventListener('click', () => location.href = 'index.html');
+
+    function tick(now) {
+      const dt = Math.min(0.033, (now - last) / 1000 || 0);
+      last = now;
+      if (velocity) x = clamp(x + velocity * 26 * dt, 10, 90);
+      if (jumping) {
+        jumpY += jumpVelocity * dt;
+        jumpVelocity -= 1750 * dt;
+        if (jumpY <= 0) {
+          jumpY = 0;
+          jumpVelocity = 0;
+          jumping = false;
+          hero.classList.remove('jumping');
+        }
+      }
+      applyHero();
+      requestAnimationFrame(tick);
+    }
+    applyHero();
+    requestAnimationFrame(tick);
+  }
+
   function initCodes() {
     addSpeaker(); $('printCodesBtn')?.addEventListener('click', () => print());
     const grid=$('qrGrid'); if (!grid) return;
@@ -671,6 +779,7 @@
     if (page === 'board') initBoard();
     else if (page === 'level') initLevel();
     else if (page === 'battle') initBattle();
+    else if (page === 'minigame') initMiniGame();
     else if (page === 'codes') initCodes();
   });
 })();
