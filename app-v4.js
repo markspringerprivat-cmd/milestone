@@ -178,6 +178,11 @@
   function getQuestionsForId(id) { return QUESTION_BANK[id] || QUESTION_BANK.sehen; }
   function bgForMeta(meta) { return meta?.isBoss ? 'stage_all.webp' : STAGE_BACKGROUNDS[Number(meta?.slot) || 0]; }
   function popupBgForMeta(meta) { return meta?.isBoss ? 'popup_all.webp' : POPUP_BACKGROUNDS[Number(meta?.slot) || 0]; }
+  function applyStagePopup(modal, meta) {
+    if (!modal) return;
+    modal.classList.add('stage-popup');
+    modal.style.setProperty('--popup-bg', `url("${popupBgForMeta(meta)}")`);
+  }
 
   function preloadAssets(list) {
     list.filter(Boolean).forEach(src => {
@@ -308,7 +313,7 @@
   let scanIndex = null, scanner = null;
   function activeScanMeta() { return Number.isInteger(scanIndex) ? { slot: scanIndex, isBoss:false } : null; }
   function openScan(index) {
-    stopSound('background'); scanIndex = index; $('manualCodeInput').value=''; setScanMessage(''); show($('scanModal')); startScanner();
+    stopSound('background'); scanIndex = index; $('manualCodeInput').value=''; setScanMessage(''); applyStagePopup($('scanModal'), { slot:index, isBoss:false }); show($('scanModal')); startScanner();
   }
   function closeScan() { stopScanner(); hide($('scanModal')); scanIndex = null; playSound('background', { loop:true, restart:true }); }
   function setScanMessage(text, bad=false) { const msg=$('scanMessage'); if (!msg) return; msg.textContent=text; msg.className = text ? `message ${bad?'bad':'ok'}` : 'message hidden'; }
@@ -342,12 +347,16 @@
     playSound('levelunlocked'); renderBoard(); showEncounter(id,index);
   }
   function showEncounter(id,index) {
-    const data = SENSES[id]; window.pendingLaunch = { url:`level.html?sense=${encodeURIComponent(id)}&slot=${index}`, meta:{ isBoss:false, slot:index, senseId:id } };
-    $('encounterImage').src=data.enemy; $('encounterImage').alt=data.enemyName; $('encounterKicker').textContent='Level freigeschaltet'; $('encounterTitle').textContent=data.enemyName; $('encounterSpeech').textContent=data.speech; show($('encounterModal'));
+    const data = SENSES[id]; const meta = { isBoss:false, slot:index, senseId:id };
+    window.pendingLaunch = { url:`level.html?sense=${encodeURIComponent(id)}&slot=${index}`, meta };
+    const modal = $('encounterModal'); applyStagePopup(modal, meta);
+    $('encounterImage').src=data.enemy; $('encounterImage').alt=data.enemyName; $('encounterKicker').textContent='Level freigeschaltet'; $('encounterTitle').textContent=data.enemyName; $('encounterSpeech').textContent=data.speech; show(modal);
   }
   function showBossEncounter() {
-    window.pendingLaunch = { url:'level.html?type=boss', meta:{ isBoss:true, senseId:'boss' } };
-    $('encounterImage').src=BOSS.enemy; $('encounterImage').alt=BOSS.enemyName; $('encounterKicker').textContent='Finale freigeschaltet'; $('encounterTitle').textContent=BOSS.enemyName; $('encounterSpeech').textContent=BOSS.speech; show($('encounterModal'));
+    const meta = { isBoss:true, senseId:'boss' };
+    window.pendingLaunch = { url:'level.html?type=boss', meta };
+    const modal = $('encounterModal'); applyStagePopup(modal, meta);
+    $('encounterImage').src=BOSS.enemy; $('encounterImage').alt=BOSS.enemyName; $('encounterKicker').textContent='Finale freigeschaltet'; $('encounterTitle').textContent=BOSS.enemyName; $('encounterSpeech').textContent=BOSS.speech; show(modal);
   }
   function escapeToBoard(meta) {
     closeScan(); hide($('encounterModal'));
@@ -357,6 +366,7 @@
     const raw = localStorage.getItem(RETURN_STORE); if (!raw) return; localStorage.removeItem(RETURN_STORE);
     let data; try { data=JSON.parse(raw); } catch (_) { return; }
     const modal = $('levelUnlockedModal'); if (!modal) return;
+    applyStagePopup(modal, data.meta);
     const img = modal.querySelector('img'); const title=$('levelUnlockedTitle'); const kicker=$('levelUnlockedKicker'); const text=$('levelUnlockedText');
     stopSound('background');
     if (data.type === 'escape') { img.src=ASSETS.escapeHero; kicker.textContent=''; title.textContent='Du bist entkommen.'; text.textContent='Scanne einen neuen QR-Code, um es erneut zu versuchen.'; }
