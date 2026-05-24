@@ -2348,3 +2348,166 @@ body.stage-popups .encounter-card, .modal.stage-popup .encounter-card{
   .evaluation-card.unified-sequence .evaluation-stage .evaluation-img{width:min(120vw,455px)!important;height:min(39svh,360px)!important}
   .evaluation-card.unified-sequence .evaluation-stage .evaluation-outcome-img{width:min(110vw,380px)!important;height:min(33svh,310px)!important}
 }
+
+/* --- Battle intro popup layout refresh (mobile-first, based on layout sketch) --- */
+.evaluation-card.battle-layout-v2{
+  justify-content:flex-start !important;
+  gap:0 !important;
+  padding:16px 16px 18px !important;
+  min-height:min(82svh,720px) !important;
+  max-height:min(82svh,720px) !important;
+}
+.evaluation-card.battle-layout-v2 .battle-v2-title{
+  width:min(92%,560px);
+  margin:0 auto 12px;
+  padding:10px 18px;
+  border-radius:18px;
+  background:rgba(255,255,255,.84);
+  color:#172033;
+  font-weight:900;
+  font-size:clamp(1.05rem,4vw,1.65rem);
+  line-height:1.2;
+  text-align:center;
+  box-shadow:0 10px 22px rgba(0,0,0,.10);
+}
+.evaluation-card.battle-layout-v2 .battle-v2-stage{
+  position:relative;
+  width:min(100%,640px);
+  flex:1 1 auto;
+  min-height:min(42svh,380px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:visible;
+  margin:0 auto;
+}
+.evaluation-card.battle-layout-v2 .battle-v2-side{
+  position:absolute;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-end;
+  gap:10px;
+  bottom:16px;
+  z-index:2;
+}
+.evaluation-card.battle-layout-v2 .battle-v2-hero{left:4%;}
+.evaluation-card.battle-layout-v2 .battle-v2-enemy{right:4%;}
+.evaluation-card.battle-layout-v2 .battle-v2-actor{
+  width:min(35vw,220px);
+  max-width:220px;
+  max-height:min(28svh,250px);
+  object-fit:contain;
+  display:block;
+  filter:drop-shadow(0 14px 22px rgba(0,0,0,.20));
+  transform-origin:center bottom;
+}
+.evaluation-card.battle-layout-v2 .battle-v2-actor.pulse{
+  animation:battlePulseSoft 1.7s ease-in-out infinite alternate !important;
+}
+.evaluation-card.battle-layout-v2 .battle-v2-name{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:8px 16px;
+  min-width:min(34vw,170px);
+  border-radius:999px;
+  background:rgba(255,255,255,.84);
+  color:#16233d;
+  font-weight:950;
+  font-size:clamp(.92rem,2.7vw,1.18rem);
+  line-height:1.15;
+  text-align:center;
+  box-shadow:0 10px 22px rgba(0,0,0,.12);
+}
+.evaluation-card.battle-layout-v2 .battle-v2-versus{
+  position:absolute;
+  left:50%;
+  top:54%;
+  transform:translate(-50%,-50%) rotate(-10deg);
+  width:min(23vw,150px);
+  max-width:150px;
+  max-height:min(22svh,170px);
+  object-fit:contain;
+  display:block;
+  z-index:3;
+  filter:drop-shadow(0 14px 24px rgba(0,0,0,.22));
+}
+.evaluation-card.battle-layout-v2 .battle-v2-versus.wobble{
+  animation:versusWobbleSoft 1.25s ease-in-out infinite alternate !important;
+}
+.evaluation-card.battle-layout-v2 .battle-v2-actions{
+  width:min(100%,640px);
+  margin:10px auto 0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:12px;
+}
+.evaluation-card.battle-layout-v2 .battle-v2-actions .game-btn{
+  width:min(100%,560px);
+  min-width:0 !important;
+}
+
+@media (max-width: 760px){
+  .evaluation-card.battle-layout-v2{
+    width:calc(100vw - 16px) !important;
+    min-height:calc(100svh - 16px) !important;
+    max-height:calc(100svh - 16px) !important;
+    padding:14px 12px 16px !important;
+  }
+  .evaluation-card.battle-layout-v2 .battle-v2-title{
+    width:94%;
+    margin-bottom:10px;
+    padding:9px 14px;
+  }
+  .evaluation-card.battle-layout-v2 .battle-v2-stage{
+    min-height:min(46svh,420px);
+  }
+  .evaluation-card.battle-layout-v2 .battle-v2-side{bottom:18px;}
+  .evaluation-card.battle-layout-v2 .battle-v2-hero{left:3%;}
+  .evaluation-card.battle-layout-v2 .battle-v2-enemy{right:3%;}
+  .evaluation-card.battle-layout-v2 .battle-v2-actor{
+    width:min(38vw,190px);
+    max-height:min(27svh,210px);
+  }
+  .evaluation-card.battle-layout-v2 .battle-v2-name{
+    min-width:min(35vw,150px);
+    padding:7px 12px;
+  }
+  .evaluation-card.battle-layout-v2 .battle-v2-versus{
+    top:52%;
+    width:min(26vw,118px);
+    max-height:130px;
+  }
+  .evaluation-card.battle-layout-v2 .battle-v2-actions{
+    margin-top:8px;
+    gap:10px;
+  }
+}
+
+@media (max-width: 430px){
+  .evaluation-card.battle-layout-v2 .battle-v2-stage{
+    min-height:min(44svh,360px);
+  }
+  .evaluation-card.battle-layout-v2 .battle-v2-side{bottom:14px;gap:8px;}
+  .evaluation-card.battle-layout-v2 .battle-v2-hero{left:2%;}
+  .evaluation-card.battle-layout-v2 .battle-v2-enemy{right:2%;}
+  .evaluation-card.battle-layout-v2 .battle-v2-actor{
+    width:min(40vw,168px);
+    max-height:min(24svh,175px);
+  }
+  .evaluation-card.battle-layout-v2 .battle-v2-versus{
+    top:50%;
+    width:min(28vw,100px);
+    max-height:112px;
+  }
+  .evaluation-card.battle-layout-v2 .battle-v2-name{
+    min-width:min(33vw,132px);
+    font-size:.86rem;
+    padding:6px 10px;
+  }
+  .evaluation-card.battle-layout-v2 .battle-v2-actions .game-btn{
+    width:100%;
+  }
+}

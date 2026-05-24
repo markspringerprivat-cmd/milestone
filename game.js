@@ -1238,26 +1238,26 @@
     const card = modal?.querySelector('.evaluation-card');
     if (!modal || !card) { showEvaluationFlow(results, data, meta); return; }
 
+    const enemyName = data.enemyName || data.title || 'Gegner';
     pendingBattleContext = { results, data, meta };
     setModalPopupBackground(modal, popupBgForMeta(meta));
-    card.className = 'modal-card evaluation-card unified-popup unified-intro';
+    card.className = 'modal-card evaluation-card unified-popup unified-intro battle-layout-v2';
     card.innerHTML = `
-      <div class="battle-inline-layout">
-        <div class="battle-inline-side left">
-          <img class="battle-inline-actor pulse" src="held.webp" alt="Sir Nervus">
-          <div class="battle-inline-name">Sir Nervus</div>
+      <div class="battle-v2-title">Kampf gegen ${escapeHtml(enemyName)}</div>
+      <div class="battle-v2-stage" aria-label="Kampfvorschau">
+        <div class="battle-v2-side battle-v2-hero">
+          <img class="battle-v2-actor pulse" src="held.webp" alt="Sir Nervus">
+          <div class="battle-v2-name">Sir Nervus</div>
         </div>
-        <div class="battle-inline-versus-wrap">
-          <img class="battle-inline-versus wobble" src="versus_final.webp" alt="Versus">
-        </div>
-        <div class="battle-inline-side right">
-          <img class="battle-inline-actor pulse" src="${data.enemy}" alt="${escapeHtml(data.enemyName || data.title || 'Gegner')}">
-          <div class="battle-inline-name">${escapeHtml(data.enemyName || data.title || 'Gegner')}</div>
+        <img class="battle-v2-versus wobble" src="versus_final.webp" alt="Versus">
+        <div class="battle-v2-side battle-v2-enemy">
+          <img class="battle-v2-actor pulse" src="${data.enemy}" alt="${escapeHtml(enemyName)}">
+          <div class="battle-v2-name">${escapeHtml(enemyName)}</div>
         </div>
       </div>
-      <div class="battle-inline-actions">
-        <button id="unifiedBattleBeginBtn" class="game-btn primary" type="button">Kampf beginnen</button>
-        <button id="unifiedBattleRunBtn" class="game-btn muted" type="button">Wegrennen</button>
+      <div class="battle-v2-actions">
+        <button id="unifiedBattleBeginBtn" class="game-btn primary" type="button">Kampf starten</button>
+        <button id="unifiedBattleBackBtn" class="game-btn muted secondary" type="button">Zurück</button>
       </div>
     `;
     show(modal);
@@ -1270,11 +1270,9 @@
       window.setTimeout(() => showEvaluationFlow(ctx.results, ctx.data, ctx.meta), 120);
     }, { once: true });
 
-    el('unifiedBattleRunBtn')?.addEventListener('click', () => {
-      const ctx = pendingBattleContext;
+    el('unifiedBattleBackBtn')?.addEventListener('click', () => {
       pendingBattleContext = null;
       hide(modal);
-      runAwayFromLevel(ctx?.meta || meta);
     }, { once: true });
   }
 
