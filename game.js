@@ -660,12 +660,12 @@
     // 4. Layout-Flush — Browser berechnet Layout, ohne es zu rendern
     // 5. opacity:1 — erster sichtbarer Frame zeigt den Ritter direkt an der richtigen Stelle
     runner.classList.remove('running');
-    runner.style.opacity = '0';          // erst opacity, dann hidden entfernen
-    runner.classList.remove('hidden');   // jetzt display:block, aber noch transparent
-    runner.style.left = `${pos.x}%`;
-    runner.style.top  = `${pos.y}%`;
-    void runner.offsetWidth;             // Layout-Flush — Position ist jetzt berechnet
-    runner.style.opacity = '1';          // sichtbar machen — kein Teleport-Frame möglich
+    runner.style.setProperty('opacity', '0', 'important');
+    runner.classList.remove('hidden');
+    runner.style.setProperty('left', `${pos.x}%`, 'important');
+    runner.style.setProperty('top', `${pos.y}%`, 'important');
+    void runner.offsetWidth;
+    runner.style.setProperty('opacity', '1', 'important');
     return runner;
   }
 
@@ -673,7 +673,7 @@
     const runner = el('boardRunner');
     if (!runner) return;
     runner.classList.remove('running');
-    runner.style.opacity = '0';
+    runner.style.setProperty('opacity', '0', 'important');
     hide(runner);
   }
 
@@ -700,8 +700,8 @@
       const elapsed = now - startTime;
       const t = Math.min(elapsed / duration, 1);
       const e = easeOutSpring(t);
-      runner.style.left = `${fx + (tx - fx) * e}%`;
-      runner.style.top  = `${fy + (ty - fy) * e}%`;
+      runner.style.setProperty('left', `${fx + (tx - fx) * e}%`, 'important');
+      runner.style.setProperty('top', `${fy + (ty - fy) * e}%`, 'important');
       if (t < 1) {
         window.requestAnimationFrame(step);
       } else {
@@ -1304,6 +1304,139 @@
     });
   }
 
+  let evaluationMotionFrame = 0;
+  let evaluationMotionToken = 0;
+
+  function stopEvaluationMotion() {
+    evaluationMotionToken += 1;
+    if (evaluationMotionFrame) window.cancelAnimationFrame(evaluationMotionFrame);
+    evaluationMotionFrame = 0;
+  }
+
+  function setEvalVisual(node, x = 0, y = 0, scale = 1, rot = 0, opacity = null) {
+    if (!node) return;
+    node.style.setProperty('transform', `translate(-50%, -50%) translate(${x}px, ${y}px) scale(${scale}) rotate(${rot}deg)`, 'important');
+    if (opacity !== null) node.style.setProperty('opacity', String(opacity), 'important');
+  }
+
+  function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+
+  function startEvaluationAnswerMotion(image) {
+    if (!image) return;
+    stopEvaluationMotion();
+    const token = evaluationMotionToken;
+    const dirs = [
+      { x: -54, y: 0, r: -5 },
+      { x: 54, y: 0, r: 5 },
+      { x: 0, y: -44, r: -3 },
+      { x: 0, y: 44, r: 3 }
+    ];
+    const dir = randomFrom(dirs);
+    const start = performance.now();
+    const entryMs = 460;
+    const step = (now) => {
+      if (token !== evaluationMotionToken) return;
+      const t = Math.min((now - start) / entryMs, 1);
+      const e = easeOutCubic(t);
+      const x = dir.x * (1 - e);
+      const y = dir.y * (1 - e);
+      const scale = 0.84 + 0.16 * e;
+      const rot = dir.r * (1 - e);
+      setEvalVisual(image, x, y, scale, rot, e);
+      if (t < 1) {
+        evaluationMotionFrame = window.requestAnimationFrame(step);
+        return;
+      }
+      startEvaluationAnswerIdle(image, token);
+    };
+    evaluationMotionFrame = window.requestAnimationFrame(step);
+  }
+
+  function startEvaluationAnswerIdle(image, token = evaluationMotionToken) {
+    const origin = performance.now();
+    const step = (now) => {
+      if (token !== evaluationMotionToken) return;
+      const t = (now - origin) / 1000;
+      const x = Math.sin(t * 5.4) * 5;
+      const y = Math.sin(t * 3.2) * -2;
+      const scale = 1.02 + Math.sin(t * 4.2) * 0.018;
+      const rot = Math.sin(t * 4.8) * 1.6;
+      setEvalVisual(image, x, y, scale, rot, 1);
+      evaluationMotionFrame = window.requestAnimationFrame(step);
+    };
+    evaluationMotionFrame = window.requestAnimationFrame(step);
+  }
+
+  function startEvaluationFinalIdle(image) {
+    if (!image) return;
+    stopEvaluationMotion();
+    const token = evaluationMotionToken;
+    const origin = performance.now();
+    const step = (now) => {
+      if (token !== evaluationMotionToken) return;
+      const t = (now - origin) / 1000;
+      const x = Math.sin(t * 4.6) * 9;
+      const y = Math.sin(t * 3.1) * -2;
+      const scale = 1.03 + Math.sin(t * 5.2) * 0.07;
+      const rot = Math.sin(t * 4.6) * 3.2;
+      setEvalVisual(image, x, y, scale, rot, 1);
+      evaluationMotionFrame = window.requestAnimationFrame(step);
+    };
+    evaluationMotionFrame = window.requestAnimationFrame(step);
+  }
+
+  function startEvaluationOutcomeIdle(outcome) {
+    if (!outcome) return;
+    stopEvaluationMotion();
+    const token = evaluationMotionToken;
+    const origin = performance.now();
+    const step = (now) => {
+      if (token !== evaluationMotionToken) return;
+      const t = (now - origin) / 1000;
+      const x = Math.sin(t * 3.8) * 3;
+      const y = Math.sin(t * 2.9) * -2;
+      const scale = 0.92 + Math.sin(t * 3.7) * 0.025;
+      const rot = Math.sin(t * 3.4) * 0.75;
+      setEvalVisual(outcome, x, y, scale, rot, 1);
+      evaluationMotionFrame = window.requestAnimationFrame(step);
+    };
+    evaluationMotionFrame = window.requestAnimationFrame(step);
+  }
+
+  function revealEvaluationCloud(image, outcomeImage) {
+    return new Promise(resolve => {
+      stopEvaluationMotion();
+      const token = evaluationMotionToken;
+      const start = performance.now();
+      const duration = 1350;
+      if (outcomeImage) {
+        outcomeImage.classList.remove('hidden');
+        outcomeImage.classList.add('outcome-preload');
+        outcomeImage.style.setProperty('visibility', 'visible', 'important');
+        setEvalVisual(outcomeImage, 0, 0, 0.72, 0, 0);
+      }
+      const step = (now) => {
+        if (token !== evaluationMotionToken) return;
+        const t = Math.min((now - start) / duration, 1);
+        const e = easeOutCubic(t);
+        const wobble = Math.sin(t * Math.PI * 6) * (1 - e) * 6;
+        const cloudOpacity = t < 0.66 ? 1 : Math.max(0, 1 - (t - 0.66) / 0.34);
+        setEvalVisual(image, wobble, 0, 1 + 0.95 * e, wobble * 0.18, cloudOpacity);
+        if (outcomeImage) {
+          const o = t < 0.42 ? 0 : Math.min((t - 0.42) / 0.58, 1);
+          const oe = easeOutCubic(o);
+          setEvalVisual(outcomeImage, 0, 0, 0.72 + 0.20 * oe, 0, oe);
+        }
+        if (t < 1) {
+          evaluationMotionFrame = window.requestAnimationFrame(step);
+        } else {
+          resolve();
+        }
+      };
+      evaluationMotionFrame = window.requestAnimationFrame(step);
+    });
+  }
+
   function applyUnifiedEvaluationAssetLayout(node) {
     if (!node) return;
     // Nur Position setzen — kein inline transform, da dieser CSS-Animationen blockieren würde.
@@ -1343,10 +1476,10 @@
       // Das sorgt dafür dass die Animation GLEICHZEITIG mit dem ersten sichtbaren Frame startet.
       image.style.animation = 'none';
       applyUnifiedEvaluationAssetLayout(image);
-      void image.offsetWidth; // Layout-Flush: Browser muss jetzt rendern
+      void image.offsetWidth;
       image.style.animation = '';
-      // Klasse setzen — Animation beginnt ab diesem Frame
       image.className = `evaluation-img ${finalStep ? 'final-step' : 'answer-step'} ${entryClass}`;
+      if (!finalStep) startEvaluationAnswerMotion(image);
     };
 
     image.onload = apply;
@@ -1437,6 +1570,7 @@
     show(modal);
     startBattleBackground();
 
+    stopEvaluationMotion();
     const runToken = ++evaluationRunToken;
     const totalSteps = results.length + 1;
 
@@ -1480,8 +1614,9 @@
     // dann animation:none flush, dann animation:'' — so startet evalFinalPulse4 sofort.
     image.className = 'evaluation-img final-loop final-clickable';
     image.style.animation = 'none';
-    void image.offsetWidth;             // Layout-Flush: neue Klasse + kein animation
-    image.style.animation = '';         // CSS-Animation aus final-loop greift ab jetzt
+    void image.offsetWidth;
+    image.style.animation = '';
+    startEvaluationFinalIdle(image);
     image.setAttribute('role', 'button');
     image.setAttribute('tabindex', '0');
     image.setAttribute('aria-label', 'Ergebnis aufdecken');
@@ -1500,43 +1635,36 @@
       outcomeImage.alt = won ? `${data.enemyName || data.label || 'Gegner'} besiegt` : 'Besiegter Ritter';
       outcomeImage.className = `evaluation-outcome-img hidden ${won ? 'won' : 'lost'}`;
       applyUnifiedEvaluationAssetLayout(outcomeImage);
+      setEvalVisual(outcomeImage, 0, 0, 0.72, 0, 0);
     }
 
     const revealOutcome = async () => {
       if (runToken !== evaluationRunToken || image.dataset.revealing === '1') return;
       image.dataset.revealing = '1';
 
-      // Reveal-Animation des final-Bildes starten
       image.classList.remove('final-loop', 'final-clickable');
       image.removeAttribute('role');
       image.removeAttribute('tabindex');
       image.removeAttribute('aria-label');
-      image.style.animation = 'none';
-      void image.offsetWidth;
-      image.style.animation = '';
       image.className = 'evaluation-img final-reveal';
 
-      // Outcome-Bild gleichzeitig einblenden — startet sofort transparent, blendet auf
       if (outcomeImage) {
-        outcomeImage.style.animation = 'none';
-        outcomeImage.style.opacity = '0';
-        outcomeImage.style.transition = 'none';
-        void outcomeImage.offsetWidth;
-        outcomeImage.className = `evaluation-outcome-img outcome-fade ${won ? 'won' : 'lost'}`;
+        outcomeImage.className = `evaluation-outcome-img behind ${won ? 'won' : 'lost'}`;
+        applyUnifiedEvaluationAssetLayout(outcomeImage);
       }
 
       setEvaluationStatus('');
       stopManagedChannel('evaluation');
       stopBattleBackground();
 
-      // Warte bis final-reveal fertig (1.2s aus CSS)
-      await wait(1200);
+      await revealEvaluationCloud(image, outcomeImage);
       if (runToken !== evaluationRunToken) return;
 
-      // final-Bild ausblenden, Outcome-Bild vollständig sichtbar
       image.className = 'evaluation-img hidden';
       if (outcomeImage) {
         outcomeImage.className = `evaluation-outcome-img outcome-step ${won ? 'won' : 'lost'}`;
+        applyUnifiedEvaluationAssetLayout(outcomeImage);
+        startEvaluationOutcomeIdle(outcomeImage);
       }
 
       if (won) {
@@ -1558,11 +1686,12 @@
       if (won) {
         action.innerHTML = '<button id="evaluationContinueBtn" class="game-btn primary">Weiter</button>';
         show(action);
-        el('evaluationContinueBtn')?.addEventListener('click', () => { hide(modal); finishLevel(meta); }, { once: true });
+        el('evaluationContinueBtn')?.addEventListener('click', () => { stopEvaluationMotion(); hide(modal); finishLevel(meta); }, { once: true });
       } else {
         action.innerHTML = '<button id="evaluationRetryBtn" class="game-btn primary">Neuer Versuch</button><button id="evaluationEscapeBtn" class="game-btn muted">Wegrennen</button>';
         show(action);
         el('evaluationRetryBtn')?.addEventListener('click', () => {
+          stopEvaluationMotion();
           hide(modal);
           delete image.dataset.revealing;
           const oi = el('evaluationOutcomeImage');
