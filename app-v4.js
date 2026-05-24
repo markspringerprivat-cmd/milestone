@@ -111,7 +111,14 @@
     winHero: 'held_gewonnen.webp',
     loseHero: 'held_verloren.webp',
     escapeHero: 'held_entkommen.webp',
-    versus: 'versus_final.webp'
+    versus: 'versus_final.webp',
+    text: {
+      kampf: 'kampf_text.webp',
+      richtig: 'richtig_text.webp',
+      falsch: 'falsch_text.webp',
+      gewonnen: 'gewonnen_text.webp',
+      verloren: 'verloren_text.webp'
+    }
   };
 
   const AUDIO_FILES = {
@@ -191,7 +198,7 @@
     });
   }
   function preloadBattleAssets(data, meta) {
-    preloadAssets([ASSETS.hero, ASSETS.versus, data.enemy, data.defeated, ASSETS.loseHero, ASSETS.final, ...ASSETS.correct, ...ASSETS.wrong, bgForMeta(meta), popupBgForMeta(meta), ...Object.values(AUDIO_FILES)]);
+    preloadAssets([ASSETS.hero, ASSETS.versus, ASSETS.text.kampf, ASSETS.text.richtig, ASSETS.text.falsch, ASSETS.text.gewonnen, ASSETS.text.verloren, data.enemy, data.defeated, ASSETS.loseHero, ASSETS.final, ...ASSETS.correct, ...ASSETS.wrong, bgForMeta(meta), popupBgForMeta(meta), ...Object.values(AUDIO_FILES)]);
   }
   function prefetchPage(href) {
     if (document.querySelector(`link[rel="prefetch"][href="${href}"]`)) return;
@@ -412,7 +419,7 @@
     const meta = payload.meta; const data = dataForMeta(meta); if (!data) { location.replace('index.html'); return; }
     document.body.style.setProperty('--battle-bg', `url("${popupBgForMeta(meta)}")`);
     preloadBattleAssets(data, meta);
-    $('battleTitle').textContent = `Kampf gegen ${data.enemyName}`;
+    if ($('battleKampfText')) $('battleKampfText').src = ASSETS.text.kampf;
     $('battleHero').src = ASSETS.hero; $('battleEnemy').src = data.enemy; $('battleEnemyName').textContent = data.enemyName;
     $('battleBackBtn')?.addEventListener('click', () => history.back());
     $('battleStartBtn')?.addEventListener('click', () => runBattleSequence(payload, data, meta), { once:true });
@@ -425,19 +432,31 @@
   function pickNoRepeat(list, prev) { const pool = list.filter(x=>x!==prev); return (pool.length?pool:list)[Math.floor(Math.random()*(pool.length?pool:list).length)]; }
   let lastCorrect=null,lastWrong=null;
   async function runBattleSequence(payload, data, meta) {
-    setBattleMode('sequence'); await playSound('fight'); playSound('battle_background', { loop:true });
-    const img=$('sequenceImage'), label=$('sequenceLabel'), status=$('sequenceStatus'), dots=$('sequenceDots'), outcome=$('outcomeImage'), action=$('battleAction');
+    setBattleMode('sequence');
+    await playSound('fight');
+    playSound('battle_background', { loop:true });
+    const img=$('sequenceImage'), label=$('sequenceLabel'), status=$('sequenceStatus'), dots=$('sequenceDots'), outcome=$('outcomeImage'), action=$('battleAction'), textImg=$('sequenceTextImage');
+    action.innerHTML = '';
+    hide(action);
+    if (textImg) { textImg.className = 'battle-text-img hidden'; textImg.removeAttribute('src'); }
+    label.textContent = ''; status.textContent = '';
     dots.innerHTML = '<span></span>'.repeat(6);
     for (let i=0;i<payload.results.length;i++) {
-      const ok = payload.results[i]; const list = ok ? ASSETS.correct : ASSETS.wrong; const src = ok ? (lastCorrect=pickNoRepeat(list,lastCorrect)) : (lastWrong=pickNoRepeat(list,lastWrong));
+      const ok = payload.results[i];
+      const list = ok ? ASSETS.correct : ASSETS.wrong;
+      const src = ok ? (lastCorrect=pickNoRepeat(list,lastCorrect)) : (lastWrong=pickNoRepeat(list,lastWrong));
+      const textSrc = ok ? ASSETS.text.richtig : ASSETS.text.falsch;
       const base = src.replace(/\.webp$/,'');
-      label.textContent = `Frage ${i+1}`; status.textContent = ok ? 'Richtig' : 'Falsch'; status.className = `battle-status ${ok?'ok':'bad'}`;
+      label.textContent = `Frage ${i+1}`;
+      status.textContent = ok ? 'Richtig' : 'Falsch';
+      status.className = `battle-status sr-only ${ok?'ok':'bad'}`;
       [...dots.children].forEach((d,di)=>d.className=di===i?'active':'');
-      await showSequenceImage(img, src, ok ? 'Richtige Antwort' : 'Falsche Antwort', i);
-      playSound(base);
-      await sleep(1800);
+      await playAnswerStep(img, textImg, src, textSrc, ok ? 'Richtige Antwort' : 'Falsche Antwort', base);
     }
-    label.textContent = 'Finale'; status.textContent='Tippe auf die Wolke'; status.className='battle-status'; [...dots.children].forEach((d,di)=>d.className=di===5?'active':'');
+    label.textContent = 'Finale';
+    status.textContent = '';
+    [...dots.children].forEach((d,di)=>d.className=di===5?'active':'');
+    if (textImg) textImg.className = 'battle-text-img hidden';
     await showFinalCloud(img);
     playSound('final');
     const wrong = payload.results.filter(v=>!v).length; const won = wrong <= 1;
@@ -445,8 +464,14 @@
     outcome.className='battle-outcome behind';
     img.onclick = async () => {
       img.onclick = null; stopSound('final');
+      if (textImg) {
+        textImg.src = won ? ASSETS.text.gewonnen : ASSETS.text.verloren;
+        textImg.alt = won ? 'Gewonnen' : 'Verloren';
+        textImg.className = 'battle-text-img result-preload';
+      }
       outcome.classList.add('pre-visible');
       await sleep(220);
+      if (textImg) textImg.className = 'battle-text-img result-show';
       img.classList.remove('final-idle'); img.classList.add('cloud-reveal');
       outcome.classList.add('visible');
       await sleep(1300);
@@ -455,11 +480,38 @@
       showBattleResult(won, data, meta, action, label, status);
     };
   }
+
+  function playAnswerStep(img, textImg, src, textSrc, alt, soundKey) {
+    return new Promise(resolve => {
+      img.className='battle-seq-img preparing'; img.src=src; img.alt=alt; img.onclick=null;
+      if (textImg) { textImg.className = 'battle-text-img preparing'; textImg.src = textSrc; textImg.alt = alt; }
+      const apply=()=>{
+        img.onload=null;
+        if (textImg) textImg.onload=null;
+        void img.offsetWidth;
+        if (textImg) void textImg.offsetWidth;
+        playSound(soundKey);
+        img.className='battle-seq-img answer-cycle';
+        if (textImg) textImg.className='battle-text-img answer-text-cycle';
+        window.setTimeout(()=>{
+          img.className='battle-seq-img hidden';
+          if (textImg) textImg.className='battle-text-img hidden';
+          resolve();
+        }, 2000);
+      };
+      let loadedImg = img.complete;
+      let loadedText = !textImg || textImg.complete;
+      const tryApply=()=>{ if (loadedImg && loadedText) apply(); };
+      img.onload=()=>{ loadedImg=true; tryApply(); };
+      if (textImg) textImg.onload=()=>{ loadedText=true; tryApply(); };
+      tryApply();
+    });
+  }
+
   function showSequenceImage(img, src, alt, index) {
     return new Promise(resolve => {
-      const dirs = ['from-left','from-right','from-top','from-bottom','from-zoom'];
       img.className='battle-seq-img preparing'; img.src=src; img.alt=alt; img.onclick=null;
-      const apply=()=>{ img.onload=null; void img.offsetWidth; img.className=`battle-seq-img answer ${dirs[index % dirs.length]}`; resolve(); };
+      const apply=()=>{ img.onload=null; void img.offsetWidth; img.className='battle-seq-img answer-cycle'; window.setTimeout(resolve, 2000); };
       img.onload=apply; if (img.complete) apply();
     });
   }
@@ -471,8 +523,9 @@
     });
   }
   function showBattleResult(won, data, meta, action, label, status) {
-    label.textContent = won ? `${data.enemyName} besiegt!` : 'Du wurdest besiegt.'; status.textContent = won ? 'Du hast das Level geschafft.' : ''; status.className = won ? 'battle-status ok' : 'battle-status bad';
+    label.textContent = ''; status.textContent = ''; status.className = 'battle-status sr-only';
     action.innerHTML = '';
+    show(action);
     if (won) {
       const btn = document.createElement('button'); btn.className='game-btn primary'; btn.textContent='Weiter'; btn.onclick=()=>finishBattleWin(meta); action.appendChild(btn);
     } else {

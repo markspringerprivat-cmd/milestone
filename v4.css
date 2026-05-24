@@ -209,3 +209,262 @@ body[data-page="battle"]::after{
   .battle-title{font-size:1.02rem!important;padding:9px 14px!important}
   .game-btn{min-height:52px!important;padding:13px 20px!important}
 }
+
+/* === Battle text-image sequence update === */
+.sr-only{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  padding:0!important;
+  margin:-1px!important;
+  overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;
+  white-space:nowrap!important;
+  border:0!important;
+}
+
+body[data-page="battle"] .battle-card{
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+
+/* Intro: Kampf-logo oben, Figuren darunter */
+body[data-page="battle"] .battle-intro-scene{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:0!important;
+}
+.battle-kampf-text{
+  display:block!important;
+  width:min(88vw,560px)!important;
+  height:min(20svh,150px)!important;
+  object-fit:contain!important;
+  margin:0 auto 6px!important;
+  filter:drop-shadow(0 14px 24px rgba(0,0,0,.24))!important;
+  transform-origin:center center!important;
+  animation:battleHeaderPose 1.8s ease-in-out infinite alternate!important;
+}
+body[data-page="battle"] .battle-versus-layout{
+  position:relative!important;
+  width:100%!important;
+  flex:1 1 auto!important;
+  min-height:0!important;
+}
+body[data-page="battle"] .battle-side.hero{
+  left:4%!important;
+  top:29%!important;
+}
+body[data-page="battle"] .battle-side.enemy{
+  right:4%!important;
+  top:29%!important;
+}
+body[data-page="battle"] .battle-actor{
+  width:min(42vw,260px)!important;
+  height:min(32svh,270px)!important;
+  max-width:none!important;
+  object-fit:contain!important;
+}
+body[data-page="battle"] .battle-versus{
+  left:50%!important;
+  top:49%!important;
+  width:min(24vw,150px)!important;
+  height:min(25svh,170px)!important;
+  object-fit:contain!important;
+}
+body[data-page="battle"] .battle-name{
+  background:rgba(246,250,255,.82)!important;
+  font-size:clamp(.86rem,2.5vw,1.05rem)!important;
+}
+body[data-page="battle"] .battle-buttons{
+  margin-top:auto!important;
+  gap:12px!important;
+}
+
+/* Sequence: image text instead of typed labels */
+body[data-page="battle"] #battleSequenceScene .battle-top{
+  position:absolute!important;
+  top:12px!important;
+  left:0!important;
+  right:0!important;
+  z-index:6!important;
+  min-height:110px!important;
+  pointer-events:none!important;
+}
+.battle-text-img{
+  display:block;
+  width:min(78vw,430px);
+  height:min(13svh,92px);
+  object-fit:contain;
+  object-position:center center;
+  margin:4px auto 0;
+  filter:drop-shadow(0 12px 22px rgba(0,0,0,.22));
+  transform-origin:center center;
+  will-change:transform,opacity;
+}
+.battle-text-img.hidden,.battle-text-img.preparing{
+  opacity:0!important;
+  visibility:hidden!important;
+}
+.battle-text-img.answer-text-cycle{
+  opacity:1!important;
+  visibility:visible!important;
+  animation:battleTextCross 2s cubic-bezier(.22,1,.36,1) both!important;
+}
+.battle-text-img.result-preload{
+  opacity:0!important;
+  visibility:visible!important;
+  transform:translateX(0) scale(.92)!important;
+}
+.battle-text-img.result-show{
+  opacity:1!important;
+  visibility:visible!important;
+  animation:battleResultTextIn .55s cubic-bezier(.22,1,.36,1) both, battleHeaderPose 1.35s ease-in-out .55s infinite alternate!important;
+}
+body[data-page="battle"] .battle-label,
+body[data-page="battle"] .battle-status{
+  display:none!important;
+}
+body[data-page="battle"] .battle-dots{
+  height:18px!important;
+  margin-bottom:4px!important;
+}
+
+/* Fixed stage: buttons do not move the art */
+body[data-page="battle"] #battleSequenceScene .battle-stage{
+  position:absolute!important;
+  left:0!important;
+  right:0!important;
+  top:116px!important;
+  bottom:140px!important;
+  width:100%!important;
+  min-height:auto!important;
+  overflow:visible!important;
+  z-index:2!important;
+}
+body[data-page="battle"] #battleSequenceScene .battle-action{
+  position:absolute!important;
+  left:14px!important;
+  right:14px!important;
+  bottom:max(14px,env(safe-area-inset-bottom) + 8px)!important;
+  min-height:118px!important;
+  z-index:8!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:12px!important;
+  padding:0!important;
+}
+body[data-page="battle"] #battleSequenceScene .battle-action:empty{display:none!important;}
+body[data-page="battle"] #battleSequenceScene .battle-action .game-btn{
+  width:min(100%,590px)!important;
+  max-width:590px!important;
+}
+
+/* Answer art enters from left, text from right, both hold, then leave */
+body[data-page="battle"] .battle-seq-img,
+body[data-page="battle"] .battle-outcome{
+  position:absolute!important;
+  left:50%!important;
+  top:50%!important;
+  object-fit:contain!important;
+  object-position:center center!important;
+  transform:translate(-50%,-50%)!important;
+  will-change:transform,opacity!important;
+}
+body[data-page="battle"] .battle-seq-img{
+  width:min(108vw,530px)!important;
+  height:min(49svh,450px)!important;
+  z-index:3!important;
+}
+body[data-page="battle"] .battle-seq-img.answer-cycle{
+  opacity:1!important;
+  animation:battleAnswerCross 2s cubic-bezier(.22,1,.36,1) both!important;
+}
+body[data-page="battle"] .battle-seq-img.preparing,
+body[data-page="battle"] .battle-seq-img.hidden{
+  opacity:0!important;
+  visibility:hidden!important;
+}
+body[data-page="battle"] .battle-outcome{
+  width:min(82vw,380px)!important;
+  height:min(34svh,315px)!important;
+  z-index:1!important;
+  opacity:0!important;
+}
+body[data-page="battle"] .battle-outcome.pre-visible{
+  display:block!important;
+  opacity:0!important;
+  transform:translate(-50%,-50%) scale(.78)!important;
+}
+body[data-page="battle"] .battle-outcome.visible{
+  opacity:1!important;
+  transition:opacity .58s ease,transform .58s ease!important;
+  transform:translate(-50%,-50%) scale(.96)!important;
+}
+body[data-page="battle"] .battle-outcome.visible.idle{
+  animation:v4OutcomeIdle 1.35s ease-in-out infinite alternate!important;
+}
+
+/* Final cloud animation */
+body[data-page="battle"] .battle-seq-img.final-cloud{
+  cursor:pointer!important;
+}
+body[data-page="battle"] .battle-seq-img.final-idle{
+  opacity:1!important;
+  animation:finalCloudPose 1.05s ease-in-out infinite alternate!important;
+}
+body[data-page="battle"] .battle-seq-img.cloud-reveal{
+  animation:finalCloudReveal 1.32s ease-in forwards!important;
+}
+
+@keyframes battleHeaderPose{
+  from{transform:translateY(0) scale(.985) rotate(-.8deg)}
+  to{transform:translateY(-3px) scale(1.015) rotate(.8deg)}
+}
+@keyframes battleAnswerCross{
+  0%{opacity:0;transform:translate(-50%,-50%) translateX(-72vw) rotate(-4deg) scale(.88)}
+  25%{opacity:1;transform:translate(-50%,-50%) translateX(0) rotate(0) scale(1.04)}
+  50%{opacity:1;transform:translate(-50%,-50%) translateX(-5px) rotate(-1.4deg) scale(1.055)}
+  75%{opacity:1;transform:translate(-50%,-50%) translateX(5px) rotate(1.4deg) scale(1.055)}
+  100%{opacity:0;transform:translate(-50%,-50%) translateX(72vw) rotate(4deg) scale(.9)}
+}
+@keyframes battleTextCross{
+  0%{opacity:0;transform:translateX(72vw) rotate(3deg) scale(.9)}
+  25%{opacity:1;transform:translateX(0) rotate(0) scale(1)}
+  50%{opacity:1;transform:translateX(4px) rotate(1deg) scale(1.025)}
+  75%{opacity:1;transform:translateX(-4px) rotate(-1deg) scale(1.025)}
+  100%{opacity:0;transform:translateX(-72vw) rotate(-3deg) scale(.9)}
+}
+@keyframes battleResultTextIn{
+  from{opacity:0;transform:translateY(-18px) scale(.88)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+@keyframes finalCloudPose{
+  0%{transform:translate(-50%,-50%) translateX(-12px) rotate(-3deg) scale(.98)}
+  100%{transform:translate(-50%,-50%) translateX(12px) rotate(3deg) scale(1.10)}
+}
+@keyframes finalCloudReveal{
+  0%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0)}
+  50%{opacity:.95;transform:translate(-50%,-50%) scale(1.28) rotate(3deg)}
+  78%{opacity:.62;transform:translate(-50%,-50%) scale(1.55) rotate(-2deg)}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(1.82) rotate(1deg)}
+}
+
+@media(max-width:560px){
+  .battle-kampf-text{width:min(92vw,410px)!important;height:min(17svh,118px)!important;margin-bottom:2px!important}
+  body[data-page="battle"] .battle-side.hero{left:0!important;top:31%!important}
+  body[data-page="battle"] .battle-side.enemy{right:0!important;top:31%!important}
+  body[data-page="battle"] .battle-actor{width:min(43vw,174px)!important;height:min(27svh,190px)!important}
+  body[data-page="battle"] .battle-versus{top:50%!important;width:min(23vw,94px)!important;height:min(20svh,126px)!important}
+  body[data-page="battle"] .battle-name{font-size:.82rem!important;min-width:min(35vw,132px)!important;padding:6px 9px!important}
+  body[data-page="battle"] #battleSequenceScene .battle-top{top:10px!important;min-height:94px!important}
+  .battle-text-img{width:min(84vw,340px)!important;height:min(11svh,76px)!important;margin-top:3px!important}
+  body[data-page="battle"] #battleSequenceScene .battle-stage{top:100px!important;bottom:144px!important}
+  body[data-page="battle"] .battle-seq-img{width:min(112vw,430px)!important;height:min(45svh,360px)!important}
+  body[data-page="battle"] .battle-outcome{width:min(86vw,310px)!important;height:min(30svh,270px)!important}
+  body[data-page="battle"] #battleSequenceScene .battle-action{left:10px!important;right:10px!important;min-height:126px!important;flex-direction:column!important;gap:10px!important}
+  body[data-page="battle"] #battleSequenceScene .battle-action .game-btn{width:100%!important}
+}

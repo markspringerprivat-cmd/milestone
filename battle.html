@@ -4,15 +4,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Kampf · Königreich der Sinne</title>
-  <link rel="stylesheet" href="style.css?v=v4_ui_polish_20260524">
-  <link rel="stylesheet" href="v4.css?v=v4_ui_polish_20260524">
-  <script src="app-v4.js?v=v4_ui_polish_20260524" defer></script>
+  <link rel="stylesheet" href="style.css?v=v4_textfx_20260524">
+  <link rel="stylesheet" href="v4.css?v=v4_textfx_20260524">
+  <script src="app-v4.js?v=v4_textfx_20260524" defer></script>
 </head>
 <body data-page="battle" data-battle-mode="intro">
   <main class="battle-page" aria-label="Kampfseite">
     <section class="battle-card">
       <div id="battleIntroScene" class="battle-scene battle-intro-scene">
-        <div id="battleTitle" class="battle-title">Kampf gegen Gegner</div>
+        <img id="battleKampfText" class="battle-kampf-text" src="kampf_text.webp" alt="Kampf">
         <div class="battle-versus-layout">
           <div class="battle-side hero">
             <img id="battleHero" class="battle-actor" src="held.webp" alt="Sir Nervus">
@@ -33,8 +33,9 @@
       <div id="battleSequenceScene" class="battle-scene battle-sequence hidden">
         <div class="battle-top">
           <div id="sequenceDots" class="battle-dots" aria-hidden="true"></div>
-          <div id="sequenceLabel" class="battle-label">Frage 1</div>
-          <div id="sequenceStatus" class="battle-status"></div>
+          <img id="sequenceTextImage" class="battle-text-img hidden" alt="">
+          <div id="sequenceLabel" class="battle-label sr-only">Frage 1</div>
+          <div id="sequenceStatus" class="battle-status sr-only"></div>
         </div>
         <div class="battle-stage">
           <img id="outcomeImage" class="battle-outcome" alt="Ergebnis">
