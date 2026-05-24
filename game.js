@@ -384,7 +384,13 @@
     try {
       const parsed = JSON.parse(localStorage.getItem(STORE));
       if (!parsed || !Array.isArray(parsed.slots) || !Array.isArray(parsed.completed)) return defaultState();
-      return { ...defaultState(), ...parsed };
+      const state = { ...defaultState(), ...parsed };
+      // Migration für alte Spielstände: Sobald es Fortschritt gibt, darf die erste
+      // Intro-Laufsequenz nie wieder geladen werden. Sonst erscheint erneut ein
+      // Ritter vom unteren Spielfeldrand.
+      const hasProgress = state.slots.some(Boolean) || state.completed.some(Boolean) || Number.isInteger(state.heroNode) || state.bossCompleted;
+      if (hasProgress) state.boardGuideSeen = true;
+      return state;
     } catch {
       return defaultState();
     }
@@ -612,108 +618,109 @@
       guide.classList.remove('go-away');
       guide.classList.toggle('hidden', !isBoardGuidePending() || document.body.dataset.page !== 'board' || el('boardScreen')?.classList.contains('hidden'));
     }
-    if (runner) {
+    if (runner && !boardTravel) {
       runner.classList.remove('running');
       runner.style.opacity = '0';
       hide(runner);
     }
-    boardTravel = null;
   }
 
-  function setRunnerPosition(runner, pos) {
-    if (!runner || !pos) return;
+  function getLevelPosition(index) {
+    return LEVEL_POSITIONS[index] || LEVEL_POSITIONS[0];
+  }
+
+  function placeRunner(pos) {
+    const runner = el('boardRunner');
+    if (!runner || !pos) return null;
+    runner.classList.remove('hidden', 'running');
+    runner.style.transitionProperty = 'none';
+    runner.style.opacity = '1';
     runner.style.left = `${pos.x}%`;
     runner.style.top = `${pos.y}%`;
+    void runner.offsetWidth;
+    return runner;
   }
 
-  function animateRunner(fromPos, toPos, duration = 2000, onArrive) {
+  function hideRunner() {
     const runner = el('boardRunner');
+    if (!runner) return;
+    runner.classList.remove('running');
+    runner.style.opacity = '0';
+    hide(runner);
+  }
+
+  function runHeroAnimation(fromPos, toPos, duration = 2000, onArrive) {
+    const runner = placeRunner(fromPos);
     const token = ++boardTravelToken;
-    if (!runner || !fromPos || !toPos) {
+    if (!runner || !toPos) {
       onArrive?.();
       return;
     }
 
-    runner.classList.remove('hidden', 'running');
-    runner.style.opacity = '1';
-    runner.style.transitionDuration = `${duration}ms`;
-    setRunnerPosition(runner, fromPos);
     runner.style.setProperty('--target-left', `${toPos.x}%`);
     runner.style.setProperty('--target-top', `${toPos.y}%`);
-    void runner.offsetWidth;
+    runner.style.transitionProperty = 'left, top, opacity';
+    runner.style.transitionDuration = `${duration}ms, ${duration}ms, 220ms`;
+    runner.style.transitionTimingFunction = 'cubic-bezier(.22,1,.36,1), cubic-bezier(.22,1,.36,1), ease';
+
     window.requestAnimationFrame(() => {
       window.requestAnimationFrame(() => runner.classList.add('running'));
     });
 
     window.setTimeout(() => {
       if (token !== boardTravelToken) return;
-      runner.classList.remove('running');
-      runner.style.opacity = '0';
-      hide(runner);
+      hideRunner();
       onArrive?.();
-    }, duration + 50);
+    }, duration + 80);
+  }
+
+  function beginHeroTravel(fromIndex, toIndex, onArrive, options = {}) {
+    if (boardTravel) return;
+    const state = getState();
+    const fromPos = options.fromIntro ? { x: 18.5, y: 95.2 } : getLevelPosition(fromIndex);
+    const toPos = getLevelPosition(toIndex);
+    boardTravel = { from: options.fromIntro ? null : fromIndex, to: toIndex };
+
+    // Während der Bewegung wird der stehende Ritter aus dem Map-Render entfernt.
+    // Der sichtbare Ritter ist ausschließlich boardRunner. Dadurch gibt es keine
+    // Doppelritter und keine Teleportation zwischen zwei Levelpunkten.
+    state.heroNode = null;
+    state.boardGuideSeen = true;
+    setState(state);
+    renderBoard();
+    hide(el('boardGuide'));
+    playSound('levelstart');
+
+    runHeroAnimation(fromPos, toPos, 2000, () => {
+      const arrived = getState();
+      arrived.heroNode = toIndex;
+      arrived.boardGuideSeen = true;
+      setState(arrived);
+      boardTravel = null;
+      renderBoard();
+      window.setTimeout(() => onArrive?.(), 260);
+    });
   }
 
   function playBoardStartSequence(index, onArrive) {
-    if (boardTravel) return;
-    const state = getState();
-    state.boardGuideSeen = true;
-    setState(state);
     const guide = el('boardGuide');
-    const target = LEVEL_POSITIONS[index] || LEVEL_POSITIONS[0];
-    boardTravel = { from: 'intro', to: index };
     guide?.classList.add('go-away');
-
     window.setTimeout(() => {
-      hide(guide);
-      const movingState = getState();
-      movingState.heroNode = null;
-      setState(movingState);
-      renderBoard();
-      playSound('levelstart');
-      const startPos = { x: 18.5, y: 95.2 };
-      animateRunner(startPos, target, 2000, () => {
-        const nextState = getState();
-        nextState.heroNode = index;
-        setState(nextState);
-        boardTravel = null;
-        renderBoard();
-        stopBackgroundMusic();
-        window.setTimeout(() => onArrive?.(), 350);
-      });
-    }, 800);
+      beginHeroTravel(null, index, onArrive, { fromIntro: true });
+    }, 700);
   }
 
   function playBoardTravelSequence(fromIndex, toIndex, onArrive) {
-    if (boardTravel || fromIndex === toIndex) {
-      if (fromIndex === toIndex) onArrive?.();
+    if (fromIndex === toIndex) {
+      const state = getState();
+      state.heroNode = toIndex;
+      state.boardGuideSeen = true;
+      setState(state);
+      renderBoard();
+      onArrive?.();
       return;
     }
-
-    const from = LEVEL_POSITIONS[fromIndex] || LEVEL_POSITIONS[toIndex] || LEVEL_POSITIONS[0];
-    const target = LEVEL_POSITIONS[toIndex] || from;
-    boardTravel = { from: fromIndex, to: toIndex };
-
-    const movingState = getState();
-    movingState.heroNode = fromIndex;
-    setState(movingState);
-    renderBoard();
-    playSound('levelstart');
-
-    window.setTimeout(() => {
-      const transientState = getState();
-      transientState.heroNode = null;
-      setState(transientState);
-      renderBoard();
-      animateRunner(from, target, 2000, () => {
-        const nextState = getState();
-        nextState.heroNode = toIndex;
-        setState(nextState);
-        boardTravel = null;
-        renderBoard();
-        window.setTimeout(() => onArrive?.(), 250);
-      });
-    }, 60);
+    beginHeroTravel(fromIndex, toIndex, onArrive);
   }
 
   // ─── Board-Rendering ──────────────────────────────────────────────────────
@@ -744,7 +751,7 @@
       const done = state.completed[index];
       const isActive = index === active && !done;
       const guidePending = isBoardGuidePending(state) && index === 0 && isActive && !assigned;
-      const heroHere = heroNode === index && !(boardTravel && boardTravel.from === index);
+      const heroHere = heroNode === index && !boardTravel;
       const token = document.createElement('button');
       token.type = 'button';
       token.className = `map-token ${guidePending ? 'guide-active' : heroHere ? 'hero-active standing' : done ? 'done' : isActive ? 'available' : 'locked'}`;
@@ -812,43 +819,50 @@
     const heroNode = getHeroNode(state);
     setBoardMenuOpen(false);
 
-    const moveHeroThen = (callback) => {
+    const goToLevel = (callback) => {
       stopBackgroundMusic();
-      if (index === 0 && isBoardGuidePending(getState())) {
+      const latest = getState();
+      const currentHero = getHeroNode(latest);
+
+      // Nur beim allerersten Klick im komplett neuen Spiel von unten/links einlaufen.
+      const firstIntroMove = index === 0 && isBoardGuidePending(latest) && currentHero === null;
+      if (firstIntroMove) {
         playBoardStartSequence(index, callback);
         return;
       }
-      if (Number.isInteger(heroNode) && heroNode !== index) {
-        playBoardTravelSequence(heroNode, index, callback);
+
+      if (Number.isInteger(currentHero) && currentHero !== index) {
+        playBoardTravelSequence(currentHero, index, callback);
         return;
       }
-      const nextState = getState();
-      nextState.heroNode = index;
-      setState(nextState);
+
+      latest.heroNode = index;
+      latest.boardGuideSeen = true;
+      setState(latest);
       renderBoard();
       callback?.();
     };
 
+    // Bereits geschaffte Level dürfen erneut betreten werden. Vorher läuft Sir Nervus
+    // sichtbar zu diesem Feld zurück oder vorwärts.
     if (state.completed[index]) {
-      moveHeroThen(() => {
-        const latest = getState();
-        latest.heroNode = index;
-        setState(latest);
+      goToLevel(() => {
         window.setTimeout(() => {
           window.location.href = `level.html?sense=${encodeURIComponent(state.slots[index])}&slot=${index}`;
-        }, 140);
+        }, 120);
       });
       return;
     }
 
+    // Noch nicht freigeschaltete spätere Level bleiben gesperrt.
     if (index !== active) return;
 
     if (state.slots[index]) {
-      moveHeroThen(() => showEncounter(state.slots[index], index));
+      goToLevel(() => showEncounter(state.slots[index], index));
       return;
     }
 
-    moveHeroThen(() => openScanModal(index));
+    goToLevel(() => openScanModal(index));
   }
 
   function handleBossClick() {
@@ -1243,7 +1257,7 @@
     node.style.left = '50%';
     node.style.right = 'auto';
     node.style.bottom = 'auto';
-    node.style.top = window.matchMedia('(max-width: 560px)').matches ? '54.5%' : '54%';
+    node.style.top = window.matchMedia('(max-width: 560px)').matches ? '53.6%' : '53.4%';
     node.style.margin = '0';
     node.style.objectFit = 'contain';
     node.style.objectPosition = 'center center';
@@ -1417,12 +1431,12 @@
           outcomeImage.className = `evaluation-outcome-img behind visible ${won ? 'won' : 'lost'}`;
           applyUnifiedEvaluationAssetLayout(outcomeImage);
         }
-      }, 520);
+      }, 420);
       image.classList.add('final-reveal');
       setEvaluationStatus('');
       stopSound('final');
       stopBattleBackground();
-      await wait(1325);
+      await wait(1320);
       if (runToken !== evaluationRunToken) return;
 
       image.className = 'evaluation-img hidden';

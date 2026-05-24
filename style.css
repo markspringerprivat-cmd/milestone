@@ -1939,3 +1939,145 @@ body.stage-popups .encounter-card, .modal.stage-popup .encounter-card{
   .battle-inline-actor{width:min(38vw,170px) !important;max-height:26svh !important}
   .battle-inline-versus{width:min(20vw,92px) !important;max-height:16svh !important}
 }
+
+/* === 2026-05-24 FINAL OVERRIDE: one hero-path logic + final-cloud animation === */
+.board-runner{
+  z-index:12 !important;
+  pointer-events:none !important;
+  transform:translate(-50%,-50%) !important;
+  will-change:left,top,opacity !important;
+}
+.board-runner.running{
+  left:var(--target-left) !important;
+  top:var(--target-top) !important;
+}
+.board-runner-img{
+  width:clamp(132px,18vw,184px) !important;
+  height:clamp(132px,18vw,184px) !important;
+  object-fit:contain !important;
+  object-position:center center !important;
+  transform-origin:center bottom !important;
+  animation:boardRunnerWalkPulse .7s ease-in-out infinite alternate !important;
+}
+.map-token.hero-active.standing .hero-token,
+.map-token.standing .hero-token{
+  animation:boardHeroPulse 2.2s ease-in-out infinite !important;
+}
+
+.evaluation-card.unified-sequence .evaluation-stage{
+  overflow:hidden !important;
+  min-height:55svh !important;
+  height:55svh !important;
+}
+.evaluation-card.unified-sequence .evaluation-stage .evaluation-img,
+.evaluation-card.unified-sequence .evaluation-stage .evaluation-outcome-img{
+  left:50% !important;
+  top:53.4% !important;
+  right:auto !important;
+  bottom:auto !important;
+  margin:0 !important;
+  transform:translate(-50%,-50%) scale(1) !important;
+  transform-origin:center center !important;
+  object-fit:contain !important;
+  object-position:center center !important;
+}
+.evaluation-card.unified-sequence .evaluation-stage .evaluation-img{
+  width:min(94vw,520px) !important;
+  height:min(43svh,405px) !important;
+  max-width:none !important;
+  max-height:none !important;
+}
+.evaluation-card.unified-sequence .evaluation-stage .evaluation-outcome-img{
+  width:min(88vw,430px) !important;
+  height:min(37svh,350px) !important;
+  max-width:none !important;
+  max-height:none !important;
+}
+.evaluation-card.unified-sequence .evaluation-img.answer-step,
+.evaluation-card.unified-sequence .evaluation-img.answer-step.enter-center,
+.evaluation-card.unified-sequence .evaluation-img.answer-step.enter-left,
+.evaluation-card.unified-sequence .evaluation-img.answer-step.enter-right,
+.evaluation-card.unified-sequence .evaluation-img.answer-step.enter-top,
+.evaluation-card.unified-sequence .evaluation-img.answer-step.enter-bottom,
+.evaluation-card.unified-sequence .evaluation-img.answer-step.enter-zoom{
+  animation:evalAnswerInAndSway 1.25s cubic-bezier(.22,1,.36,1) infinite alternate !important;
+}
+.evaluation-card.unified-sequence .evaluation-img.final-step,
+.evaluation-card.unified-sequence .evaluation-img.final-step.enter-center-final,
+.evaluation-card.unified-sequence .evaluation-img.final-step.enter-left,
+.evaluation-card.unified-sequence .evaluation-img.final-step.enter-right,
+.evaluation-card.unified-sequence .evaluation-img.final-step.enter-top,
+.evaluation-card.unified-sequence .evaluation-img.final-step.enter-bottom,
+.evaluation-card.unified-sequence .evaluation-img.final-step.enter-zoom{
+  animation:evalFinalCloudEnter .55s cubic-bezier(.22,1,.36,1) both !important;
+}
+.evaluation-card.unified-sequence .evaluation-img.final-loop{
+  animation:evalFinalCloudIdle 1.05s ease-in-out infinite alternate !important;
+  cursor:pointer !important;
+}
+.evaluation-card.unified-sequence .evaluation-img.final-reveal{
+  animation:evalFinalCloudRevealSmooth 1.32s ease-in forwards !important;
+  cursor:default !important;
+}
+.evaluation-card.unified-sequence .evaluation-outcome-img.behind{
+  opacity:0 !important;
+  transform:translate(-50%,-50%) scale(.82) !important;
+}
+.evaluation-card.unified-sequence .evaluation-outcome-img.behind.visible{
+  opacity:.92 !important;
+  transform:translate(-50%,-50%) scale(.94) !important;
+  transition:opacity .42s ease, transform .42s ease !important;
+}
+.evaluation-card.unified-sequence .evaluation-outcome-img.outcome-step{
+  opacity:1 !important;
+  animation:evalOutcomePopSmooth .62s cubic-bezier(.22,1,.36,1) both, evalOutcomePoseSmooth 1.35s ease-in-out .62s infinite alternate !important;
+}
+
+@keyframes boardRunnerWalkPulse{
+  0%{transform:translateY(0) scale(1)}
+  100%{transform:translateY(-3px) scale(1.025)}
+}
+@keyframes evalAnswerInAndSway{
+  0%{opacity:.98;transform:translate(-50%,-50%) translateX(-5px) scale(1.02) rotate(-1.8deg)}
+  100%{opacity:1;transform:translate(-50%,-50%) translateX(5px) scale(1.07) rotate(1.8deg)}
+}
+@keyframes evalFinalCloudEnter{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.86) rotate(0deg)}
+  100%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0deg)}
+}
+@keyframes evalFinalCloudIdle{
+  0%{opacity:1;transform:translate(-50%,-50%) translateX(-7px) scale(.99) rotate(-3deg)}
+  50%{opacity:1;transform:translate(-50%,-50%) translateX(0) scale(1.065) rotate(0deg)}
+  100%{opacity:1;transform:translate(-50%,-50%) translateX(7px) scale(1.12) rotate(3deg)}
+}
+@keyframes evalFinalCloudRevealSmooth{
+  0%{opacity:1;transform:translate(-50%,-50%) scale(1.04) rotate(0deg)}
+  55%{opacity:.96;transform:translate(-50%,-50%) scale(1.28) rotate(1deg)}
+  82%{opacity:.45;transform:translate(-50%,-50%) scale(1.58) rotate(-1deg)}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(1.86) rotate(0deg)}
+}
+@keyframes evalOutcomePopSmooth{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.78)}
+  100%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+}
+@keyframes evalOutcomePoseSmooth{
+  0%{transform:translate(-50%,-50%) translateY(0) scale(1) rotate(-.8deg)}
+  100%{transform:translate(-50%,-50%) translateY(-3px) scale(1.035) rotate(.8deg)}
+}
+
+@media (max-width:860px){
+  .board-runner-img{width:clamp(116px,21vw,158px) !important;height:clamp(116px,21vw,158px) !important}
+  .evaluation-card.unified-sequence .evaluation-stage{min-height:51svh !important;height:51svh !important}
+  .evaluation-card.unified-sequence .evaluation-stage .evaluation-img,
+  .evaluation-card.unified-sequence .evaluation-stage .evaluation-outcome-img{top:53.6% !important}
+  .evaluation-card.unified-sequence .evaluation-stage .evaluation-img{width:min(98vw,430px) !important;height:min(36svh,335px) !important}
+  .evaluation-card.unified-sequence .evaluation-stage .evaluation-outcome-img{width:min(92vw,355px) !important;height:min(31svh,295px) !important}
+}
+@media (max-width:560px){
+  .board-runner-img{width:clamp(106px,24vw,146px) !important;height:clamp(106px,24vw,146px) !important}
+  .evaluation-card.unified-sequence .evaluation-stage{min-height:49svh !important;height:49svh !important}
+  .evaluation-card.unified-sequence .evaluation-stage .evaluation-img,
+  .evaluation-card.unified-sequence .evaluation-stage .evaluation-outcome-img{top:53.8% !important}
+  .evaluation-card.unified-sequence .evaluation-stage .evaluation-img{width:min(100vw,390px) !important;height:min(34svh,310px) !important}
+  .evaluation-card.unified-sequence .evaluation-stage .evaluation-outcome-img{width:min(94vw,325px) !important;height:min(29svh,270px) !important}
+}
