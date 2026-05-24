@@ -2081,3 +2081,136 @@ body.stage-popups .encounter-card, .modal.stage-popup .encounter-card{
   .evaluation-card.unified-sequence .evaluation-stage .evaluation-img{width:min(100vw,390px) !important;height:min(34svh,310px) !important}
   .evaluation-card.unified-sequence .evaluation-stage .evaluation-outcome-img{width:min(94vw,325px) !important;height:min(29svh,270px) !important}
 }
+
+/* === 2026-05-24 REAL FIX: runner uses board-screen coords, evaluation animates with independent transforms === */
+.board-runner{
+  position:absolute !important;
+  z-index:30 !important;
+  pointer-events:none !important;
+  transform:translate(-50%,-50%) !important;
+  will-change:left,top,opacity !important;
+}
+.board-runner.running{
+  left:var(--target-left) !important;
+  top:var(--target-top) !important;
+}
+.board-runner-img{
+  width:clamp(134px,18vw,188px) !important;
+  height:clamp(134px,18vw,188px) !important;
+  object-fit:contain !important;
+  object-position:center center !important;
+  animation:boardRunnerStepV3 .72s ease-in-out infinite alternate !important;
+}
+@keyframes boardRunnerStepV3{
+  0%{translate:0 0; scale:1; rotate:-.7deg}
+  100%{translate:0 -4px; scale:1.025; rotate:.7deg}
+}
+
+.evaluation-card.unified-sequence .evaluation-stage{
+  min-height:56svh !important;
+  height:56svh !important;
+  overflow:hidden !important;
+}
+.evaluation-card.unified-sequence .evaluation-stage .evaluation-img,
+.evaluation-card.unified-sequence .evaluation-stage .evaluation-outcome-img{
+  left:50% !important;
+  top:52.6% !important;
+  right:auto !important;
+  bottom:auto !important;
+  margin:0 !important;
+  transform:translate(-50%,-50%) !important;
+  transform-origin:center center !important;
+  object-fit:contain !important;
+  object-position:center center !important;
+  translate:0 0;
+  scale:1;
+  rotate:0deg;
+}
+.evaluation-card.unified-sequence .evaluation-stage .evaluation-img{
+  width:min(104vw,570px) !important;
+  height:min(47svh,440px) !important;
+}
+.evaluation-card.unified-sequence .evaluation-stage .evaluation-outcome-img{
+  width:min(94vw,455px) !important;
+  height:min(39svh,365px) !important;
+}
+.evaluation-card.unified-sequence .evaluation-img.answer-step,
+.evaluation-card.unified-sequence .evaluation-img.answer-step.enter-center,
+.evaluation-card.unified-sequence .evaluation-img.answer-step.enter-left,
+.evaluation-card.unified-sequence .evaluation-img.answer-step.enter-right,
+.evaluation-card.unified-sequence .evaluation-img.answer-step.enter-top,
+.evaluation-card.unified-sequence .evaluation-img.answer-step.enter-bottom,
+.evaluation-card.unified-sequence .evaluation-img.answer-step.enter-zoom{
+  animation:evalAnswerEntryV3 .44s cubic-bezier(.22,1,.36,1) both, evalAnswerIdleV3 1.2s ease-in-out .44s infinite alternate !important;
+}
+.evaluation-card.unified-sequence .evaluation-img.final-loop{
+  opacity:1 !important;
+  cursor:pointer !important;
+  animation:evalFinalCloudIdleV3 1.08s ease-in-out infinite alternate !important;
+}
+.evaluation-card.unified-sequence .evaluation-img.final-reveal{
+  opacity:1 !important;
+  animation:evalFinalCloudRevealV3 1.45s ease-in forwards !important;
+}
+.evaluation-card.unified-sequence .evaluation-outcome-img.behind,
+.evaluation-card.unified-sequence .evaluation-outcome-img.behind.preloaded{
+  opacity:0 !important;
+  scale:.78;
+  rotate:0deg;
+  translate:0 0;
+}
+.evaluation-card.unified-sequence .evaluation-outcome-img.behind.visible{
+  opacity:.96 !important;
+  scale:.9;
+  rotate:0deg;
+  translate:0 0;
+  transition:opacity .52s ease, scale .52s cubic-bezier(.22,1,.36,1) !important;
+}
+.evaluation-card.unified-sequence .evaluation-outcome-img.outcome-step{
+  opacity:1 !important;
+  animation:evalOutcomeInV3 .52s cubic-bezier(.22,1,.36,1) both, evalOutcomePoseV3 1.35s ease-in-out .52s infinite alternate !important;
+}
+@keyframes evalAnswerEntryV3{
+  0%{opacity:0;translate:0 18px;scale:.88;rotate:0deg}
+  100%{opacity:1;translate:0 0;scale:1.04;rotate:0deg}
+}
+@keyframes evalAnswerIdleV3{
+  0%{translate:-6px 0;scale:1.04;rotate:-1.8deg}
+  100%{translate:6px 0;scale:1.08;rotate:1.8deg}
+}
+@keyframes evalFinalCloudIdleV3{
+  0%{opacity:1;translate:-10px 0;scale:1.02;rotate:-4deg}
+  50%{opacity:1;translate:0 -2px;scale:1.11;rotate:0deg}
+  100%{opacity:1;translate:10px 0;scale:1.18;rotate:4deg}
+}
+@keyframes evalFinalCloudRevealV3{
+  0%{opacity:1;translate:0 0;scale:1.05;rotate:0deg}
+  45%{opacity:.98;translate:0 -2px;scale:1.28;rotate:2deg}
+  72%{opacity:.68;translate:0 -4px;scale:1.58;rotate:-1deg}
+  100%{opacity:0;translate:0 -6px;scale:1.95;rotate:0deg}
+}
+@keyframes evalOutcomeInV3{
+  0%{opacity:0;translate:0 10px;scale:.84;rotate:0deg}
+  100%{opacity:1;translate:0 0;scale:1;rotate:0deg}
+}
+@keyframes evalOutcomePoseV3{
+  0%{translate:-2px 0;scale:1;rotate:-.9deg}
+  100%{translate:2px -3px;scale:1.035;rotate:.9deg}
+}
+
+@media (max-width:860px){
+  .board-runner-img{width:clamp(120px,22vw,166px) !important;height:clamp(120px,22vw,166px) !important}
+  .evaluation-card.unified-sequence .evaluation-stage{min-height:52svh !important;height:52svh !important}
+  .evaluation-card.unified-sequence .evaluation-stage .evaluation-img,
+  .evaluation-card.unified-sequence .evaluation-stage .evaluation-outcome-img{top:52.8% !important}
+  .evaluation-card.unified-sequence .evaluation-stage .evaluation-img{width:min(108vw,465px) !important;height:min(39svh,360px) !important}
+  .evaluation-card.unified-sequence .evaluation-stage .evaluation-outcome-img{width:min(98vw,385px) !important;height:min(33svh,315px) !important}
+}
+@media (max-width:560px){
+  .board-runner-img{width:clamp(112px,25vw,154px) !important;height:clamp(112px,25vw,154px) !important}
+  .evaluation-card.unified-sequence .evaluation-stage{min-height:50svh !important;height:50svh !important}
+  .evaluation-card.unified-sequence .evaluation-stage .evaluation-img,
+  .evaluation-card.unified-sequence .evaluation-stage .evaluation-outcome-img{top:52.9% !important}
+  .evaluation-card.unified-sequence .evaluation-stage .evaluation-img{width:min(110vw,430px) !important;height:min(37svh,340px) !important}
+  .evaluation-card.unified-sequence .evaluation-stage .evaluation-outcome-img{width:min(100vw,350px) !important;height:min(31svh,290px) !important}
+}

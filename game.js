@@ -629,6 +629,27 @@
     return LEVEL_POSITIONS[index] || LEVEL_POSITIONS[0];
   }
 
+  function getRunnerBoardPosition(index) {
+    // Die Levelpunkte werden in mapInner positioniert, der laufende Ritter liegt aber
+    // als Overlay auf boardScreen. Deshalb müssen die Koordinaten aus mapInner
+    // in boardScreen-Prozentwerte umgerechnet werden. Sonst startet der Runner
+    // optisch wieder vom unteren Rand statt vom aktuellen Levelpunkt.
+    updateBoardBox();
+    const screen = el('boardScreen');
+    const inner = el('mapInner');
+    const pos = getLevelPosition(index);
+    if (!screen || !inner) return pos;
+    const screenRect = screen.getBoundingClientRect();
+    const innerRect = inner.getBoundingClientRect();
+    if (!screenRect.width || !screenRect.height || !innerRect.width || !innerRect.height) return pos;
+    const xPx = (innerRect.left - screenRect.left) + innerRect.width * (pos.x / 100);
+    const yPx = (innerRect.top - screenRect.top) + innerRect.height * (pos.y / 100);
+    return {
+      x: (xPx / screenRect.width) * 100,
+      y: (yPx / screenRect.height) * 100
+    };
+  }
+
   function placeRunner(pos) {
     const runner = el('boardRunner');
     if (!runner || !pos) return null;
@@ -677,8 +698,8 @@
   function beginHeroTravel(fromIndex, toIndex, onArrive, options = {}) {
     if (boardTravel) return;
     const state = getState();
-    const fromPos = options.fromIntro ? { x: 18.5, y: 95.2 } : getLevelPosition(fromIndex);
-    const toPos = getLevelPosition(toIndex);
+    const fromPos = options.fromIntro ? { x: 18.5, y: 95.2 } : getRunnerBoardPosition(fromIndex);
+    const toPos = getRunnerBoardPosition(toIndex);
     boardTravel = { from: options.fromIntro ? null : fromIndex, to: toIndex };
 
     // Während der Bewegung wird der stehende Ritter aus dem Map-Render entfernt.
@@ -1402,7 +1423,8 @@
     await playFinalCue(runToken);
     if (runToken !== evaluationRunToken) return;
 
-    image.classList.add('final-loop', 'final-clickable');
+    image.className = 'evaluation-img final-loop final-clickable';
+    applyUnifiedEvaluationAssetLayout(image);
     image.setAttribute('role', 'button');
     image.setAttribute('tabindex', '0');
     image.setAttribute('aria-label', 'Ergebnis aufdecken');
@@ -1420,7 +1442,6 @@
     const revealOutcome = async () => {
       if (runToken !== evaluationRunToken || image.dataset.revealing === '1') return;
       image.dataset.revealing = '1';
-      image.classList.remove('final-loop', 'final-clickable');
       if (outcomeImage) {
         outcomeImage.className = `evaluation-outcome-img behind preloaded ${won ? 'won' : 'lost'}`;
         applyUnifiedEvaluationAssetLayout(outcomeImage);
@@ -1431,12 +1452,13 @@
           outcomeImage.className = `evaluation-outcome-img behind visible ${won ? 'won' : 'lost'}`;
           applyUnifiedEvaluationAssetLayout(outcomeImage);
         }
-      }, 420);
-      image.classList.add('final-reveal');
+      }, 460);
+      image.className = 'evaluation-img final-reveal';
+      applyUnifiedEvaluationAssetLayout(image);
       setEvaluationStatus('');
       stopSound('final');
       stopBattleBackground();
-      await wait(1320);
+      await wait(1480);
       if (runToken !== evaluationRunToken) return;
 
       image.className = 'evaluation-img hidden';
