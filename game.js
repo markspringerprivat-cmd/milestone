@@ -653,14 +653,19 @@
   function placeRunner(pos) {
     const runner = el('boardRunner');
     if (!runner || !pos) return null;
-    // Sofort sichtbar platzieren ohne jede CSS-Transition.
-    // display:block erst setzen, dann position — so gibt es kein Flackern.
+    // Reihenfolge ist entscheidend gegen den "Teleport nach oben links"-Frame:
+    // 1. opacity:0 PER INLINE-STYLE setzen — das überschreibt die CSS-Default-opacity
+    // 2. display:none entfernen (hidden-class) — Runner ist nun unsichtbar im DOM
+    // 3. Position setzen (left/top) — überschreibt CSS-Default left:0/top:0
+    // 4. Layout-Flush — Browser berechnet Layout, ohne es zu rendern
+    // 5. opacity:1 — erster sichtbarer Frame zeigt den Ritter direkt an der richtigen Stelle
     runner.classList.remove('running');
-    runner.classList.remove('hidden');
+    runner.style.opacity = '0';          // erst opacity, dann hidden entfernen
+    runner.classList.remove('hidden');   // jetzt display:block, aber noch transparent
     runner.style.left = `${pos.x}%`;
     runner.style.top  = `${pos.y}%`;
-    runner.style.opacity = '1';
-    void runner.offsetWidth; // Layout erzwingen, damit Browser die Startposition kennt
+    void runner.offsetWidth;             // Layout-Flush — Position ist jetzt berechnet
+    runner.style.opacity = '1';          // sichtbar machen — kein Teleport-Frame möglich
     return runner;
   }
 
@@ -1446,25 +1451,46 @@
       setEvaluationImage(image, imageSrc, `Auswertung Frage ${index + 1}`);
       setEvaluationStatus(isCorrect ? 'Richtig' : 'Falsch', isCorrect ? 'ok' : 'bad');
       setEvaluationDots(index, totalSteps);
-      await playEvaluationCue(imageSrc, runToken);
+      // Sound abspielen OHNE prepareOutcomeSound — battle_background soll weiterlaufen
+      if (runToken === evaluationRunToken) {
+        await playManagedSound(soundKeyForEvaluationImage(imageSrc), 'evaluation');
+      }
       if (runToken !== evaluationRunToken) return;
       await wait(1500);
     }
 
     if (runToken !== evaluationRunToken) return;
     label.textContent = 'Finale Auswertung';
-    setEvaluationImage(image, EVALUATION_IMAGES.final, 'Finale Auswertung', true);
     setEvaluationStatus('Tippe auf das Bild, um das Ergebnis aufzudecken.', '');
     setEvaluationDots(results.length, totalSteps);
     if (action) { action.innerHTML = ''; hide(action); }
-    await playFinalCue(runToken);
+
+    // Final-Bild laden und NUR wenn geladen → final-loop setzen
+    // Damit ist sichergestellt dass die Pulsier-Animation sofort ab erstem Frame läuft
+    await new Promise(resolve => {
+      if (runToken !== evaluationRunToken) { resolve(); return; }
+      setEvaluationImage(image, EVALUATION_IMAGES.final, 'Finale Auswertung', true);
+      // Warte bis das Bild geladen UND die entry-animation fertig ist
+      window.setTimeout(resolve, 500);
+    });
     if (runToken !== evaluationRunToken) return;
 
+    // Jetzt final-loop setzen — Bild ist garantiert geladen und sichtbar.
+    // Reihenfolge: Klasse zuerst setzen (damit alte Animation-Definition weg ist),
+    // dann animation:none flush, dann animation:'' — so startet evalFinalPulse4 sofort.
     image.className = 'evaluation-img final-loop final-clickable';
-    // Kein applyUnified hier — das würde die Puls-Animation durch inline-transform stören
+    image.style.animation = 'none';
+    void image.offsetWidth;             // Layout-Flush: neue Klasse + kein animation
+    image.style.animation = '';         // CSS-Animation aus final-loop greift ab jetzt
     image.setAttribute('role', 'button');
     image.setAttribute('tabindex', '0');
     image.setAttribute('aria-label', 'Ergebnis aufdecken');
+
+    // Final-Sound erst abspielen nachdem Bild sichtbar pulsiert
+    stopManagedChannel('evaluation');
+    await nextPaint(2);
+    if (runToken !== evaluationRunToken) return;
+    await playManagedSound('final', 'evaluation');
 
     const wrong = results.filter(r => !r).length;
     const won = wrong < 2;
@@ -1479,29 +1505,39 @@
     const revealOutcome = async () => {
       if (runToken !== evaluationRunToken || image.dataset.revealing === '1') return;
       image.dataset.revealing = '1';
-      if (outcomeImage) {
-        outcomeImage.className = `evaluation-outcome-img behind preloaded ${won ? 'won' : 'lost'}`;
-        // Kein applyUnified nach Klasse — Transition in CSS übernimmt
-      }
-      await nextPaint(1);
-      window.setTimeout(() => {
-        if (outcomeImage) {
-          outcomeImage.className = `evaluation-outcome-img behind visible ${won ? 'won' : 'lost'}`;
-        }
-      }, 460);
-      image.className = 'evaluation-img final-reveal';
-      // Kein applyUnified — CSS-Animation evalFinalReveal4 übernimmt den transform
-      setEvaluationStatus('');
-      stopSound('final');
-      stopBattleBackground();
-      await wait(1480);
-      if (runToken !== evaluationRunToken) return;
 
-      image.className = 'evaluation-img hidden';
+      // Reveal-Animation des final-Bildes starten
+      image.classList.remove('final-loop', 'final-clickable');
       image.removeAttribute('role');
       image.removeAttribute('tabindex');
       image.removeAttribute('aria-label');
-      if (outcomeImage) outcomeImage.className = `evaluation-outcome-img outcome-step ${won ? 'won' : 'lost'}`;
+      image.style.animation = 'none';
+      void image.offsetWidth;
+      image.style.animation = '';
+      image.className = 'evaluation-img final-reveal';
+
+      // Outcome-Bild gleichzeitig einblenden — startet sofort transparent, blendet auf
+      if (outcomeImage) {
+        outcomeImage.style.animation = 'none';
+        outcomeImage.style.opacity = '0';
+        outcomeImage.style.transition = 'none';
+        void outcomeImage.offsetWidth;
+        outcomeImage.className = `evaluation-outcome-img outcome-fade ${won ? 'won' : 'lost'}`;
+      }
+
+      setEvaluationStatus('');
+      stopManagedChannel('evaluation');
+      stopBattleBackground();
+
+      // Warte bis final-reveal fertig (1.2s aus CSS)
+      await wait(1200);
+      if (runToken !== evaluationRunToken) return;
+
+      // final-Bild ausblenden, Outcome-Bild vollständig sichtbar
+      image.className = 'evaluation-img hidden';
+      if (outcomeImage) {
+        outcomeImage.className = `evaluation-outcome-img outcome-step ${won ? 'won' : 'lost'}`;
+      }
 
       if (won) {
         label.textContent = meta.isBoss ? `${data.enemyName || 'Boss'} besiegt!` : `${data.enemyName || data.label} besiegt!`;
