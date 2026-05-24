@@ -1181,6 +1181,21 @@
     });
   }
 
+  function applyUnifiedEvaluationAssetLayout(node) {
+    if (!node) return;
+    node.style.position = 'absolute';
+    node.style.inset = 'auto';
+    node.style.left = '50%';
+    node.style.right = 'auto';
+    node.style.bottom = 'auto';
+    node.style.top = window.matchMedia('(max-width: 560px)').matches ? '61.5%' : '61%';
+    node.style.margin = '0';
+    node.style.objectFit = 'contain';
+    node.style.objectPosition = 'center center';
+    node.style.transform = 'translate(-50%, -50%) scale(1)';
+    node.style.transformOrigin = 'center center';
+  }
+
   function setEvaluationImage(image, src, alt, finalStep = false) {
     if (!image) return;
     const entryClass = finalStep ? 'enter-center-final' : 'enter-center';
@@ -1189,14 +1204,17 @@
     image.alt = alt;
     image.decoding = 'async';
     image.dataset.evalSrc = src;
+    applyUnifiedEvaluationAssetLayout(image);
 
     const apply = () => {
       if (image.dataset.evalSrc !== src) return;
       image.onload = null;
       image.onerror = null;
+      applyUnifiedEvaluationAssetLayout(image);
       void image.offsetWidth;
       image.style.animation = '';
       image.className = `evaluation-img ${finalStep ? 'final-step' : 'answer-step'} ${entryClass}`;
+      applyUnifiedEvaluationAssetLayout(image);
     };
 
     image.onload = apply;
@@ -1246,7 +1264,7 @@
       <div class="evaluation-label" id="evaluationLabel">Frage 1</div>
       <div class="evaluation-stage" id="evaluationStage">
         <img id="evaluationOutcomeImage" class="evaluation-outcome-img hidden" alt="Ergebnis">
-        <img id="evaluationImage" class="evaluation-img" alt="Auswertung">
+        <img id="evaluationImage" class="evaluation-img preparing hidden" alt="Auswertung">
       </div>
       <div id="evaluationStatus" class="evaluation-status hidden" aria-live="polite"></div>
       <div id="evaluationDots" class="evaluation-dots" aria-hidden="true"></div>
@@ -1277,7 +1295,13 @@
 
     if (checkBtn) checkBtn.disabled = true;
     if (action) { action.innerHTML = ''; hide(action); }
-    if (outcomeLayer) { outcomeLayer.className = 'evaluation-outcome-img hidden'; outcomeLayer.removeAttribute('src'); outcomeLayer.alt = 'Ergebnis'; }
+    if (outcomeLayer) {
+      outcomeLayer.className = 'evaluation-outcome-img hidden';
+      outcomeLayer.removeAttribute('src');
+      outcomeLayer.alt = 'Ergebnis';
+      applyUnifiedEvaluationAssetLayout(outcomeLayer);
+    }
+    applyUnifiedEvaluationAssetLayout(image);
     show(modal);
     startBattleBackground();
 
@@ -1321,6 +1345,7 @@
       outcomeImage.src = won ? data.defeated : 'held_verloren.webp';
       outcomeImage.alt = won ? `${data.enemyName || data.label || 'Gegner'} besiegt` : 'Besiegter Ritter';
       outcomeImage.className = `evaluation-outcome-img hidden ${won ? 'won' : 'lost'}`;
+      applyUnifiedEvaluationAssetLayout(outcomeImage);
     }
 
     const revealOutcome = async () => {
