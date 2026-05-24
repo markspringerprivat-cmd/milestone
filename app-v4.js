@@ -5,6 +5,7 @@
   const BATTLE_STORE = 'koenigreichSinneV4Battle';
   const RETURN_STORE = 'koenigreichSinneV4BoardReturn';
   const SOUND_STORE = 'koenigreichSinneV4Muted';
+  const STATE_VERSION = 'v4_12levels_1';
 
   const SENSES = {
     sehen: {
@@ -40,7 +41,7 @@
   };
 
   const BOSS = {
-    id: 'boss', label: 'Boss', enemyName: 'Sinntron 3000', enemy: 'boss.webp', defeated: 'boss_besiegt.webp', title: 'Finale: Boss der Sinne',
+    id: 'boss', label: 'Boss', code: 'SINNE-BOSS', enemyName: 'Sinntron 3000', enemy: 'boss.webp', defeated: 'boss_besiegt.webp', title: 'Finale: Boss der Sinne',
     speech: '„Alle Sinne gegen mich? Dann zeig, dass du das Königreich wirklich verstanden hast!”',
     intro: 'Im finalen Level geht es um das Zusammenspiel aller Sinnesorgane.',
     content: ['Sinnesorgane nehmen Reize aus der Umwelt oder aus dem Körper auf. Das Gehirn verarbeitet diese Informationen und ordnet sie ein.', 'Viele Wahrnehmungen entstehen durch das Zusammenspiel mehrerer Sinne. Beim Essen wirken zum Beispiel Geschmack, Geruch, Temperatur, Konsistenz und Sehen zusammen.']
@@ -91,17 +92,30 @@
     ]
   };
 
+  const LEVEL_COUNT = 12;
+  const QR_LEVELS = [0, 2, 4, 6, 8, 10];
+  const PLACEHOLDER_LEVELS = [1, 3, 5, 7, 9, 11];
+  const BOSS_SLOT = 10;
   const LEVEL_POSITIONS = [
-    { x: 24.5, y: 91.5 },
-    { x: 28.7, y: 78.2 },
-    { x: 28.7, y: 62.5 },
-    { x: 31.1, y: 44.2 },
-    { x: 30.8, y: 31.5 }
+    { x: 69.5, y: 89.2 },
+    { x: 23.8, y: 91.0 },
+    { x: 28.8, y: 66.4 },
+    { x: 69.5, y: 71.6 },
+    { x: 68.8, y: 53.7 },
+    { x: 28.8, y: 54.9 },
+    { x: 68.9, y: 40.7 },
+    { x: 29.0, y: 36.2 },
+    { x: 28.7, y: 23.3 },
+    { x: 74.7, y: 18.7 },
+    { x: 68.8, y: 10.6 },
+    { x: 41.8, y: 10.8 }
   ];
-  const BOSS_POSITION = { x: 50.0, y: 10.3 };
   const BOARD_RATIO = 941 / 1672;
-  const STAGE_BACKGROUNDS = ['stage_gras.webp', 'stage_sand.webp', 'stage_eis.webp', 'stage_lava.webp', 'stage_himmel.webp'];
-  const POPUP_BACKGROUNDS = ['popup_gras.webp', 'popup_sand.webp', 'popup_eis.webp', 'popup_lava.webp', 'popup_himmel.webp'];
+  const STAGE_BACKGROUNDS = ['stage_gras.webp', 'stage_sand.webp', 'stage_eis.webp', 'stage_lava.webp', 'stage_himmel.webp', 'stage_all.webp'];
+  const POPUP_BACKGROUNDS = ['popup_gras.webp', 'popup_sand.webp', 'popup_eis.webp', 'popup_lava.webp', 'popup_himmel.webp', 'popup_all.webp'];
+  const isPlaceholderSlot = index => PLACEHOLDER_LEVELS.includes(Number(index));
+  const isQrSlot = index => QR_LEVELS.includes(Number(index));
+  const stageIndexForSlot = slot => Math.max(0, Math.min(5, Math.floor((Number(slot) || 0) / 2)));
 
   const ASSETS = {
     correct: ['richtig_1.webp', 'richtig_2.webp', 'richtig_3.webp'],
@@ -173,18 +187,29 @@
     document.body.appendChild(b);
   }
 
-  function defaultState() { return { started:false, slots:[null,null,null,null,null], completed:[false,false,false,false,false], bossCompleted:false, heroIndex:null, introUsed:false }; }
-  function getState() {
-    try { return { ...defaultState(), ...(JSON.parse(localStorage.getItem(STORE)) || {}) }; } catch (_) { return defaultState(); }
+  function defaultState() { return { stateVersion:STATE_VERSION, started:false, slots:Array(LEVEL_COUNT).fill(null), completed:Array(LEVEL_COUNT).fill(false), bossCompleted:false, heroIndex:null, introUsed:false }; }
+  function normalizeState(raw) {
+    const base = defaultState();
+    if (!raw || raw.stateVersion !== STATE_VERSION) return base;
+    const state = { ...base, ...(raw || {}) };
+    const oldSlots = Array.isArray(raw?.slots) ? raw.slots : [];
+    const oldCompleted = Array.isArray(raw?.completed) ? raw.completed : [];
+    state.slots = Array.from({ length: LEVEL_COUNT }, (_, i) => oldSlots[i] || null);
+    state.completed = Array.from({ length: LEVEL_COUNT }, (_, i) => Boolean(oldCompleted[i]));
+    if (!Number.isInteger(state.heroIndex) || state.heroIndex < 0 || state.heroIndex >= LEVEL_COUNT) state.heroIndex = null;
+    return state;
   }
-  function setState(state) { localStorage.setItem(STORE, JSON.stringify({ ...defaultState(), ...state })); }
-  function currentSlot(state = getState()) { const i = state.completed.findIndex(v => !v); return i < 0 ? 5 : i; }
-  function allLevelsDone(state = getState()) { return state.completed.every(Boolean); }
+  function getState() {
+    try { return normalizeState(JSON.parse(localStorage.getItem(STORE)) || null); } catch (_) { return defaultState(); }
+  }
+  function setState(state) { localStorage.setItem(STORE, JSON.stringify(normalizeState(state))); }
+  function currentSlot(state = getState()) { const i = state.completed.findIndex(v => !v); return i < 0 ? LEVEL_COUNT : i; }
+  function allLevelsDone(state = getState()) { return state.completed.length === LEVEL_COUNT && state.completed.every(Boolean); }
   function usedIds(state = getState()) { return state.slots.filter(Boolean); }
-  function dataForMeta(meta) { return meta?.isBoss ? BOSS : SENSES[meta?.senseId]; }
+  function dataForMeta(meta) { return meta?.isBoss || meta?.senseId === 'boss' ? BOSS : SENSES[meta?.senseId]; }
   function getQuestionsForId(id) { return QUESTION_BANK[id] || QUESTION_BANK.sehen; }
-  function bgForMeta(meta) { return meta?.isBoss ? 'stage_all.webp' : STAGE_BACKGROUNDS[Number(meta?.slot) || 0]; }
-  function popupBgForMeta(meta) { return meta?.isBoss ? 'popup_all.webp' : POPUP_BACKGROUNDS[Number(meta?.slot) || 0]; }
+  function bgForMeta(meta) { return STAGE_BACKGROUNDS[stageIndexForSlot(meta?.slot)]; }
+  function popupBgForMeta(meta) { return POPUP_BACKGROUNDS[stageIndexForSlot(meta?.slot)]; }
   function applyStagePopup(modal, meta) {
     if (!modal) return;
     modal.classList.add('stage-popup');
@@ -229,7 +254,7 @@
     $('toggleScannerBtn')?.addEventListener('click', () => { document.querySelector('.camera-box')?.classList.toggle('hidden'); });
     $('scanJumpBottomBtn')?.addEventListener('click', () => $('randomUnlockBtn')?.scrollIntoView({ behavior:'smooth', block:'center' }));
     $('scanJumpTopBtn')?.addEventListener('click', () => $('scanTitle')?.scrollIntoView({ behavior:'smooth', block:'start' }));
-    $('launchLevelBtn')?.addEventListener('click', () => { if (!window.pendingLaunch) return; location.href = window.pendingLaunch.url; });
+    $('launchLevelBtn')?.addEventListener('click', handleLaunchLevel);
     $('encounterBackBtn')?.addEventListener('click', () => escapeToBoard(window.pendingLaunch?.meta));
     $('levelUnlockedContinueBtn')?.addEventListener('click', () => { hide($('levelUnlockedModal')); playSound('background', { loop:true }); });
     window.addEventListener('resize', updateMapGeometry);
@@ -249,7 +274,7 @@
     inner.style.width = `${imgW}px`; inner.style.height = `${imgH}px`;
   }
 
-  function boardPos(index) { return index === 5 ? BOSS_POSITION : LEVEL_POSITIONS[index]; }
+  function boardPos(index) { return LEVEL_POSITIONS[index]; }
   function setHeroAt(index, instant=true) {
     const hero = $('movingHero'); if (!hero) return;
     const pos = boardPos(index); if (!pos) return;
@@ -266,7 +291,7 @@
       hero.classList.remove('hidden');
       hero.style.opacity = '1';
       if (fromIntro || current === null) {
-        hero.style.transition = 'none'; hero.style.left = '16%'; hero.style.top = '94%'; hero.dataset.index = 'intro';
+        hero.style.transition = 'none'; hero.style.left = '92%'; hero.style.top = '96%'; hero.dataset.index = 'intro';
       } else {
         setHeroAt(current, true);
       }
@@ -284,18 +309,18 @@
     const state = getState(); const active = currentSlot(state); const heroIndex = Number.isInteger(state.heroIndex) ? state.heroIndex : null;
     inner.innerHTML = '';
     LEVEL_POSITIONS.forEach((pos, index) => {
-      const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'map-token v4-node'; btn.style.left = `${pos.x}%`; btn.style.top = `${pos.y}%`;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = `map-token v4-node ${isPlaceholderSlot(index) ? 'placeholder-node' : 'quiz-node'}`;
+      btn.style.left = `${pos.x}%`; btn.style.top = `${pos.y}%`;
       const assigned = state.slots[index]; const done = state.completed[index]; const isActive = index === active;
       if (done) btn.innerHTML = `<img class="done-flag-token" src="flag_complete.webp" alt="abgeschlossen"><span class="token-label">Level ${index+1}</span>`;
       else if (isActive) btn.innerHTML = `<span class="token-label open-level-pill">Level ${index+1}</span>`;
       else btn.innerHTML = `<img class="lock-token" src="lock.png" alt="Schloss"><span class="token-label">Level ${index+1}</span>`;
       btn.addEventListener('click', () => onLevelNode(index)); inner.appendChild(btn);
     });
-    const boss = document.createElement('button'); boss.type='button'; boss.className='map-token v4-node boss'; boss.style.left=`${BOSS_POSITION.x}%`; boss.style.top=`${BOSS_POSITION.y}%`;
-    boss.innerHTML = state.bossCompleted ? `<img class="done-flag-token" src="flag_complete.webp" alt="Finale geschafft"><span class="token-label">Finale</span>` : `<img class="lock-token" src="lock.png" alt="Boss verschlossen"><span class="token-label">Finale</span>`;
-    boss.addEventListener('click', onBossNode); inner.appendChild(boss);
     const hero = document.createElement('button'); hero.type='button'; hero.id='movingHero'; hero.className='map-token moving-hero-token'; hero.innerHTML='<img class="hero-token" src="held.webp" alt="Sir Nervus">'; inner.appendChild(hero);
-    if (heroIndex !== null) setHeroAt(heroIndex, true); else { hero.classList.add('hidden'); hero.style.left='16%'; hero.style.top='94%'; }
+    if (heroIndex !== null) setHeroAt(heroIndex, true); else { hero.classList.add('hidden'); hero.style.left='92%'; hero.style.top='96%'; }
     renderGuide(state);
   }
 
@@ -312,13 +337,20 @@
     if (fromIntro) { $('boardGuide')?.classList.add('go-away'); await sleep(650); hide($('boardGuide')); }
     await animateHeroTo(index, { fromIntro });
     const latest = getState(); const assigned = latest.slots[index];
-    if (completed) { location.href = `level.html?sense=${encodeURIComponent(assigned)}&slot=${index}`; return; }
+
+    if (isPlaceholderSlot(index)) {
+      if (completed) return;
+      showPlaceholder(index);
+      return;
+    }
+
+    if (completed) {
+      if (!assigned) return;
+      location.href = assigned === 'boss' ? `level.html?type=boss&slot=${index}` : `level.html?sense=${encodeURIComponent(assigned)}&slot=${index}`;
+      return;
+    }
     if (assigned) { showEncounter(assigned, index); return; }
     openScan(index);
-  }
-  async function onBossNode() {
-    const state = getState(); if (!allLevelsDone(state) || state.bossCompleted) return;
-    await animateHeroTo(5); showBossEncounter();
   }
 
   let scanIndex = null, scanner = null;
@@ -341,15 +373,17 @@
   function unlockByCode(raw) {
     if (!Number.isInteger(scanIndex)) return;
     const code = String(raw || '').trim().toUpperCase();
-    const sense = Object.values(SENSES).find(s => s.code.toUpperCase() === code || s.id.toUpperCase() === code.replace('SINNE-',''));
-    if (!sense) { setScanMessage('Code nicht erkannt.', true); return; }
-    if (usedIds().includes(sense.id)) { setScanMessage('Dieser Gegner wurde schon verwendet.', true); return; }
-    unlockSense(sense.id, scanIndex);
+    const candidates = scanIndex === BOSS_SLOT ? [BOSS] : Object.values(SENSES);
+    const entry = candidates.find(s => s.code?.toUpperCase() === code || s.id.toUpperCase() === code.replace('SINNE-',''));
+    if (!entry) { setScanMessage(scanIndex === BOSS_SLOT ? 'Für dieses Feld brauchst du den Boss-Code.' : 'Code nicht erkannt.', true); return; }
+    if (usedIds().includes(entry.id)) { setScanMessage('Dieser Gegner wurde schon verwendet.', true); return; }
+    unlockSense(entry.id, scanIndex);
   }
   function unlockRandom() {
     if (!Number.isInteger(scanIndex)) return;
+    if (scanIndex === BOSS_SLOT) { unlockSense('boss', scanIndex); return; }
     const unused = Object.keys(SENSES).filter(id => !usedIds().includes(id));
-    if (!unused.length) return;
+    if (!unused.length) { setScanMessage('Alle Sinnes-Gegner wurden bereits verwendet.', true); return; }
     unlockSense(unused[Math.floor(Math.random()*unused.length)], scanIndex);
   }
   async function unlockSense(id, index) {
@@ -358,16 +392,50 @@
     playSound('levelunlocked'); renderBoard(); showEncounter(id,index);
   }
   function showEncounter(id,index) {
-    const data = SENSES[id]; const meta = { isBoss:false, slot:index, senseId:id };
-    window.pendingLaunch = { url:`level.html?sense=${encodeURIComponent(id)}&slot=${index}`, meta };
+    const isBoss = id === 'boss';
+    const data = isBoss ? BOSS : SENSES[id];
+    if (!data) return;
+    const meta = { isBoss, slot:index, senseId:id };
+    window.pendingLaunch = { url:isBoss ? `level.html?type=boss&slot=${index}` : `level.html?sense=${encodeURIComponent(id)}&slot=${index}`, meta };
     const modal = $('encounterModal'); applyStagePopup(modal, meta);
-    $('encounterImage').src=data.enemy; $('encounterImage').alt=data.enemyName; $('encounterKicker').textContent='Level freigeschaltet'; $('encounterTitle').textContent=data.enemyName; $('encounterSpeech').textContent=data.speech; show(modal);
+    $('launchLevelBtn').textContent = isBoss ? 'Finale starten' : 'Level starten';
+    $('encounterImage').src=data.enemy; $('encounterImage').alt=data.enemyName; $('encounterKicker').textContent=isBoss ? 'Finale freigeschaltet' : 'Level freigeschaltet'; $('encounterTitle').textContent=data.enemyName; $('encounterSpeech').textContent=data.speech; show(modal);
   }
-  function showBossEncounter() {
-    const meta = { isBoss:true, senseId:'boss' };
-    window.pendingLaunch = { url:'level.html?type=boss', meta };
+
+  function showPlaceholder(index) {
+    const meta = { isBoss:false, slot:index, placeholder:true };
+    window.pendingLaunch = { placeholder:true, slot:index, meta };
     const modal = $('encounterModal'); applyStagePopup(modal, meta);
-    $('encounterImage').src=BOSS.enemy; $('encounterImage').alt=BOSS.enemyName; $('encounterKicker').textContent='Finale freigeschaltet'; $('encounterTitle').textContent=BOSS.enemyName; $('encounterSpeech').textContent=BOSS.speech; show(modal);
+    $('launchLevelBtn').textContent = index === LEVEL_COUNT - 1 ? 'Zum Finale' : 'Weiter';
+    $('encounterImage').src = ASSETS.winHero;
+    $('encounterImage').alt = 'Sir Nervus macht weiter';
+    $('encounterKicker').textContent = 'Zwischenstation';
+    $('encounterTitle').textContent = `Level ${index + 1}`;
+    $('encounterSpeech').textContent = index === LEVEL_COUNT - 1 ? 'Das Königreich ist gerettet. Weiter zum Abschluss!' : 'Kurze Rast geschafft. Weiter zum nächsten Feld!';
+    show(modal);
+  }
+
+  function handleLaunchLevel() {
+    if (!window.pendingLaunch) return;
+    if (window.pendingLaunch.placeholder) { completePlaceholder(window.pendingLaunch.slot); return; }
+    location.href = window.pendingLaunch.url;
+  }
+
+  async function completePlaceholder(index) {
+    hide($('encounterModal'));
+    const state = getState();
+    state.completed[index] = true;
+    state.heroIndex = index;
+    setState(state);
+    renderBoard();
+    playSound('levelunlocked');
+    const next = currentSlot(getState());
+    if (next >= LEVEL_COUNT) { showOutro(); return; }
+    await animateHeroTo(next);
+    const latest = getState();
+    if (isPlaceholderSlot(next)) showPlaceholder(next);
+    else if (latest.slots[next]) showEncounter(latest.slots[next], next);
+    else openScan(next);
   }
   function escapeToBoard(meta) {
     closeScan(); hide($('encounterModal'));
@@ -391,7 +459,6 @@
     const img = modal.querySelector('img'); const title=$('levelUnlockedTitle'); const kicker=$('levelUnlockedKicker'); const text=$('levelUnlockedText');
     stopSound('background');
     if (data.type === 'escape') { img.src=ASSETS.escapeHero; kicker.textContent=''; title.textContent='Du bist entkommen.'; text.textContent='Scanne einen neuen QR-Code, um es erneut zu versuchen.'; }
-    else if (data.meta?.isBoss) { showOutro(); return; }
     else { img.src=ASSETS.winHero; kicker.textContent='Erfolg'; title.textContent='Neues Level freigeschaltet'; text.textContent='Weiter zum Spielbrett.'; playSound('levelunlocked'); }
     show(modal);
   }
@@ -399,11 +466,13 @@
   function initLevel() {
     addSpeaker();
     const isBoss = qs('type') === 'boss'; const slot = Number(qs('slot')); const senseId = isBoss ? 'boss' : qs('sense'); const state=getState();
-    if (!isBoss && (!Number.isInteger(slot) || !SENSES[senseId] || state.slots[slot] !== senseId)) { location.replace('index.html'); return; }
-    if (isBoss && !allLevelsDone(state)) { location.replace('index.html'); return; }
-    const data = isBoss ? BOSS : SENSES[senseId]; const meta = { isBoss, slot: isBoss ? null : slot, senseId };
+    if (!Number.isInteger(slot) || slot < 0 || slot >= LEVEL_COUNT) { location.replace('index.html'); return; }
+    if (isBoss) {
+      if (state.slots[slot] !== 'boss') { location.replace('index.html'); return; }
+    } else if (!SENSES[senseId] || state.slots[slot] !== senseId) { location.replace('index.html'); return; }
+    const data = isBoss ? BOSS : SENSES[senseId]; const meta = { isBoss, slot, senseId };
     document.body.style.setProperty('--stage-bg', `url("${bgForMeta(meta)}")`);
-    $('levelBadge').textContent = isBoss ? 'Finale' : `Level ${slot+1}`;
+    $('levelBadge').textContent = `Level ${slot+1}`;
     const enemy = $('levelEnemy'); if (enemy) { enemy.src=data.enemy; enemy.alt=data.enemyName; }
     const content = $('levelContent'); if (content) content.innerHTML = `<p>${esc(data.intro)}</p>` + data.content.map(p=>`<p>${esc(p)}</p>`).join('');
     const questions = getQuestionsForId(senseId);
@@ -578,7 +647,14 @@
   }
   function finishBattleWin(meta) {
     const state = getState();
-    if (meta.isBoss) state.bossCompleted = true; else { state.completed[meta.slot]=true; state.heroIndex=meta.slot; }
+    if (meta.isBoss) {
+      state.bossCompleted = true;
+      state.completed[meta.slot] = true;
+      state.heroIndex = meta.slot;
+    } else {
+      state.completed[meta.slot] = true;
+      state.heroIndex = meta.slot;
+    }
     setState(state); sessionStorage.removeItem(BATTLE_STORE);
     localStorage.setItem(RETURN_STORE, JSON.stringify({ type:'unlocked', meta }));
     location.href='index.html';
@@ -587,7 +663,7 @@
   function initCodes() {
     addSpeaker(); $('printCodesBtn')?.addEventListener('click', () => print());
     const grid=$('qrGrid'); if (!grid) return;
-    grid.innerHTML = Object.values(SENSES).map(s=>`<article class="qr-card"><img src="qr_${s.id}.png" alt="QR-Code ${esc(s.label)}"><h2>${esc(s.label)}</h2><p>${esc(s.code)}</p></article>`).join('');
+    grid.innerHTML = [...Object.values(SENSES), BOSS].map(s=>`<article class="qr-card"><img src="qr_${s.id}.png" alt="QR-Code ${esc(s.label)}"><h2>${esc(s.label)}</h2><p>${esc(s.code)}</p></article>`).join('');
   }
 
   document.addEventListener('DOMContentLoaded', () => {

@@ -706,3 +706,26 @@ body[data-page="battle"] #battleSequenceScene .battle-action .game-btn{
   .intro-text-img{max-height:46svh}
   .outro-continue-btn{width:min(76vw,340px)}
 }
+
+/* --- 12-Level-Board Anpassungen --- */
+.board-guide-hero{
+  left:auto!important;
+  right:-5%!important;
+  bottom:-1%!important;
+  width:min(56vw,300px)!important;
+  transform-origin:right bottom!important;
+}
+.map-token.v4-node.placeholder-node .open-level-pill{
+  background:rgba(255,255,255,.94)!important;
+  color:#173268!important;
+}
+.map-token.v4-node.quiz-node .open-level-pill{
+  background:linear-gradient(180deg,#fff,#eef4ff)!important;
+}
+@media(max-width:560px){
+  .board-guide-hero{right:-8%!important;left:auto!important;width:min(60vw,240px)!important}
+  .map-token.v4-node .token-label{min-width:70px!important;padding:6px 10px!important;font-size:.72rem!important}
+  .map-token.v4-node .lock-token{width:60px!important;height:60px!important}
+  .map-token.v4-node .done-flag-token{width:68px!important;height:68px!important}
+  .moving-hero-token .hero-token{width:clamp(78px,22vw,120px)!important;height:clamp(78px,22vw,120px)!important}
+}
