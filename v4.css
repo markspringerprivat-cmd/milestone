@@ -729,3 +729,73 @@ body[data-page="battle"] #battleSequenceScene .battle-action .game-btn{
   .map-token.v4-node .done-flag-token{width:68px!important;height:68px!important}
   .moving-hero-token .hero-token{width:clamp(78px,22vw,120px)!important;height:clamp(78px,22vw,120px)!important}
 }
+
+/* === FINAL 12-board order + battle layout fixes === */
+body[data-page="battle"] .battle-card{padding-bottom:calc(18px + env(safe-area-inset-bottom))!important;}
+body[data-page="battle"] .battle-kampf-text{
+  width:min(102vw,760px)!important;
+  height:min(27svh,210px)!important;
+  margin:82px auto 4px!important;
+}
+body[data-page="battle"] .battle-versus-layout{
+  min-height:50svh!important;
+  padding-bottom:4px!important;
+}
+body[data-page="battle"] .battle-side.hero{left:-2%!important;top:26%!important;}
+body[data-page="battle"] .battle-side.enemy{right:2%!important;top:26%!important;}
+body[data-page="battle"] .battle-actor{
+  width:min(45vw,285px)!important;
+  height:min(34svh,310px)!important;
+}
+body[data-page="battle"] .battle-name{margin-top:-8px!important;}
+body[data-page="battle"] .battle-buttons{
+  margin-top:0!important;
+  gap:10px!important;
+  padding-bottom:calc(12px + env(safe-area-inset-bottom))!important;
+}
+body[data-page="battle"] .battle-buttons .game-btn{
+  min-height:58px!important;
+  width:calc(100% - 96px)!important;
+  max-width:520px!important;
+}
+body[data-page="battle"] #battleSequenceScene .battle-top{top:60px!important;min-height:154px!important;}
+body[data-page="battle"] .battle-text-img{
+  width:min(100vw,680px)!important;
+  height:min(21svh,164px)!important;
+  margin:34px auto 0!important;
+}
+body[data-page="battle"] #battleSequenceScene .battle-stage{top:170px!important;bottom:132px!important;}
+body[data-page="battle"] .battle-seq-img,body[data-page="battle"] .battle-outcome{top:62%!important;}
+body[data-page="battle"] .battle-seq-img{width:min(112vw,580px)!important;height:min(51svh,480px)!important;}
+body[data-page="battle"] .battle-outcome{width:min(88vw,420px)!important;height:min(37svh,350px)!important;}
+body[data-page="battle"] .battle-seq-img.final-idle{
+  animation:finalCloudHeavySwing .78s ease-in-out infinite alternate, finalCloudHeavyPulse .9s ease-in-out infinite!important;
+}
+body[data-page="battle"] .battle-text-img.result-show{
+  width:min(106vw,720px)!important;
+  height:min(22svh,172px)!important;
+}
+@keyframes finalCloudHeavySwing{
+  0%{transform:translate(-50%,-50%) translateX(-18px) rotate(-5deg) scale(.94)}
+  100%{transform:translate(-50%,-50%) translateX(18px) rotate(5deg) scale(1.10)}
+}
+@keyframes finalCloudHeavyPulse{
+  0%,100%{filter:drop-shadow(0 16px 28px rgba(0,0,0,.22))}
+  50%{filter:drop-shadow(0 20px 36px rgba(255,210,60,.45))}
+}
+@media(max-width:560px){
+  body[data-page="battle"] .battle-kampf-text{width:min(102vw,450px)!important;height:min(22svh,165px)!important;margin:74px auto 0!important;}
+  body[data-page="battle"] .battle-versus-layout{min-height:48svh!important;}
+  body[data-page="battle"] .battle-side.hero{left:-4%!important;top:29%!important;}
+  body[data-page="battle"] .battle-side.enemy{right:0!important;top:29%!important;}
+  body[data-page="battle"] .battle-actor{width:min(46vw,196px)!important;height:min(29svh,218px)!important;}
+  body[data-page="battle"] .battle-name{font-size:.82rem!important;padding:5px 8px!important;margin-top:-10px!important;}
+  body[data-page="battle"] .battle-buttons .game-btn{width:calc(100% - 84px)!important;min-height:54px!important;}
+  body[data-page="battle"] #battleSequenceScene .battle-top{top:50px!important;min-height:144px!important;}
+  body[data-page="battle"] .battle-text-img{width:min(102vw,415px)!important;height:min(16svh,118px)!important;margin-top:34px!important;}
+  body[data-page="battle"] #battleSequenceScene .battle-stage{top:166px!important;bottom:136px!important;}
+  body[data-page="battle"] .battle-seq-img,body[data-page="battle"] .battle-outcome{top:63%!important;}
+  body[data-page="battle"] .battle-seq-img{width:min(112vw,440px)!important;height:min(45svh,365px)!important;}
+  body[data-page="battle"] .battle-outcome{width:min(88vw,320px)!important;height:min(31svh,270px)!important;}
+  body[data-page="battle"] .battle-text-img.result-show{width:min(108vw,430px)!important;height:min(17svh,126px)!important;}
+}

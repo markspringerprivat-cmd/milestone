@@ -97,18 +97,18 @@
   const PLACEHOLDER_LEVELS = [1, 3, 5, 7, 9, 11];
   const BOSS_SLOT = 10;
   const LEVEL_POSITIONS = [
-    { x: 69.5, y: 89.2 },
-    { x: 23.8, y: 91.0 },
-    { x: 28.8, y: 66.4 },
-    { x: 69.5, y: 71.6 },
-    { x: 68.8, y: 53.7 },
-    { x: 28.8, y: 54.9 },
-    { x: 68.9, y: 40.7 },
-    { x: 29.0, y: 36.2 },
-    { x: 28.7, y: 23.3 },
-    { x: 74.7, y: 18.7 },
-    { x: 68.8, y: 10.6 },
-    { x: 41.8, y: 10.8 }
+    { x: 34.8, y: 90.6 },
+    { x: 77.0, y: 91.0 },
+    { x: 82.9, y: 70.2 },
+    { x: 36.5, y: 64.5 },
+    { x: 40.9, y: 55.1 },
+    { x: 81.9, y: 48.1 },
+    { x: 77.4, y: 39.0 },
+    { x: 37.1, y: 36.3 },
+    { x: 36.9, y: 22.6 },
+    { x: 78.3, y: 17.2 },
+    { x: 65.4, y: 6.4 },
+    { x: 35.7, y: 11.2 }
   ];
   const BOARD_RATIO = 941 / 1672;
   const STAGE_BACKGROUNDS = ['stage_gras.webp', 'stage_sand.webp', 'stage_eis.webp', 'stage_lava.webp', 'stage_himmel.webp', 'stage_all.webp'];
@@ -560,6 +560,8 @@
     outcome.className='battle-outcome behind';
     img.onclick = async () => {
       img.onclick = null; hideFinalHint(); stopSound('final');
+      stopSound('battle_background');
+      playSound(won ? 'win' : 'lose');
       if (textImg) {
         textImg.src = won ? ASSETS.text.gewonnen : ASSETS.text.verloren;
         textImg.alt = won ? 'Gewonnen' : 'Verloren';
@@ -569,13 +571,11 @@
       await sleep(180);
       img.classList.remove('final-idle'); img.classList.add('cloud-reveal');
       outcome.classList.add('visible');
-      await sleep(1320);
+      await sleep(1120);
       img.className='battle-seq-img hidden';
       outcome.className='battle-outcome visible idle';
-      stopSound('battle_background');
-      playSound(won ? 'win' : 'lose');
       if (textImg) {
-        await sleep(60);
+        await sleep(80);
         textImg.className = 'battle-text-img result-show';
       }
       showBattleResult(won, data, meta, action, label, status);
