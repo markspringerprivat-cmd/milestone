@@ -114,6 +114,9 @@
   const BOSS_POPUP_BACKGROUND = 'popup_all.webp';
   const BOARD_RATIO = 1086 / 1448;
 
+  let boardTravel = null;
+  let boardTravelToken = 0;
+
   const STORE = 'koenigreichSinneGameRebuildV1';
   const UNLOCKED_MODAL_STORE = 'koenigreichSinneShowUnlockedModalV1';
   const RETURN_MODAL_STORE = 'koenigreichSinneReturnModalV1';
@@ -609,89 +612,108 @@
       guide.classList.remove('go-away');
       guide.classList.toggle('hidden', !isBoardGuidePending() || document.body.dataset.page !== 'board' || el('boardScreen')?.classList.contains('hidden'));
     }
-    if (runner) { runner.classList.remove('running'); hide(runner); }
+    if (runner) {
+      runner.classList.remove('running');
+      runner.style.opacity = '0';
+      hide(runner);
+    }
+    boardTravel = null;
   }
 
-  function playBoardStartSequence(index) {
-    const state = getState();
-    state.boardGuideSeen = true;
-    setState(state);
-
-    const guide = el('boardGuide');
-    const runner = el('boardRunner');
-    const target = LEVEL_POSITIONS[index] || LEVEL_POSITIONS[0];
-    guide?.classList.add('go-away');
-
-    window.setTimeout(() => {
-      hide(guide);
-      if (runner) {
-        runner.classList.remove('hidden', 'running');
-        runner.style.opacity = '1';
-        // Von knapp innerhalb des unteren Spielfeldrands sichtbar einfliegen lassen.
-        runner.style.left = `${Math.max(42, target.x - 1.4)}%`;
-        runner.style.top = '95.8%';
-        runner.style.setProperty('--target-left', `${target.x}%`);
-        runner.style.setProperty('--target-top', `${target.y}%`);
-        void runner.offsetWidth;
-        window.requestAnimationFrame(() => {
-          window.requestAnimationFrame(() => runner.classList.add('running'));
-        });
-      }
-      playSound('levelstart');
-      window.setTimeout(() => {
-        const nextState = getState();
-        nextState.heroNode = index;
-        setState(nextState);
-        stopBackgroundMusic();
-        window.setTimeout(() => {
-          hide(runner);
-          renderBoard();
-          openScanModal(index);
-        }, 500);
-      }, 1650);
-    }, 850);
+  function setRunnerPosition(runner, pos) {
+    if (!runner || !pos) return;
+    runner.style.left = `${pos.x}%`;
+    runner.style.top = `${pos.y}%`;
   }
 
-  function playBoardTravelSequence(fromIndex, toIndex, onArrive) {
+  function animateRunner(fromPos, toPos, duration = 2000, onArrive) {
     const runner = el('boardRunner');
-    const from = LEVEL_POSITIONS[fromIndex] || LEVEL_POSITIONS[toIndex] || LEVEL_POSITIONS[0];
-    const target = LEVEL_POSITIONS[toIndex] || from;
-    if (!runner) {
-      const state = getState();
-      state.heroNode = toIndex;
-      setState(state);
-      renderBoard();
+    const token = ++boardTravelToken;
+    if (!runner || !fromPos || !toPos) {
       onArrive?.();
       return;
     }
 
-    // Wichtig: stehenden Ritter auf dem Feld ausblenden, bevor der Läufer erscheint,
-    // damit niemals zwei Ritter gleichzeitig sichtbar sind.
-    const movingState = getState();
-    movingState.heroNode = null;
-    setState(movingState);
-    renderBoard();
-
     runner.classList.remove('hidden', 'running');
     runner.style.opacity = '1';
-    runner.style.left = `${from.x}%`;
-    runner.style.top = `${from.y}%`;
-    runner.style.setProperty('--target-left', `${target.x}%`);
-    runner.style.setProperty('--target-top', `${target.y}%`);
+    runner.style.transitionDuration = `${duration}ms`;
+    setRunnerPosition(runner, fromPos);
+    runner.style.setProperty('--target-left', `${toPos.x}%`);
+    runner.style.setProperty('--target-top', `${toPos.y}%`);
     void runner.offsetWidth;
-    playSound('levelstart');
     window.requestAnimationFrame(() => {
       window.requestAnimationFrame(() => runner.classList.add('running'));
     });
 
     window.setTimeout(() => {
-      const state = getState();
-      state.heroNode = toIndex;
-      setState(state);
+      if (token !== boardTravelToken) return;
+      runner.classList.remove('running');
+      runner.style.opacity = '0';
       hide(runner);
+      onArrive?.();
+    }, duration + 50);
+  }
+
+  function playBoardStartSequence(index, onArrive) {
+    if (boardTravel) return;
+    const state = getState();
+    state.boardGuideSeen = true;
+    setState(state);
+    const guide = el('boardGuide');
+    const target = LEVEL_POSITIONS[index] || LEVEL_POSITIONS[0];
+    boardTravel = { from: 'intro', to: index };
+    guide?.classList.add('go-away');
+
+    window.setTimeout(() => {
+      hide(guide);
+      const movingState = getState();
+      movingState.heroNode = null;
+      setState(movingState);
       renderBoard();
-      window.setTimeout(() => onArrive?.(), 450);
-    }, 1200);
+      playSound('levelstart');
+      const startPos = { x: 18.5, y: 95.2 };
+      animateRunner(startPos, target, 2000, () => {
+        const nextState = getState();
+        nextState.heroNode = index;
+        setState(nextState);
+        boardTravel = null;
+        renderBoard();
+        stopBackgroundMusic();
+        window.setTimeout(() => onArrive?.(), 350);
+      });
+    }, 800);
+  }
+
+  function playBoardTravelSequence(fromIndex, toIndex, onArrive) {
+    if (boardTravel || fromIndex === toIndex) {
+      if (fromIndex === toIndex) onArrive?.();
+      return;
+    }
+
+    const from = LEVEL_POSITIONS[fromIndex] || LEVEL_POSITIONS[toIndex] || LEVEL_POSITIONS[0];
+    const target = LEVEL_POSITIONS[toIndex] || from;
+    boardTravel = { from: fromIndex, to: toIndex };
+
+    const movingState = getState();
+    movingState.heroNode = fromIndex;
+    setState(movingState);
+    renderBoard();
+    playSound('levelstart');
+
+    window.setTimeout(() => {
+      const transientState = getState();
+      transientState.heroNode = null;
+      setState(transientState);
+      renderBoard();
+      animateRunner(from, target, 2000, () => {
+        const nextState = getState();
+        nextState.heroNode = toIndex;
+        setState(nextState);
+        boardTravel = null;
+        renderBoard();
+        window.setTimeout(() => onArrive?.(), 250);
+      });
+    }, 60);
   }
 
   // ─── Board-Rendering ──────────────────────────────────────────────────────
@@ -722,7 +744,7 @@
       const done = state.completed[index];
       const isActive = index === active && !done;
       const guidePending = isBoardGuidePending(state) && index === 0 && isActive && !assigned;
-      const heroHere = heroNode === index;
+      const heroHere = heroNode === index && !(boardTravel && boardTravel.from === index);
       const token = document.createElement('button');
       token.type = 'button';
       token.className = `map-token ${guidePending ? 'guide-active' : heroHere ? 'hero-active standing' : done ? 'done' : isActive ? 'available' : 'locked'}`;
@@ -783,6 +805,8 @@
   // ─── Board-Interaktion ────────────────────────────────────────────────────
 
   function handleNodeClick(index) {
+    if (boardTravel) return;
+
     const state = getState();
     const active = currentSlot(state);
     const heroNode = getHeroNode(state);
@@ -790,15 +814,19 @@
 
     const moveHeroThen = (callback) => {
       stopBackgroundMusic();
+      if (index === 0 && isBoardGuidePending(getState())) {
+        playBoardStartSequence(index, callback);
+        return;
+      }
       if (Number.isInteger(heroNode) && heroNode !== index) {
         playBoardTravelSequence(heroNode, index, callback);
-      } else {
-        const nextState = getState();
-        nextState.heroNode = index;
-        setState(nextState);
-        renderBoard();
-        callback?.();
+        return;
       }
+      const nextState = getState();
+      nextState.heroNode = index;
+      setState(nextState);
+      renderBoard();
+      callback?.();
     };
 
     if (state.completed[index]) {
@@ -808,7 +836,7 @@
         setState(latest);
         window.setTimeout(() => {
           window.location.href = `level.html?sense=${encodeURIComponent(state.slots[index])}&slot=${index}`;
-        }, 180);
+        }, 140);
       });
       return;
     }
@@ -819,8 +847,6 @@
       moveHeroThen(() => showEncounter(state.slots[index], index));
       return;
     }
-
-    if (index === 0 && isBoardGuidePending(state)) { playBoardStartSequence(index); return; }
 
     moveHeroThen(() => openScanModal(index));
   }
@@ -1217,7 +1243,7 @@
     node.style.left = '50%';
     node.style.right = 'auto';
     node.style.bottom = 'auto';
-    node.style.top = window.matchMedia('(max-width: 560px)').matches ? '61.5%' : '61%';
+    node.style.top = window.matchMedia('(max-width: 560px)').matches ? '54.5%' : '54%';
     node.style.margin = '0';
     node.style.objectFit = 'contain';
     node.style.objectPosition = 'center center';
@@ -1350,7 +1376,7 @@
       setEvaluationDots(index, totalSteps);
       await playEvaluationCue(imageSrc, runToken);
       if (runToken !== evaluationRunToken) return;
-      await wait(2000);
+      await wait(1500);
     }
 
     if (runToken !== evaluationRunToken) return;
@@ -1382,15 +1408,21 @@
       image.dataset.revealing = '1';
       image.classList.remove('final-loop', 'final-clickable');
       if (outcomeImage) {
-        outcomeImage.className = `evaluation-outcome-img behind ${won ? 'won' : 'lost'}`;
+        outcomeImage.className = `evaluation-outcome-img behind preloaded ${won ? 'won' : 'lost'}`;
         applyUnifiedEvaluationAssetLayout(outcomeImage);
       }
       await nextPaint(1);
+      window.setTimeout(() => {
+        if (outcomeImage) {
+          outcomeImage.className = `evaluation-outcome-img behind visible ${won ? 'won' : 'lost'}`;
+          applyUnifiedEvaluationAssetLayout(outcomeImage);
+        }
+      }, 520);
       image.classList.add('final-reveal');
       setEvaluationStatus('');
       stopSound('final');
       stopBattleBackground();
-      await wait(1250);
+      await wait(1325);
       if (runToken !== evaluationRunToken) return;
 
       image.className = 'evaluation-img hidden';
