@@ -952,3 +952,97 @@ body[data-page="minigame"] .speaker-btn{display:none!important}
   .mini-hero{width:min(40vw,156px);height:min(26svh,178px);}
   .mini-settings-btn{width:48px;height:48px;font-size:1.3rem;}
 }
+
+/* --- Mini-game sprite controls and anti-selection hardening --- */
+body[data-page="minigame"],
+body[data-page="minigame"] *{
+  -webkit-user-select:none!important;
+  user-select:none!important;
+  -webkit-touch-callout:none!important;
+  -webkit-tap-highlight-color:transparent!important;
+}
+body[data-page="minigame"]{
+  position:fixed!important;
+  inset:0!important;
+  width:100vw!important;
+  height:100svh!important;
+  overflow:hidden!important;
+}
+.mini-game-page,
+.mini-game-stage,
+.mini-controls{
+  touch-action:none!important;
+  overscroll-behavior:none!important;
+}
+.mini-hero{
+  width:min(36vw,210px)!important;
+  height:min(28svh,235px)!important;
+  bottom:0!important;
+  pointer-events:none!important;
+}
+.mini-hero.walking{
+  animation:miniWalkBob .30s ease-in-out infinite alternate!important;
+}
+.mini-control-btn{
+  touch-action:none!important;
+  user-select:none!important;
+  -webkit-user-select:none!important;
+  -webkit-touch-callout:none!important;
+  -webkit-tap-highlight-color:transparent!important;
+  -webkit-appearance:none!important;
+  appearance:none!important;
+  cursor:pointer;
+}
+.mini-control-btn::selection{background:transparent!important;color:inherit!important;}
+.mini-control-btn:focus{outline:none!important;}
+.mini-control-btn:focus-visible{box-shadow:0 0 0 4px rgba(255,255,255,.32),0 12px 22px rgba(0,0,0,.22)!important;}
+@media(max-width:560px){
+  .mini-hero{width:min(44vw,176px)!important;height:min(29svh,202px)!important;}
+}
+
+/* --- Mini-game sprite controls and anti-selection hardening --- */
+body[data-page="minigame"],
+body[data-page="minigame"] *{
+  -webkit-user-select:none!important;
+  user-select:none!important;
+  -webkit-touch-callout:none!important;
+  -webkit-tap-highlight-color:transparent!important;
+}
+body[data-page="minigame"]{
+  position:fixed!important;
+  inset:0!important;
+  width:100vw!important;
+  height:100svh!important;
+  overflow:hidden!important;
+}
+.mini-game-page,
+.mini-game-stage,
+.mini-controls{
+  touch-action:none!important;
+  overscroll-behavior:none!important;
+}
+.mini-hero{
+  width:min(36vw,210px)!important;
+  height:min(28svh,235px)!important;
+  bottom:0!important;
+  pointer-events:none!important;
+}
+.mini-hero.walking{
+  animation:miniWalkBob .30s ease-in-out infinite alternate!important;
+}
+.mini-control-btn{
+  touch-action:none!important;
+  user-select:none!important;
+  -webkit-user-select:none!important;
+  -webkit-touch-callout:none!important;
+  -webkit-tap-highlight-color:transparent!important;
+  -webkit-appearance:none!important;
+  appearance:none!important;
+  cursor:pointer;
+}
+.mini-control-btn::selection{background:transparent!important;color:inherit!important;}
+.mini-control-btn:focus{outline:none!important;}
+.mini-control-btn:focus-visible{box-shadow:0 0 0 4px rgba(255,255,255,.32),0 12px 22px rgba(0,0,0,.22)!important;}
+@media(max-width:560px){
+  .mini-hero{width:min(44vw,176px)!important;height:min(29svh,202px)!important;}
+}

@@ -702,47 +702,120 @@
     const boardBtn = $('miniBackBoardBtn');
     if (!hero) return;
 
+    const SPRITES = {
+      right1: 'mini_right_1.png',
+      right2: 'mini_right_2.png',
+      left1: 'mini_left_1.png',
+      left2: 'mini_left_2.png',
+      jump: 'mini_jump.png',
+      fall: 'mini_fall.png'
+    };
+    Object.values(SPRITES).forEach(src => { const img = new Image(); img.src = src; });
+    const jumpAudio = new Audio('jump_sound.mp3');
+    jumpAudio.preload = 'auto';
+    jumpAudio.volume = 0.82;
+
     let x = 50;
-    let velocity = 0;
     let direction = 1;
+    let pressedLeft = false;
+    let pressedRight = false;
+    let velocity = 0;
     let jumping = false;
     let jumpY = 0;
     let jumpVelocity = 0;
     let last = performance.now();
+    let lastSprite = '';
 
     function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
+    function currentVelocity() {
+      if (pressedLeft && !pressedRight) return -1;
+      if (pressedRight && !pressedLeft) return 1;
+      return 0;
+    }
+    function recomputeVelocity() {
+      velocity = currentVelocity();
+      if (velocity !== 0) direction = velocity > 0 ? 1 : -1;
+      hero.classList.toggle('walking', velocity !== 0 && !jumping);
+    }
+    function setSprite(src) {
+      if (lastSprite === src) return;
+      hero.src = src;
+      lastSprite = src;
+    }
+    function updateSprite(now) {
+      if (jumping) {
+        setSprite(jumpVelocity >= 0 ? SPRITES.jump : SPRITES.fall);
+        hero.classList.remove('walking');
+        return;
+      }
+      if (velocity < 0) {
+        setSprite((Math.floor(now / 300) % 2 === 0) ? SPRITES.left1 : SPRITES.left2);
+      } else if (velocity > 0) {
+        setSprite((Math.floor(now / 300) % 2 === 0) ? SPRITES.right1 : SPRITES.right2);
+      } else {
+        setSprite(direction < 0 ? SPRITES.left1 : SPRITES.right1);
+      }
+      hero.classList.toggle('walking', velocity !== 0);
+    }
     function applyHero() {
       hero.style.left = `${x}%`;
-      hero.style.transform = `translateX(-50%) translateY(${-jumpY}px) scaleX(${direction})`;
+      hero.style.transform = `translateX(-50%) translateY(${-jumpY}px)`;
     }
-    function setVelocity(v) {
-      velocity = v;
-      if (v !== 0) {
-        direction = v > 0 ? 1 : -1;
-        hero.classList.add('walking');
-      } else {
-        hero.classList.remove('walking');
-      }
+    function playJumpSound() {
+      try {
+        jumpAudio.currentTime = 0;
+        jumpAudio.play().catch(() => {});
+      } catch (_) {}
     }
-    function bindHold(btn, v) {
-      if (!btn) return;
-      const start = (ev) => { ev.preventDefault(); setVelocity(v); };
-      const stop = (ev) => { ev?.preventDefault?.(); if (velocity === v) setVelocity(0); };
-      btn.addEventListener('pointerdown', start);
-      btn.addEventListener('pointerup', stop);
-      btn.addEventListener('pointercancel', stop);
-      btn.addEventListener('pointerleave', stop);
-      btn.addEventListener('touchstart', start, { passive:false });
-      btn.addEventListener('touchend', stop, { passive:false });
-    }
-    bindHold(leftBtn, -1);
-    bindHold(rightBtn, 1);
-    jumpBtn?.addEventListener('click', () => {
+    function jump() {
       if (jumping) return;
       jumping = true;
       jumpVelocity = 760;
       hero.classList.add('jumping');
+      playJumpSound();
+      setSprite(SPRITES.jump);
+    }
+    function bindHold(btn, side) {
+      if (!btn) return;
+      const down = (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        if (side === 'left') pressedLeft = true;
+        if (side === 'right') pressedRight = true;
+        recomputeVelocity();
+        try { btn.setPointerCapture?.(ev.pointerId); } catch (_) {}
+      };
+      const up = (ev) => {
+        ev?.preventDefault?.();
+        ev?.stopPropagation?.();
+        if (side === 'left') pressedLeft = false;
+        if (side === 'right') pressedRight = false;
+        recomputeVelocity();
+      };
+      btn.addEventListener('pointerdown', down);
+      btn.addEventListener('pointerup', up);
+      btn.addEventListener('pointercancel', up);
+      btn.addEventListener('lostpointercapture', up);
+      btn.addEventListener('contextmenu', ev => ev.preventDefault());
+      btn.addEventListener('selectstart', ev => ev.preventDefault());
+      btn.addEventListener('dragstart', ev => ev.preventDefault());
+    }
+    bindHold(leftBtn, 'left');
+    bindHold(rightBtn, 'right');
+    jumpBtn?.addEventListener('pointerdown', (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      jump();
     });
+    [jumpBtn, leftBtn, rightBtn].forEach(btn => {
+      if (!btn) return;
+      btn.addEventListener('contextmenu', ev => ev.preventDefault());
+      btn.addEventListener('selectstart', ev => ev.preventDefault());
+      btn.addEventListener('dragstart', ev => ev.preventDefault());
+    });
+    window.addEventListener('blur', () => { pressedLeft = false; pressedRight = false; recomputeVelocity(); });
+    document.addEventListener('visibilitychange', () => { if (document.hidden) { pressedLeft = false; pressedRight = false; recomputeVelocity(); } });
+
     settingsBtn?.addEventListener('click', () => show(menu));
     closeMenu?.addEventListener('click', () => hide(menu));
     boardBtn?.addEventListener('click', () => location.href = 'index.html');
@@ -750,7 +823,7 @@
     function tick(now) {
       const dt = Math.min(0.033, (now - last) / 1000 || 0);
       last = now;
-      if (velocity) x = clamp(x + velocity * 26 * dt, 10, 90);
+      if (velocity) x = clamp(x + velocity * 26 * dt, 8, 92);
       if (jumping) {
         jumpY += jumpVelocity * dt;
         jumpVelocity -= 1750 * dt;
@@ -759,11 +832,14 @@
           jumpVelocity = 0;
           jumping = false;
           hero.classList.remove('jumping');
+          recomputeVelocity();
         }
       }
+      updateSprite(now);
       applyHero();
       requestAnimationFrame(tick);
     }
+    setSprite(SPRITES.right1);
     applyHero();
     requestAnimationFrame(tick);
   }
