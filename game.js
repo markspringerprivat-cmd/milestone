@@ -653,12 +653,14 @@
   function placeRunner(pos) {
     const runner = el('boardRunner');
     if (!runner || !pos) return null;
-    runner.classList.remove('hidden', 'running');
-    runner.style.transitionProperty = 'none';
-    runner.style.opacity = '1';
+    // Sofort sichtbar platzieren ohne jede CSS-Transition.
+    // display:block erst setzen, dann position — so gibt es kein Flackern.
+    runner.classList.remove('running');
+    runner.classList.remove('hidden');
     runner.style.left = `${pos.x}%`;
-    runner.style.top = `${pos.y}%`;
-    void runner.offsetWidth;
+    runner.style.top  = `${pos.y}%`;
+    runner.style.opacity = '1';
+    void runner.offsetWidth; // Layout erzwingen, damit Browser die Startposition kennt
     return runner;
   }
 
@@ -670,41 +672,59 @@
     hide(runner);
   }
 
-  function runHeroAnimation(fromPos, toPos, duration = 2000, onArrive) {
+  // Easing: cubic-bezier(.22,1,.36,1) — springy ease-out
+  function easeOutSpring(t) {
+    // Näherung von cubic-bezier(.22,1,.36,1) via simple ease-out-expo
+    return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+  }
+
+  function runHeroAnimation(fromPos, toPos, duration, onArrive) {
+    duration = duration || 1800;
     const runner = placeRunner(fromPos);
     const token = ++boardTravelToken;
-    if (!runner || !toPos) {
-      onArrive?.();
-      return;
+    if (!runner || !toPos) { onArrive?.(); return; }
+
+    runner.classList.add('running'); // Lauf-Animation auf dem Bild aktiv halten
+
+    const startTime = performance.now();
+    const fx = fromPos.x, fy = fromPos.y;
+    const tx = toPos.x,  ty = toPos.y;
+
+    function step(now) {
+      if (token !== boardTravelToken) return; // abgebrochen
+      const elapsed = now - startTime;
+      const t = Math.min(elapsed / duration, 1);
+      const e = easeOutSpring(t);
+      runner.style.left = `${fx + (tx - fx) * e}%`;
+      runner.style.top  = `${fy + (ty - fy) * e}%`;
+      if (t < 1) {
+        window.requestAnimationFrame(step);
+      } else {
+        // Kurze Pause damit der Spieler den Ritter am Ziel sieht, dann ausblenden
+        window.setTimeout(() => {
+          if (token !== boardTravelToken) return;
+          hideRunner();
+          onArrive?.();
+        }, 120);
+      }
     }
-
-    runner.style.setProperty('--target-left', `${toPos.x}%`);
-    runner.style.setProperty('--target-top', `${toPos.y}%`);
-    runner.style.transitionProperty = 'left, top, opacity';
-    runner.style.transitionDuration = `${duration}ms, ${duration}ms, 220ms`;
-    runner.style.transitionTimingFunction = 'cubic-bezier(.22,1,.36,1), cubic-bezier(.22,1,.36,1), ease';
-
-    window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(() => runner.classList.add('running'));
-    });
-
-    window.setTimeout(() => {
-      if (token !== boardTravelToken) return;
-      hideRunner();
-      onArrive?.();
-    }, duration + 80);
+    window.requestAnimationFrame(step);
   }
 
   function beginHeroTravel(fromIndex, toIndex, onArrive, options = {}) {
     if (boardTravel) return;
     const state = getState();
-    const fromPos = options.fromIntro ? { x: 18.5, y: 95.2 } : getRunnerBoardPosition(fromIndex);
+
+    // Startposition: Intro-Lauf kommt von unten links außerhalb des Bildschirms.
+    // Normaler Levelwechsel: Ritter startet exakt an der aktuellen Levelposition.
+    const fromPos = options.fromIntro
+      ? { x: -8, y: 110 }                  // außerhalb unten-links
+      : getRunnerBoardPosition(fromIndex);
     const toPos = getRunnerBoardPosition(toIndex);
     boardTravel = { from: options.fromIntro ? null : fromIndex, to: toIndex };
 
-    // Während der Bewegung wird der stehende Ritter aus dem Map-Render entfernt.
-    // Der sichtbare Ritter ist ausschließlich boardRunner. Dadurch gibt es keine
-    // Doppelritter und keine Teleportation zwischen zwei Levelpunkten.
+    // Während der Bewegung wird der stehende Ritter aus dem Map-Render entfernt —
+    // der sichtbare Ritter ist ausschließlich boardRunner.
     state.heroNode = null;
     state.boardGuideSeen = true;
     setState(state);
@@ -712,14 +732,22 @@
     hide(el('boardGuide'));
     playSound('levelstart');
 
-    runHeroAnimation(fromPos, toPos, 2000, () => {
+    // Fahrzeit proportional zur Distanz: min 900 ms, max 2200 ms
+    const dx = toPos.x - fromPos.x;
+    const dy = toPos.y - fromPos.y;
+    const dist = Math.sqrt(dx * dx + dy * dy); // in Prozent-Einheiten
+    const duration = options.fromIntro
+      ? 2000
+      : Math.min(2200, Math.max(900, dist * 38));
+
+    runHeroAnimation(fromPos, toPos, duration, () => {
       const arrived = getState();
       arrived.heroNode = toIndex;
       arrived.boardGuideSeen = true;
       setState(arrived);
       boardTravel = null;
       renderBoard();
-      window.setTimeout(() => onArrive?.(), 260);
+      window.setTimeout(() => onArrive?.(), 220);
     });
   }
 
@@ -1273,23 +1301,29 @@
 
   function applyUnifiedEvaluationAssetLayout(node) {
     if (!node) return;
+    // Nur Position setzen — kein inline transform, da dieser CSS-Animationen blockieren würde.
+    // Das transform (translate -50%,-50% scale) kommt ausschließlich aus den CSS-Keyframes.
     node.style.position = 'absolute';
     node.style.inset = 'auto';
     node.style.left = '50%';
     node.style.right = 'auto';
     node.style.bottom = 'auto';
-    node.style.top = window.matchMedia('(max-width: 560px)').matches ? '53.6%' : '53.4%';
+    node.style.top = '';  // CSS-Wert aus dem Stylesheet verwenden (52.6%)
     node.style.margin = '0';
     node.style.objectFit = 'contain';
     node.style.objectPosition = 'center center';
-    node.style.transform = 'translate(-50%, -50%) scale(1)';
-    node.style.transformOrigin = 'center center';
+    node.style.transform = '';          // Inline-Transform entfernen → CSS übernimmt
+    node.style.transformOrigin = '';
+    node.style.translate = 'none';
+    node.style.scale = 'none';
+    node.style.rotate = 'none';
   }
 
   function setEvaluationImage(image, src, alt, finalStep = false) {
     if (!image) return;
     const entryClass = finalStep ? 'enter-center-final' : 'enter-center';
-    image.className = 'evaluation-img preparing';
+    // Zuerst: Bild verstecken und alle Animationen zurücksetzen
+    image.className = 'evaluation-img hidden';
     image.style.animation = 'none';
     image.alt = alt;
     image.decoding = 'async';
@@ -1300,17 +1334,20 @@
       if (image.dataset.evalSrc !== src) return;
       image.onload = null;
       image.onerror = null;
+      // Inline-Animation zurücksetzen, Layout-Flush erzwingen, dann Animation-Klasse setzen.
+      // Das sorgt dafür dass die Animation GLEICHZEITIG mit dem ersten sichtbaren Frame startet.
+      image.style.animation = 'none';
       applyUnifiedEvaluationAssetLayout(image);
-      void image.offsetWidth;
+      void image.offsetWidth; // Layout-Flush: Browser muss jetzt rendern
       image.style.animation = '';
+      // Klasse setzen — Animation beginnt ab diesem Frame
       image.className = `evaluation-img ${finalStep ? 'final-step' : 'answer-step'} ${entryClass}`;
-      applyUnifiedEvaluationAssetLayout(image);
     };
 
     image.onload = apply;
     image.onerror = apply;
     image.src = src;
-    if (image.complete) apply();
+    if (image.complete && image.naturalWidth) apply(); // Bild bereits im Cache
   }
 
   function setEvaluationStatus(text, kind = '') {
@@ -1424,7 +1461,7 @@
     if (runToken !== evaluationRunToken) return;
 
     image.className = 'evaluation-img final-loop final-clickable';
-    applyUnifiedEvaluationAssetLayout(image);
+    // Kein applyUnified hier — das würde die Puls-Animation durch inline-transform stören
     image.setAttribute('role', 'button');
     image.setAttribute('tabindex', '0');
     image.setAttribute('aria-label', 'Ergebnis aufdecken');
@@ -1444,17 +1481,16 @@
       image.dataset.revealing = '1';
       if (outcomeImage) {
         outcomeImage.className = `evaluation-outcome-img behind preloaded ${won ? 'won' : 'lost'}`;
-        applyUnifiedEvaluationAssetLayout(outcomeImage);
+        // Kein applyUnified nach Klasse — Transition in CSS übernimmt
       }
       await nextPaint(1);
       window.setTimeout(() => {
         if (outcomeImage) {
           outcomeImage.className = `evaluation-outcome-img behind visible ${won ? 'won' : 'lost'}`;
-          applyUnifiedEvaluationAssetLayout(outcomeImage);
         }
       }, 460);
       image.className = 'evaluation-img final-reveal';
-      applyUnifiedEvaluationAssetLayout(image);
+      // Kein applyUnified — CSS-Animation evalFinalReveal4 übernimmt den transform
       setEvaluationStatus('');
       stopSound('final');
       stopBattleBackground();

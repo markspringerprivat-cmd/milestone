@@ -2118,13 +2118,16 @@ body.stage-popups .encounter-card, .modal.stage-popup .encounter-card{
   right:auto !important;
   bottom:auto !important;
   margin:0 !important;
-  transform:translate(-50%,-50%) !important;
+  /* transform-origin gilt NUR für transform:, nicht für individuelle scale/translate/rotate Properties.
+     Deshalb alle Transformationen ausschließlich über transform: steuern. */
+  transform:translate(-50%,-50%) scale(1) !important;
   transform-origin:center center !important;
   object-fit:contain !important;
   object-position:center center !important;
-  translate:0 0;
-  scale:1;
-  rotate:0deg;
+  /* Individuelle Properties zurücksetzen damit sie nicht mit transform: konkurrieren */
+  translate:none;
+  scale:none;
+  rotate:none;
 }
 .evaluation-card.unified-sequence .evaluation-stage .evaluation-img{
   width:min(104vw,570px) !important;
@@ -2134,6 +2137,7 @@ body.stage-popups .encounter-card, .modal.stage-popup .encounter-card{
   width:min(94vw,455px) !important;
   height:min(39svh,365px) !important;
 }
+/* ── Antwort-Bilder: Animation startet SOFORT beim Einblenden (kein Delay) ── */
 .evaluation-card.unified-sequence .evaluation-img.answer-step,
 .evaluation-card.unified-sequence .evaluation-img.answer-step.enter-center,
 .evaluation-card.unified-sequence .evaluation-img.answer-step.enter-left,
@@ -2141,61 +2145,73 @@ body.stage-popups .encounter-card, .modal.stage-popup .encounter-card{
 .evaluation-card.unified-sequence .evaluation-img.answer-step.enter-top,
 .evaluation-card.unified-sequence .evaluation-img.answer-step.enter-bottom,
 .evaluation-card.unified-sequence .evaluation-img.answer-step.enter-zoom{
-  animation:evalAnswerEntryV3 .44s cubic-bezier(.22,1,.36,1) both, evalAnswerIdleV3 1.2s ease-in-out .44s infinite alternate !important;
+  /* Entry (0→0.38s) läuft gleichzeitig mit dem Bild-Erscheinen.
+     Danach: sanftes Schaukeln ohne Rotation für ruhige Lesbarkeit. */
+  animation:evalAnswerEntry4 .38s cubic-bezier(.22,1,.36,1) both,
+            evalAnswerIdle4  1.4s ease-in-out .38s infinite alternate !important;
 }
+
+/* ── Final-Bild: nur leichtes Pulsieren, kein Wackeln ── */
 .evaluation-card.unified-sequence .evaluation-img.final-loop{
   opacity:1 !important;
   cursor:pointer !important;
-  animation:evalFinalCloudIdleV3 1.08s ease-in-out infinite alternate !important;
+  animation:evalFinalPulse4 1.3s ease-in-out infinite alternate !important;
 }
+
+/* ── Aufdecken: Bild wächst zentriert und verschwindet, ohne sich zu verschieben ── */
 .evaluation-card.unified-sequence .evaluation-img.final-reveal{
   opacity:1 !important;
-  animation:evalFinalCloudRevealV3 1.45s ease-in forwards !important;
+  animation:evalFinalReveal4 1.2s ease-in forwards !important;
 }
+
+/* ── Ergebnis-Bild (Sieg/Niederlage) blendet sanft dahinter auf ── */
 .evaluation-card.unified-sequence .evaluation-outcome-img.behind,
 .evaluation-card.unified-sequence .evaluation-outcome-img.behind.preloaded{
   opacity:0 !important;
-  scale:.78;
-  rotate:0deg;
+  scale:0.82;
   translate:0 0;
 }
 .evaluation-card.unified-sequence .evaluation-outcome-img.behind.visible{
-  opacity:.96 !important;
-  scale:.9;
-  rotate:0deg;
+  opacity:1 !important;
+  scale:1;
   translate:0 0;
-  transition:opacity .52s ease, scale .52s cubic-bezier(.22,1,.36,1) !important;
+  transition:opacity .55s ease, scale .55s cubic-bezier(.22,1,.36,1) !important;
 }
 .evaluation-card.unified-sequence .evaluation-outcome-img.outcome-step{
   opacity:1 !important;
-  animation:evalOutcomeInV3 .52s cubic-bezier(.22,1,.36,1) both, evalOutcomePoseV3 1.35s ease-in-out .52s infinite alternate !important;
+  animation:evalOutcomeIn4 .6s cubic-bezier(.22,1,.36,1) both,
+            evalOutcomeIdle4 1.5s ease-in-out .6s infinite alternate !important;
 }
-@keyframes evalAnswerEntryV3{
-  0%{opacity:0;translate:0 18px;scale:.88;rotate:0deg}
-  100%{opacity:1;translate:0 0;scale:1.04;rotate:0deg}
+
+@keyframes evalAnswerEntry4{
+  /* Kommt von unten — Animation beginnt sofort mit der Klasse, kein Delay */
+  0%  {opacity:0; transform:translate(-50%, calc(-50% + 22px)) scale(.84)}
+  100%{opacity:1; transform:translate(-50%,-50%) scale(1)}
 }
-@keyframes evalAnswerIdleV3{
-  0%{translate:-6px 0;scale:1.04;rotate:-1.8deg}
-  100%{translate:6px 0;scale:1.08;rotate:1.8deg}
+@keyframes evalAnswerIdle4{
+  /* Sanftes Schwingen nach oben — kein Drehen */
+  0%  {opacity:1; transform:translate(-50%,-50%) scale(1)}
+  100%{opacity:1; transform:translate(-50%, calc(-50% - 5px)) scale(1.04)}
 }
-@keyframes evalFinalCloudIdleV3{
-  0%{opacity:1;translate:-10px 0;scale:1.02;rotate:-4deg}
-  50%{opacity:1;translate:0 -2px;scale:1.11;rotate:0deg}
-  100%{opacity:1;translate:10px 0;scale:1.18;rotate:4deg}
+@keyframes evalFinalPulse4{
+  /* Nur Atmen: kein Wackeln, kein Verschieben */
+  0%  {opacity:.92; transform:translate(-50%,-50%) scale(.97)}
+  100%{opacity:1;   transform:translate(-50%,-50%) scale(1.06)}
 }
-@keyframes evalFinalCloudRevealV3{
-  0%{opacity:1;translate:0 0;scale:1.05;rotate:0deg}
-  45%{opacity:.98;translate:0 -2px;scale:1.28;rotate:2deg}
-  72%{opacity:.68;translate:0 -4px;scale:1.58;rotate:-1deg}
-  100%{opacity:0;translate:0 -6px;scale:1.95;rotate:0deg}
+@keyframes evalFinalReveal4{
+  /* Wächst zentriert und verschwindet — bleibt immer an der gleichen Stelle */
+  0%  {opacity:1;   transform:translate(-50%,-50%) scale(1.00)}
+  40% {opacity:.95; transform:translate(-50%,-50%) scale(1.22)}
+  70% {opacity:.60; transform:translate(-50%,-50%) scale(1.50)}
+  100%{opacity:0;   transform:translate(-50%,-50%) scale(1.80)}
 }
-@keyframes evalOutcomeInV3{
-  0%{opacity:0;translate:0 10px;scale:.84;rotate:0deg}
-  100%{opacity:1;translate:0 0;scale:1;rotate:0deg}
+@keyframes evalOutcomeIn4{
+  0%  {opacity:0; transform:translate(-50%, calc(-50% + 12px)) scale(.80)}
+  100%{opacity:1; transform:translate(-50%,-50%) scale(1)}
 }
-@keyframes evalOutcomePoseV3{
-  0%{translate:-2px 0;scale:1;rotate:-.9deg}
-  100%{translate:2px -3px;scale:1.035;rotate:.9deg}
+@keyframes evalOutcomeIdle4{
+  0%  {opacity:1; transform:translate(-50%,-50%) scale(1)}
+  100%{opacity:1; transform:translate(-50%, calc(-50% - 4px)) scale(1.025)}
 }
 
 @media (max-width:860px){
