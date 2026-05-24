@@ -426,8 +426,20 @@
   }
   function setBattleMode(mode) {
     document.body.dataset.battleMode = mode;
-    if (mode === 'sequence') { hide($('battleIntroScene')); show($('battleSequenceScene')); }
-    if (mode === 'intro') { show($('battleIntroScene')); hide($('battleSequenceScene')); }
+    if (mode === "sequence") { hide($("battleIntroScene")); show($("battleSequenceScene")); }
+    if (mode === "intro") { show($("battleIntroScene")); hide($("battleSequenceScene")); }
+  }
+  function showFinalHint(text="Tippe auf die Wolke") { const n=$("finalHint"); if(!n) return; n.textContent=text; show(n); }
+  function hideFinalHint() { hide($("finalHint")); }
+  function waitForRenderable(node) {
+    if (!node) return Promise.resolve();
+    return new Promise(resolve => {
+      const done = () => requestAnimationFrame(() => requestAnimationFrame(resolve));
+      const finish = () => { try { node.onload = null; } catch (_) {} done(); };
+      if (node.complete && node.naturalWidth > 0) { done(); return; }
+      node.onload = finish;
+      node.onerror = finish;
+    });
   }
   function pickNoRepeat(list, prev) { const pool = list.filter(x=>x!==prev); return (pool.length?pool:list)[Math.floor(Math.random()*(pool.length?pool:list).length)]; }
   let lastCorrect=null,lastWrong=null;
@@ -436,8 +448,8 @@
     await playSound('fight');
     playSound('battle_background', { loop:true });
     const img=$('sequenceImage'), label=$('sequenceLabel'), status=$('sequenceStatus'), dots=$('sequenceDots'), outcome=$('outcomeImage'), action=$('battleAction'), textImg=$('sequenceTextImage');
-    action.innerHTML = '';
-    hide(action);
+    action.innerHTML = '';    hide(action);
+    hideFinalHint();
     if (textImg) { textImg.className = 'battle-text-img hidden'; textImg.removeAttribute('src'); }
     label.textContent = ''; status.textContent = '';
     dots.innerHTML = '<span></span>'.repeat(6);
@@ -458,12 +470,13 @@
     [...dots.children].forEach((d,di)=>d.className=di===5?'active':'');
     if (textImg) textImg.className = 'battle-text-img hidden';
     await showFinalCloud(img);
+    showFinalHint();
     playSound('final');
     const wrong = payload.results.filter(v=>!v).length; const won = wrong <= 1;
     outcome.src = won ? data.defeated : ASSETS.loseHero; outcome.alt = won ? `${data.enemyName} besiegt` : 'Du wurdest besiegt';
     outcome.className='battle-outcome behind';
     img.onclick = async () => {
-      img.onclick = null; stopSound('final');
+      img.onclick = null; hideFinalHint(); stopSound('final');
       if (textImg) {
         textImg.src = won ? ASSETS.text.gewonnen : ASSETS.text.verloren;
         textImg.alt = won ? 'Gewonnen' : 'Verloren';
@@ -483,28 +496,30 @@
 
   function playAnswerStep(img, textImg, src, textSrc, alt, soundKey) {
     return new Promise(resolve => {
-      img.className='battle-seq-img preparing'; img.src=src; img.alt=alt; img.onclick=null;
-      if (textImg) { textImg.className = 'battle-text-img preparing'; textImg.src = textSrc; textImg.alt = alt; }
-      const apply=()=>{
-        img.onload=null;
-        if (textImg) textImg.onload=null;
-        void img.offsetWidth;
-        if (textImg) void textImg.offsetWidth;
-        playSound(soundKey);
-        img.className='battle-seq-img answer-cycle';
-        if (textImg) textImg.className='battle-text-img answer-text-cycle';
-        window.setTimeout(()=>{
-          img.className='battle-seq-img hidden';
-          if (textImg) textImg.className='battle-text-img hidden';
-          resolve();
-        }, 2000);
-      };
-      let loadedImg = img.complete;
-      let loadedText = !textImg || textImg.complete;
-      const tryApply=()=>{ if (loadedImg && loadedText) apply(); };
-      img.onload=()=>{ loadedImg=true; tryApply(); };
-      if (textImg) textImg.onload=()=>{ loadedText=true; tryApply(); };
-      tryApply();
+      img.onclick = null;
+      img.className = "battle-seq-img preparing";
+      img.removeAttribute("src");
+      if (textImg) {
+        textImg.className = "battle-text-img preparing";
+        textImg.removeAttribute("src");
+      }
+      requestAnimationFrame(() => {
+        img.src = src;
+        img.alt = alt;
+        if (textImg) { textImg.src = textSrc; textImg.alt = alt; }
+        Promise.all([waitForRenderable(img), waitForRenderable(textImg)]).then(() => {
+          playSound(soundKey);
+          void img.offsetWidth;
+          if (textImg) void textImg.offsetWidth;
+          img.className = "battle-seq-img answer-cycle";
+          if (textImg) textImg.className = "battle-text-img answer-text-cycle";
+          window.setTimeout(() => {
+            img.className = "battle-seq-img hidden";
+            if (textImg) textImg.className = "battle-text-img hidden";
+            resolve();
+          }, 2000);
+        });
+      });
     });
   }
 
@@ -517,9 +532,17 @@
   }
   function showFinalCloud(img) {
     return new Promise(resolve => {
-      img.className='battle-seq-img preparing'; img.src=ASSETS.final; img.alt='Finale Staubwolke';
-      const apply=()=>{ img.onload=null; void img.offsetWidth; img.className='battle-seq-img final-cloud final-idle'; resolve(); };
-      img.onload=apply; if (img.complete) apply();
+      img.className='battle-seq-img preparing';
+      img.removeAttribute('src');
+      requestAnimationFrame(() => {
+        img.src = ASSETS.final;
+        img.alt = 'Finale Staubwolke';
+        waitForRenderable(img).then(() => {
+          void img.offsetWidth;
+          img.className='battle-seq-img final-cloud final-idle';
+          resolve();
+        });
+      });
     });
   }
   function showBattleResult(won, data, meta, action, label, status) {
