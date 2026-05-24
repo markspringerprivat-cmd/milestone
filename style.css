@@ -1633,3 +1633,97 @@ body.stage-popups .encounter-card, .modal.stage-popup .encounter-card{
     --eval-stage-height: var(--eval-stage-mobile-height);
   }
 }
+
+/* === FINAL CLOUD + HERO TRAVEL FIX === */
+/* All evaluation graphics keep one single fixed anchor; animations now include that anchor in transform. */
+.evaluation-card.unified-sequence .evaluation-stage .evaluation-img,
+.evaluation-card.unified-sequence .evaluation-stage .evaluation-outcome-img{
+  left:50% !important;
+  top:52% !important;
+  transform:translate(-50%,-50%) scale(1) rotate(0deg) !important;
+  transform-origin:center center !important;
+}
+
+.evaluation-card.unified-sequence .evaluation-img.answer-step.enter-center,
+.evaluation-card.unified-sequence .evaluation-img.answer-step.enter-left,
+.evaluation-card.unified-sequence .evaluation-img.answer-step.enter-right,
+.evaluation-card.unified-sequence .evaluation-img.answer-step.enter-top,
+.evaluation-card.unified-sequence .evaluation-img.answer-step.enter-bottom,
+.evaluation-card.unified-sequence .evaluation-img.answer-step.enter-zoom{
+  animation:evaluationAnchoredAnswer 1.45s ease-in-out both !important;
+}
+
+.evaluation-card.unified-sequence .evaluation-img.final-step.enter-center-final,
+.evaluation-card.unified-sequence .evaluation-img.final-step.enter-left,
+.evaluation-card.unified-sequence .evaluation-img.final-step.enter-right,
+.evaluation-card.unified-sequence .evaluation-img.final-step.enter-top,
+.evaluation-card.unified-sequence .evaluation-img.final-step.enter-bottom,
+.evaluation-card.unified-sequence .evaluation-img.final-step.enter-zoom{
+  animation:evaluationAnchoredFinalIn .62s cubic-bezier(.22,1,.36,1) both !important;
+}
+
+.evaluation-card.unified-sequence .evaluation-img.final-loop{
+  animation:evaluationAnchoredCloudPulse .82s ease-in-out infinite alternate !important;
+}
+
+.evaluation-card.unified-sequence .evaluation-img.final-reveal{
+  animation:evaluationAnchoredCloudReveal 1.15s ease-in forwards !important;
+}
+
+.evaluation-card.unified-sequence .evaluation-outcome-img.behind{
+  opacity:.86 !important;
+  visibility:visible !important;
+  animation:evaluationAnchoredOutcomeBehind .75s ease-out both !important;
+}
+
+.evaluation-card.unified-sequence .evaluation-outcome-img.outcome-step{
+  opacity:1 !important;
+  visibility:visible !important;
+  animation:evaluationAnchoredOutcomePose 1.35s ease-in-out infinite alternate !important;
+}
+
+.evaluation-card.unified-sequence .evaluation-outcome-img.won,
+.evaluation-card.unified-sequence .evaluation-outcome-img.lost{
+  transform:translate(-50%,-50%) scale(1) rotate(0deg) !important;
+}
+
+@keyframes evaluationAnchoredAnswer{
+  0%{opacity:0;transform:translate(-50%,-50%) translateY(14px) scale(.9) rotate(-1deg)}
+  24%{opacity:1;transform:translate(-50%,-50%) translateY(0) scale(1) rotate(0deg)}
+  50%{opacity:1;transform:translate(-50%,-50%) translateX(-4px) scale(1.015) rotate(-.5deg)}
+  74%{opacity:1;transform:translate(-50%,-50%) translateX(4px) scale(1.025) rotate(.5deg)}
+  100%{opacity:1;transform:translate(-50%,-50%) translateY(0) scale(1) rotate(0deg)}
+}
+
+@keyframes evaluationAnchoredFinalIn{
+  0%{opacity:0;transform:translate(-50%,-50%) translateY(12px) scale(.9) rotate(0deg)}
+  100%{opacity:1;transform:translate(-50%,-50%) translateY(0) scale(1) rotate(0deg)}
+}
+
+@keyframes evaluationAnchoredCloudPulse{
+  0%{opacity:1;transform:translate(-50%,-50%) translateX(-3px) scale(.96) rotate(-.4deg)}
+  100%{opacity:1;transform:translate(-50%,-50%) translateX(3px) scale(1.12) rotate(.4deg)}
+}
+
+@keyframes evaluationAnchoredCloudReveal{
+  0%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0deg)}
+  68%{opacity:.9;transform:translate(-50%,-50%) scale(1.35) rotate(.2deg)}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(1.72) rotate(.2deg)}
+}
+
+@keyframes evaluationAnchoredOutcomeBehind{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.92) rotate(0deg)}
+  100%{opacity:.86;transform:translate(-50%,-50%) scale(1) rotate(0deg)}
+}
+
+@keyframes evaluationAnchoredOutcomePose{
+  0%{opacity:1;transform:translate(-50%,-50%) translateX(-3px) scale(.98) rotate(-.25deg)}
+  100%{opacity:1;transform:translate(-50%,-50%) translateX(3px) translateY(-2px) scale(1.055) rotate(.25deg)}
+}
+
+@media (max-width: 560px){
+  .evaluation-card.unified-sequence .evaluation-stage .evaluation-img,
+  .evaluation-card.unified-sequence .evaluation-stage .evaluation-outcome-img{
+    top:53% !important;
+  }
+}

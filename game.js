@@ -396,7 +396,11 @@
   function usedSenseIds(state = getState()) { return state.slots.filter(Boolean); }
   function currentSlot(state = getState()) { return state.completed.findIndex(done => !done); }
   function getHeroNode(state = getState()) {
-    return Number.isInteger(state.heroNode) && state.heroNode >= 0 && state.heroNode < LEVEL_POSITIONS.length ? state.heroNode : null;
+    if (Number.isInteger(state.heroNode) && state.heroNode >= 0 && state.heroNode < LEVEL_POSITIONS.length) return state.heroNode;
+    for (let i = state.completed.length - 1; i >= 0; i -= 1) {
+      if (state.completed[i]) return i;
+    }
+    return null;
   }
   function allLevelsDone(state = getState()) { return state.completed.every(Boolean); }
   function isBoardGuidePending(state = getState()) {
@@ -783,29 +787,42 @@
     const active = currentSlot(state);
     const heroNode = getHeroNode(state);
     setBoardMenuOpen(false);
-    if (state.completed[index]) {
-      const goToCompleted = () => { window.location.href = `level.html?sense=${encodeURIComponent(state.slots[index])}&slot=${index}`; };
+
+    const moveHeroThen = (callback) => {
+      stopBackgroundMusic();
       if (Number.isInteger(heroNode) && heroNode !== index) {
-        playBoardTravelSequence(heroNode, index, goToCompleted);
+        playBoardTravelSequence(heroNode, index, callback);
       } else {
-        goToCompleted();
+        const nextState = getState();
+        nextState.heroNode = index;
+        setState(nextState);
+        renderBoard();
+        callback?.();
       }
+    };
+
+    if (state.completed[index]) {
+      moveHeroThen(() => {
+        const latest = getState();
+        latest.heroNode = index;
+        setState(latest);
+        window.setTimeout(() => {
+          window.location.href = `level.html?sense=${encodeURIComponent(state.slots[index])}&slot=${index}`;
+        }, 180);
+      });
       return;
     }
+
     if (index !== active) return;
-    if (state.slots[index]) { showEncounter(state.slots[index], index); return; }
-    if (index === 0 && isBoardGuidePending(state)) { playBoardStartSequence(index); return; }
-    stopBackgroundMusic();
-    if (Number.isInteger(heroNode) && heroNode !== index) {
-      playBoardTravelSequence(heroNode, index, () => openScanModal(index));
+
+    if (state.slots[index]) {
+      moveHeroThen(() => showEncounter(state.slots[index], index));
       return;
     }
-    playSound('levelstart');
-    const nextState = getState();
-    nextState.heroNode = index;
-    setState(nextState);
-    renderBoard();
-    openScanModal(index);
+
+    if (index === 0 && isBoardGuidePending(state)) { playBoardStartSequence(index); return; }
+
+    moveHeroThen(() => openScanModal(index));
   }
 
   function handleBossClick() {
@@ -1364,7 +1381,10 @@
       if (runToken !== evaluationRunToken || image.dataset.revealing === '1') return;
       image.dataset.revealing = '1';
       image.classList.remove('final-loop', 'final-clickable');
-      if (outcomeImage) outcomeImage.classList.remove('hidden');
+      if (outcomeImage) {
+        outcomeImage.className = `evaluation-outcome-img behind ${won ? 'won' : 'lost'}`;
+        applyUnifiedEvaluationAssetLayout(outcomeImage);
+      }
       await nextPaint(1);
       image.classList.add('final-reveal');
       setEvaluationStatus('');
