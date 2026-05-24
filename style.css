@@ -1269,3 +1269,79 @@ body.stage-popups .encounter-card, .modal.stage-popup .encounter-card{
     height:min(48svh,360px)!important;
   }
 }
+
+/* === FINAL POPUP FIGURE POSITION + SIZE TUNING === */
+.evaluation-card.unified-sequence .evaluation-stage{
+  position:relative!important;
+  width:min(100%,640px)!important;
+  height:min(58svh,500px)!important;
+  margin-top:auto!important;
+  overflow:visible!important;
+}
+.evaluation-card.unified-sequence .evaluation-stage .evaluation-img,
+.evaluation-card.unified-sequence .evaluation-stage .evaluation-outcome-img{
+  position:absolute!important;
+  left:50%!important;
+  top:60.5%!important; /* rote Kreisposition */
+  width:min(116%,560px)!important;
+  height:min(50svh,400px)!important;
+  max-width:none!important;
+  max-height:none!important;
+  object-fit:contain!important;
+  object-position:center center!important;
+  transform:translate(-50%,-50%) scale(1)!important;
+  transform-origin:center center!important;
+  margin:0!important;
+}
+.evaluation-card.unified-sequence .evaluation-stage .evaluation-img.preparing{
+  opacity:0!important;
+  visibility:hidden!important;
+}
+.evaluation-card.unified-sequence .evaluation-img.answer-step.enter-center,
+.evaluation-card.unified-sequence .evaluation-img.answer-step.enter-left,
+.evaluation-card.unified-sequence .evaluation-img.answer-step.enter-right,
+.evaluation-card.unified-sequence .evaluation-img.answer-step.enter-top,
+.evaluation-card.unified-sequence .evaluation-img.answer-step.enter-bottom,
+.evaluation-card.unified-sequence .evaluation-img.answer-step.enter-zoom{
+  animation:evaluationCenterFixedIn .42s cubic-bezier(.22,1,.36,1) both!important;
+}
+.evaluation-card.unified-sequence .evaluation-img.final-step.enter-center-final,
+.evaluation-card.unified-sequence .evaluation-img.final-step.enter-left,
+.evaluation-card.unified-sequence .evaluation-img.final-step.enter-right,
+.evaluation-card.unified-sequence .evaluation-img.final-step.enter-top,
+.evaluation-card.unified-sequence .evaluation-img.final-step.enter-bottom,
+.evaluation-card.unified-sequence .evaluation-img.final-step.enter-zoom{
+  animation:evaluationCenterFixedIn .55s cubic-bezier(.22,1,.36,1) both!important;
+}
+.evaluation-card.unified-sequence .evaluation-outcome-img.outcome-step{
+  animation:evaluationCenterOutcomeIn .46s cubic-bezier(.22,1,.36,1) both!important;
+}
+.evaluation-card.unified-sequence .evaluation-img.final-reveal{
+  animation:evaluationFinalRevealFixed .95s ease-in forwards!important;
+}
+@keyframes evaluationCenterFixedIn{
+  0%{opacity:0;transform:translate(-50%,-50%) translateY(16px) scale(.9)}
+  100%{opacity:1;transform:translate(-50%,-50%) translateY(0) scale(1)}
+}
+@keyframes evaluationCenterOutcomeIn{
+  0%{opacity:0;transform:translate(-50%,-50%) translateY(12px) scale(.92)}
+  100%{opacity:1;transform:translate(-50%,-50%) translateY(0) scale(1)}
+}
+@keyframes evaluationFinalRevealFixed{
+  0%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  70%{opacity:.92;transform:translate(-50%,-50%) scale(1.22)}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(1.35)}
+}
+
+@media (max-width: 560px){
+  .evaluation-card.unified-sequence .evaluation-stage{
+    width:100%!important;
+    height:min(60svh,490px)!important;
+  }
+  .evaluation-card.unified-sequence .evaluation-stage .evaluation-img,
+  .evaluation-card.unified-sequence .evaluation-stage .evaluation-outcome-img{
+    top:61.5%!important;
+    width:min(122%,520px)!important;
+    height:min(52svh,395px)!important;
+  }
+}
