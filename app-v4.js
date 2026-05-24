@@ -92,14 +92,14 @@
   };
 
   const LEVEL_POSITIONS = [
-    { x: 47.2, y: 85.8 },
-    { x: 51.8, y: 63.9 },
-    { x: 49.9, y: 47.7 },
-    { x: 51.5, y: 32.8 },
-    { x: 50.1, y: 18.8 }
+    { x: 24.5, y: 91.5 },
+    { x: 28.7, y: 78.2 },
+    { x: 28.7, y: 62.5 },
+    { x: 31.1, y: 44.2 },
+    { x: 30.8, y: 31.5 }
   ];
-  const BOSS_POSITION = { x: 50.0, y: 8.6 };
-  const BOARD_RATIO = 1086 / 1448;
+  const BOSS_POSITION = { x: 50.0, y: 10.3 };
+  const BOARD_RATIO = 941 / 1672;
   const STAGE_BACKGROUNDS = ['stage_gras.webp', 'stage_sand.webp', 'stage_eis.webp', 'stage_lava.webp', 'stage_himmel.webp'];
   const POPUP_BACKGROUNDS = ['popup_gras.webp', 'popup_sand.webp', 'popup_eis.webp', 'popup_lava.webp', 'popup_himmel.webp'];
 
@@ -198,7 +198,7 @@
     });
   }
   function preloadBattleAssets(data, meta) {
-    preloadAssets([ASSETS.hero, ASSETS.versus, ASSETS.text.kampf, ASSETS.text.richtig, ASSETS.text.falsch, ASSETS.text.gewonnen, ASSETS.text.verloren, data.enemy, data.defeated, ASSETS.loseHero, ASSETS.final, ...ASSETS.correct, ...ASSETS.wrong, bgForMeta(meta), popupBgForMeta(meta), ...Object.values(AUDIO_FILES)]);
+    preloadAssets(['intro_text.webp','outro.webp',ASSETS.hero, ASSETS.versus, ASSETS.text.kampf, ASSETS.text.richtig, ASSETS.text.falsch, ASSETS.text.gewonnen, ASSETS.text.verloren, data.enemy, data.defeated, ASSETS.loseHero, ASSETS.final, ...ASSETS.correct, ...ASSETS.wrong, bgForMeta(meta), popupBgForMeta(meta), ...Object.values(AUDIO_FILES)]);
   }
   function prefetchPage(href) {
     if (document.querySelector(`link[rel="prefetch"][href="${href}"]`)) return;
@@ -211,10 +211,14 @@
   function initBoard() {
     addSpeaker();
     const state = getState();
-    if (state.started) { showBoard(false); } else { show($('introScreen')); hide($('boardScreen')); hide($('openBoardMenuBtn')); }
-    $('startGameBtn')?.addEventListener('click', () => {
-      const s = getState(); s.started = true; setState(s); showBoard(true); playSound('background', { loop:true });
-    });
+    hide($('outroScreen'));
+    if (state.started) { showBoard(false); } else { show($('introScreen')); hide($('boardScreen')); hide($('openBoardMenuBtn')); hide($('belowBoard')); }
+    const startGame = () => {
+      const s = getState(); s.started = true; setState(s); showBoard(true); playSound('background', { loop:true, restart:true });
+    };
+    $('startGameBtn')?.addEventListener('click', startGame);
+    $('introScreen')?.addEventListener('click', (ev) => { if (ev.target.closest('#startGameBtn')) return; startGame(); });
+    $('outroContinueBtn')?.addEventListener('click', () => { hide($('outroScreen')); showBoard(false); });
     $('resetGameBtn')?.addEventListener('click', () => { if (confirm('Spielbrett wirklich zurücksetzen?')) { localStorage.removeItem(STORE); localStorage.removeItem(RETURN_STORE); location.href = 'index.html'; } });
     $('openBoardMenuBtn')?.addEventListener('click', () => document.body.classList.add('board-menu-open'));
     $('closeBoardMenuBtn')?.addEventListener('click', () => document.body.classList.remove('board-menu-open'));
@@ -369,6 +373,16 @@
     closeScan(); hide($('encounterModal'));
     localStorage.setItem(RETURN_STORE, JSON.stringify({ type:'escape', meta })); applyReturnModal();
   }
+  function showOutro() {
+    stopSound('background');
+    hide($('introScreen'));
+    hide($('boardScreen'));
+    hide($('belowBoard'));
+    hide($('openBoardMenuBtn'));
+    show($('outroScreen'));
+    playSound('levelunlocked');
+  }
+
   function applyReturnModal() {
     const raw = localStorage.getItem(RETURN_STORE); if (!raw) return; localStorage.removeItem(RETURN_STORE);
     let data; try { data=JSON.parse(raw); } catch (_) { return; }
@@ -377,7 +391,7 @@
     const img = modal.querySelector('img'); const title=$('levelUnlockedTitle'); const kicker=$('levelUnlockedKicker'); const text=$('levelUnlockedText');
     stopSound('background');
     if (data.type === 'escape') { img.src=ASSETS.escapeHero; kicker.textContent=''; title.textContent='Du bist entkommen.'; text.textContent='Scanne einen neuen QR-Code, um es erneut zu versuchen.'; }
-    else if (data.meta?.isBoss) { img.src=ASSETS.winHero; kicker.textContent='Erfolg'; title.textContent='Königreich gerettet!'; text.textContent='Weiter zum Spielbrett.'; playSound('levelunlocked'); }
+    else if (data.meta?.isBoss) { showOutro(); return; }
     else { img.src=ASSETS.winHero; kicker.textContent='Erfolg'; title.textContent='Neues Level freigeschaltet'; text.textContent='Weiter zum Spielbrett.'; playSound('levelunlocked'); }
     show(modal);
   }
@@ -483,13 +497,18 @@
         textImg.className = 'battle-text-img result-preload';
       }
       outcome.classList.add('pre-visible');
-      await sleep(220);
-      if (textImg) textImg.className = 'battle-text-img result-show';
+      await sleep(180);
       img.classList.remove('final-idle'); img.classList.add('cloud-reveal');
       outcome.classList.add('visible');
-      await sleep(1300);
-      img.className='battle-seq-img hidden'; outcome.className='battle-outcome visible idle';
-      stopSound('battle_background'); playSound(won ? 'win' : 'lose');
+      await sleep(1320);
+      img.className='battle-seq-img hidden';
+      outcome.className='battle-outcome visible idle';
+      stopSound('battle_background');
+      playSound(won ? 'win' : 'lose');
+      if (textImg) {
+        await sleep(60);
+        textImg.className = 'battle-text-img result-show';
+      }
       showBattleResult(won, data, meta, action, label, status);
     };
   }

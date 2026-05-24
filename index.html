@@ -4,18 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Königreich der Sinne</title>
-  <link rel="stylesheet" href="style.css?v=v4_textfx_layout2_20260524">
-  <script src="app-v4.js?v=v4_textfx_layout2_20260524" defer></script>
+  <link rel="stylesheet" href="style.css?v=v4_intro_outro_20260524">
+  <script src="app-v4.js?v=v4_intro_outro_20260524" defer></script>
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" async></script>
-  <link rel="stylesheet" href="v4.css?v=v4_textfx_layout2_20260524">
+  <link rel="stylesheet" href="v4.css?v=v4_intro_outro_20260524">
 </head>
 <body data-page="board">
   <main>
     <section id="introScreen" class="intro-screen" aria-label="Intro">
       <img src="intro.webp" alt="Introbild Königreich der Sinne" class="intro-img">
-      <div class="intro-panel">
-        <h1 class="intro-title">Angriff auf das Königreich der Sinne</h1>
-        <button id="startGameBtn" class="game-btn primary">Spiel starten</button>
+      <div class="intro-panel intro-text-panel">
+        <button id="startGameBtn" class="intro-start-btn" type="button" aria-label="Spiel starten">
+          <img src="intro_text.webp" alt="Angriff auf das Königreich der Sinne" class="intro-text-img">
+        </button>
       </div>
     </section>
 
@@ -41,6 +42,12 @@
           <button id="resetGameBtn" class="game-btn danger">Spielbrett zurücksetzen</button>
         </div>
       </div>
+    </section>
+
+
+    <section id="outroScreen" class="outro-screen hidden" aria-label="Outro">
+      <img src="outro.webp" alt="Königreich gerettet" class="outro-img">
+      <button id="outroContinueBtn" class="game-btn primary outro-continue-btn" type="button">Zum Spielbrett</button>
     </section>
 
     <button id="openBoardMenuBtn" class="board-menu-btn hidden" type="button" aria-label="Optionen öffnen">⚙</button>
