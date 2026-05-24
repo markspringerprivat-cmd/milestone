@@ -4,14 +4,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Testspiel · Königreich der Sinne</title>
-  <link rel="stylesheet" href="style.css?v=v4_12mini_sprites_20260524">
-  <link rel="stylesheet" href="v4.css?v=v4_12mini_sprites_20260524">
-  <script src="app-v4.js?v=v4_12mini_sprites_20260524" defer></script>
+  <link rel="stylesheet" href="style.css?v=v4_12mini_hazards_20260524">
+  <link rel="stylesheet" href="v4.css?v=v4_12mini_hazards_20260524">
+  <script src="app-v4.js?v=v4_12mini_hazards_20260524" defer></script>
 </head>
 <body data-page="minigame">
   <main class="mini-game-page" aria-label="Testspiel">
     <section class="mini-game-stage" aria-label="Spielfeld">
       <button id="miniSettingsBtn" class="mini-settings-btn" type="button" aria-label="Optionen">⚙</button>
+      <div id="miniHud" class="mini-hud" aria-live="polite">0 / 10</div>
       <div class="mini-ground" aria-hidden="true"></div>
       <img id="miniHero" class="mini-hero" src="mini_right_1.png" alt="Sir Nervus">
     </section>
@@ -22,6 +23,14 @@
       <button id="miniRightBtn" class="mini-control-btn" type="button" aria-label="Nach rechts">→</button>
     </nav>
   </main>
+  <div id="miniResult" class="mini-menu modal hidden" role="dialog" aria-modal="true" aria-labelledby="miniResultTitle">
+    <div class="modal-card mini-menu-card">
+      <h2 id="miniResultTitle">Verloren</h2>
+      <p id="miniResultText">Sir Nervus wurde getroffen.</p>
+      <button id="miniRetryBtn" class="game-btn primary" type="button">Neuer Versuch</button>
+      <button id="miniResultBoardBtn" class="game-btn muted" type="button">Zurück zum Spielbrett</button>
+    </div>
+  </div>
   <div id="miniMenu" class="mini-menu modal hidden" role="dialog" aria-modal="true" aria-labelledby="miniMenuTitle">
     <div class="modal-card mini-menu-card">
       <h2 id="miniMenuTitle">Optionen</h2>

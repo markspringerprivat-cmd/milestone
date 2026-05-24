@@ -1046,3 +1046,111 @@ body[data-page="minigame"]{
 @media(max-width:560px){
   .mini-hero{width:min(44vw,176px)!important;height:min(29svh,202px)!important;}
 }
+
+/* --- Mini-game hazards, result and hardened controls --- */
+body[data-page="minigame"],
+body[data-page="minigame"] *{
+  -webkit-user-select:none!important;
+  user-select:none!important;
+  -webkit-touch-callout:none!important;
+  -webkit-tap-highlight-color:transparent!important;
+}
+body[data-page="minigame"]{
+  position:fixed!important;
+  inset:0!important;
+  width:100vw!important;
+  height:100svh!important;
+  overflow:hidden!important;
+  overscroll-behavior:none!important;
+  touch-action:none!important;
+}
+.mini-game-page,
+.mini-game-stage,
+.mini-controls{
+  touch-action:none!important;
+  overscroll-behavior:none!important;
+  -webkit-user-drag:none!important;
+}
+.mini-hud{
+  position:absolute!important;
+  left:max(14px, env(safe-area-inset-left) + 10px)!important;
+  top:max(14px, env(safe-area-inset-top) + 8px)!important;
+  z-index:8!important;
+  min-width:86px!important;
+  padding:10px 14px!important;
+  border-radius:999px!important;
+  background:rgba(255,255,255,.88)!important;
+  color:#173268!important;
+  font-weight:1000!important;
+  text-align:center!important;
+  box-shadow:0 12px 28px rgba(0,0,0,.18)!important;
+  pointer-events:none!important;
+}
+.mini-hazard{
+  position:absolute!important;
+  border-radius:50%!important;
+  z-index:5!important;
+  background:
+    radial-gradient(circle at 32% 26%, rgba(255,255,255,.95) 0 12%, rgba(255,255,255,.25) 13% 20%, transparent 21%),
+    radial-gradient(circle at 50% 55%, #ffda45 0 30%, #ff9f1a 55%, #d65b00 100%)!important;
+  border:3px solid rgba(255,255,255,.65)!important;
+  box-shadow:0 10px 18px rgba(0,0,0,.22), inset 0 -7px 10px rgba(119,45,0,.25)!important;
+  pointer-events:none!important;
+  will-change:top,transform!important;
+  animation:miniHazardSpin 1.1s linear infinite!important;
+}
+@keyframes miniHazardSpin{
+  from{transform:rotate(0deg)}
+  to{transform:rotate(360deg)}
+}
+.mini-hero{
+  pointer-events:none!important;
+  image-rendering:auto!important;
+}
+.mini-control-btn{
+  position:relative!important;
+  touch-action:none!important;
+  user-select:none!important;
+  -webkit-user-select:none!important;
+  -webkit-touch-callout:none!important;
+  -webkit-tap-highlight-color:transparent!important;
+  -webkit-appearance:none!important;
+  appearance:none!important;
+  cursor:pointer!important;
+  transform:translateY(-5px) scale(1)!important;
+  box-shadow:0 14px 0 rgba(0,0,0,.24),0 22px 26px rgba(0,0,0,.26)!important;
+  transition:transform .08s ease, box-shadow .08s ease, filter .08s ease!important;
+  outline:none!important;
+}
+.mini-control-btn:active,
+.mini-control-btn.pressed{
+  transform:translateY(3px) scale(.985)!important;
+  box-shadow:0 5px 0 rgba(0,0,0,.28),0 10px 16px rgba(0,0,0,.22)!important;
+  filter:brightness(.96)!important;
+}
+.mini-control-btn::selection{background:transparent!important;color:inherit!important;}
+.mini-control-btn:focus{outline:none!important;}
+.mini-control-btn:focus-visible{box-shadow:0 0 0 4px rgba(255,255,255,.32),0 14px 0 rgba(0,0,0,.24),0 22px 26px rgba(0,0,0,.26)!important;}
+.mini-menu .mini-menu-card p{
+  color:#506079!important;
+  font-size:1.05rem!important;
+  line-height:1.45!important;
+  margin:0 0 8px!important;
+}
+#miniResult .mini-menu-card{
+  background:rgba(255,250,240,.96)!important;
+  border-radius:32px!important;
+  box-shadow:0 24px 70px rgba(0,0,0,.34)!important;
+}
+#miniResultTitle{
+  font-size:clamp(2rem,8vw,3.2rem)!important;
+  font-weight:1000!important;
+  letter-spacing:.02em!important;
+}
+@media(max-width:560px){
+  .mini-hud{min-width:76px!important;padding:8px 12px!important;font-size:.95rem!important;}
+  .mini-hazard{border-width:2px!important;}
+  .mini-control-btn{transform:translateY(-4px) scale(1)!important;}
+  .mini-control-btn:active,
+  .mini-control-btn.pressed{transform:translateY(3px) scale(.985)!important;}
+}

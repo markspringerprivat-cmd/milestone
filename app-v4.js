@@ -5,7 +5,7 @@
   const BATTLE_STORE = 'koenigreichSinneV4Battle';
   const RETURN_STORE = 'koenigreichSinneV4BoardReturn';
   const SOUND_STORE = 'koenigreichSinneV4Muted';
-  const STATE_VERSION = 'v4_12levels_minigame_1';
+  const STATE_VERSION = 'v4_12levels_minigame_2';
 
   const SENSES = {
     sehen: {
@@ -692,7 +692,10 @@
   function initMiniGame() {
     addSpeaker();
     stopSound('background');
+
     const hero = $('miniHero');
+    const stage = document.querySelector('.mini-game-stage');
+    const controls = document.querySelector('.mini-controls');
     const leftBtn = $('miniLeftBtn');
     const rightBtn = $('miniRightBtn');
     const jumpBtn = $('miniJumpBtn');
@@ -700,7 +703,13 @@
     const menu = $('miniMenu');
     const closeMenu = $('miniCloseMenuBtn');
     const boardBtn = $('miniBackBoardBtn');
-    if (!hero) return;
+    const resultModal = $('miniResult');
+    const resultTitle = $('miniResultTitle');
+    const resultText = $('miniResultText');
+    const retryBtn = $('miniRetryBtn');
+    const resultBoardBtn = $('miniResultBoardBtn');
+    const hud = $('miniHud');
+    if (!hero || !stage) return;
 
     const SPRITES = {
       right1: 'mini_right_1.png',
@@ -711,9 +720,14 @@
       fall: 'mini_fall.png'
     };
     Object.values(SPRITES).forEach(src => { const img = new Image(); img.src = src; });
+
     const jumpAudio = new Audio('jump_sound.mp3');
     jumpAudio.preload = 'auto';
     jumpAudio.volume = 0.82;
+
+    const TARGET_DODGES = 10;
+    const MAX_HAZARDS = 5;
+    const SPAWN_MS = 3000;
 
     let x = 50;
     let direction = 1;
@@ -725,8 +739,15 @@
     let jumpVelocity = 0;
     let last = performance.now();
     let lastSprite = '';
+    let hazards = [];
+    let spawned = 0;
+    let dodged = 0;
+    let gameOver = false;
+    let gameWon = false;
+    let lastSpawn = performance.now() + 900;
 
     function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
+    function updateHud() { if (hud) hud.textContent = `${dodged} / ${TARGET_DODGES}`; }
     function currentVelocity() {
       if (pressedLeft && !pressedRight) return -1;
       if (pressedRight && !pressedLeft) return 1;
@@ -735,7 +756,7 @@
     function recomputeVelocity() {
       velocity = currentVelocity();
       if (velocity !== 0) direction = velocity > 0 ? 1 : -1;
-      hero.classList.toggle('walking', velocity !== 0 && !jumping);
+      hero.classList.toggle('walking', velocity !== 0 && !jumping && !gameOver && !gameWon);
     }
     function setSprite(src) {
       if (lastSprite === src) return;
@@ -755,7 +776,7 @@
       } else {
         setSprite(direction < 0 ? SPRITES.left1 : SPRITES.right1);
       }
-      hero.classList.toggle('walking', velocity !== 0);
+      hero.classList.toggle('walking', velocity !== 0 && !gameOver && !gameWon);
     }
     function applyHero() {
       hero.style.left = `${x}%`;
@@ -768,18 +789,32 @@
       } catch (_) {}
     }
     function jump() {
-      if (jumping) return;
+      if (jumping || gameOver || gameWon) return;
       jumping = true;
-      jumpVelocity = 760;
+      jumpVelocity = 790;
       hero.classList.add('jumping');
       playJumpSound();
       setSprite(SPRITES.jump);
     }
+
+    function stopMovement() {
+      pressedLeft = false;
+      pressedRight = false;
+      recomputeVelocity();
+    }
+
+    function blockDefault(ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      return false;
+    }
+
     function bindHold(btn, side) {
       if (!btn) return;
       const down = (ev) => {
-        ev.preventDefault();
-        ev.stopPropagation();
+        blockDefault(ev);
+        if (gameOver || gameWon) return;
+        btn.classList.add('pressed');
         if (side === 'left') pressedLeft = true;
         if (side === 'right') pressedRight = true;
         recomputeVelocity();
@@ -788,57 +823,164 @@
       const up = (ev) => {
         ev?.preventDefault?.();
         ev?.stopPropagation?.();
+        btn.classList.remove('pressed');
         if (side === 'left') pressedLeft = false;
         if (side === 'right') pressedRight = false;
         recomputeVelocity();
       };
-      btn.addEventListener('pointerdown', down);
-      btn.addEventListener('pointerup', up);
-      btn.addEventListener('pointercancel', up);
-      btn.addEventListener('lostpointercapture', up);
-      btn.addEventListener('contextmenu', ev => ev.preventDefault());
-      btn.addEventListener('selectstart', ev => ev.preventDefault());
-      btn.addEventListener('dragstart', ev => ev.preventDefault());
+      btn.addEventListener('pointerdown', down, { passive:false });
+      btn.addEventListener('pointerup', up, { passive:false });
+      btn.addEventListener('pointercancel', up, { passive:false });
+      btn.addEventListener('pointerleave', up, { passive:false });
+      btn.addEventListener('lostpointercapture', up, { passive:false });
+      btn.addEventListener('contextmenu', blockDefault);
+      btn.addEventListener('selectstart', blockDefault);
+      btn.addEventListener('dragstart', blockDefault);
     }
+
     bindHold(leftBtn, 'left');
     bindHold(rightBtn, 'right');
     jumpBtn?.addEventListener('pointerdown', (ev) => {
-      ev.preventDefault();
-      ev.stopPropagation();
+      blockDefault(ev);
+      if (gameOver || gameWon) return;
+      jumpBtn.classList.add('pressed');
       jump();
-    });
-    [jumpBtn, leftBtn, rightBtn].forEach(btn => {
-      if (!btn) return;
-      btn.addEventListener('contextmenu', ev => ev.preventDefault());
-      btn.addEventListener('selectstart', ev => ev.preventDefault());
-      btn.addEventListener('dragstart', ev => ev.preventDefault());
-    });
-    window.addEventListener('blur', () => { pressedLeft = false; pressedRight = false; recomputeVelocity(); });
-    document.addEventListener('visibilitychange', () => { if (document.hidden) { pressedLeft = false; pressedRight = false; recomputeVelocity(); } });
+      try { jumpBtn.setPointerCapture?.(ev.pointerId); } catch (_) {}
+    }, { passive:false });
+    ['pointerup','pointercancel','pointerleave','lostpointercapture'].forEach(type => jumpBtn?.addEventListener(type, (ev) => {
+      ev?.preventDefault?.(); ev?.stopPropagation?.(); jumpBtn.classList.remove('pressed');
+    }, { passive:false }));
 
-    settingsBtn?.addEventListener('click', () => show(menu));
+    [controls, jumpBtn, leftBtn, rightBtn].forEach(node => {
+      if (!node) return;
+      node.addEventListener('contextmenu', blockDefault);
+      node.addEventListener('selectstart', blockDefault);
+      node.addEventListener('dragstart', blockDefault);
+      node.addEventListener('touchstart', ev => ev.preventDefault(), { passive:false });
+    });
+
+    window.addEventListener('blur', stopMovement);
+    document.addEventListener('visibilitychange', () => { if (document.hidden) stopMovement(); });
+
+    settingsBtn?.addEventListener('click', () => { stopMovement(); show(menu); });
     closeMenu?.addEventListener('click', () => hide(menu));
     boardBtn?.addEventListener('click', () => location.href = 'index.html');
+    resultBoardBtn?.addEventListener('click', () => location.href = 'index.html');
+    retryBtn?.addEventListener('click', () => location.reload());
+
+    function spawnHazard() {
+      if (gameOver || gameWon || hazards.length >= MAX_HAZARDS || spawned >= TARGET_DODGES) return;
+      const rect = stage.getBoundingClientRect();
+      const size = Math.round(32 + Math.random() * 24);
+      const node = document.createElement('div');
+      node.className = 'mini-hazard';
+      node.setAttribute('aria-hidden', 'true');
+      node.style.width = `${size}px`;
+      node.style.height = `${size}px`;
+      const xPx = Math.round(size / 2 + Math.random() * Math.max(1, rect.width - size));
+      node.style.left = `${xPx}px`;
+      node.style.top = `${-size - 8}px`;
+      stage.appendChild(node);
+      hazards.push({ node, x: xPx, y: -size - 8, size, speed: 145 + Math.random() * 70 });
+      spawned += 1;
+    }
+
+    function removeHazard(h) {
+      h.node?.remove();
+    }
+
+    function collide(a, b) {
+      const padX = Math.min(32, a.width * 0.18);
+      const padY = Math.min(38, a.height * 0.12);
+      const aa = { left:a.left + padX, right:a.right - padX, top:a.top + padY, bottom:a.bottom - 4 };
+      return !(aa.right < b.left || aa.left > b.right || aa.bottom < b.top || aa.top > b.bottom);
+    }
+
+    function showMiniResult(won) {
+      if (won) {
+        gameWon = true;
+        stopMovement();
+        if (resultTitle) resultTitle.textContent = 'Geschafft!';
+        if (resultText) resultText.textContent = 'Du bist zehn Kreisen ausgewichen.';
+        if (retryBtn) retryBtn.textContent = 'Weiter';
+        if (resultBoardBtn) hide(resultBoardBtn);
+        retryBtn.onclick = () => {
+          const slot = Number(qs('slot'));
+          if (Number.isInteger(slot) && slot >= 0) {
+            const state = getState();
+            state.completed[slot] = true;
+            state.heroIndex = slot;
+            setState(state);
+            localStorage.setItem(RETURN_STORE, JSON.stringify({ type:'unlocked', meta:{ slot, placeholder:true } }));
+          }
+          location.href = 'index.html';
+        };
+      } else {
+        gameOver = true;
+        stopMovement();
+        if (resultTitle) resultTitle.textContent = 'Verloren';
+        if (resultText) resultText.textContent = 'Sir Nervus wurde getroffen.';
+        if (retryBtn) retryBtn.textContent = 'Neuer Versuch';
+        if (resultBoardBtn) show(resultBoardBtn);
+        retryBtn.onclick = () => location.reload();
+      }
+      hazards.forEach(removeHazard);
+      hazards = [];
+      show(resultModal);
+    }
+
+    function updateHazards(dt, now) {
+      if (!gameOver && !gameWon && now - lastSpawn >= SPAWN_MS) {
+        spawnHazard();
+        lastSpawn = now;
+      }
+      const stageRect = stage.getBoundingClientRect();
+      const heroRect = hero.getBoundingClientRect();
+      for (let i = hazards.length - 1; i >= 0; i--) {
+        const h = hazards[i];
+        h.y += h.speed * dt;
+        h.node.style.top = `${h.y}px`;
+        const hazardRect = h.node.getBoundingClientRect();
+        if (!gameOver && !gameWon && collide(heroRect, hazardRect)) {
+          showMiniResult(false);
+          return;
+        }
+        if (h.y > stageRect.height + h.size) {
+          removeHazard(h);
+          hazards.splice(i, 1);
+          if (!gameOver && !gameWon) {
+            dodged = Math.min(TARGET_DODGES, dodged + 1);
+            updateHud();
+            if (dodged >= TARGET_DODGES) showMiniResult(true);
+          }
+        }
+      }
+    }
 
     function tick(now) {
       const dt = Math.min(0.033, (now - last) / 1000 || 0);
       last = now;
-      if (velocity) x = clamp(x + velocity * 26 * dt, 8, 92);
-      if (jumping) {
-        jumpY += jumpVelocity * dt;
-        jumpVelocity -= 1750 * dt;
-        if (jumpY <= 0) {
-          jumpY = 0;
-          jumpVelocity = 0;
-          jumping = false;
-          hero.classList.remove('jumping');
-          recomputeVelocity();
+      if (!gameOver && !gameWon) {
+        if (velocity) x = clamp(x + velocity * 26 * dt, 8, 92);
+        if (jumping) {
+          jumpY += jumpVelocity * dt;
+          jumpVelocity -= 1750 * dt;
+          if (jumpY <= 0) {
+            jumpY = 0;
+            jumpVelocity = 0;
+            jumping = false;
+            hero.classList.remove('jumping');
+            recomputeVelocity();
+          }
         }
+        updateHazards(dt, now);
+        updateSprite(now);
+        applyHero();
       }
-      updateSprite(now);
-      applyHero();
       requestAnimationFrame(tick);
     }
+
+    updateHud();
     setSprite(SPRITES.right1);
     applyHero();
     requestAnimationFrame(tick);
