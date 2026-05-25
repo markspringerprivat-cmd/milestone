@@ -96,3 +96,10 @@ Die JavaScript-Navigation benutzt `pageUrl(...)`, damit `index.html`, `level.htm
 - Gute Obstteile erscheinen nur noch ungefähr alle fünf Sekunden.
 - Dazwischen fallen überwiegend Chilis und verdorbene Fische.
 - Die Anzahl der aktiven Obstteile ist auf eins begrenzt, damit beim Einsammeln deutlich weniger Aktionen/Sounds ausgelöst werden.
+
+## Update v33
+
+- Chilis und verdorbene Fische fallen etwas langsamer.
+- Es sind jetzt 1-2 weniger schlechte Items gleichzeitig aktiv.
+- Der Ritter kann horizontal um das Spielfeld laufen: rechts raus = links wieder rein, links raus = rechts wieder rein.
+- Am Rand wird eine zweite Ritterdarstellung eingeblendet, damit die Figur beim Übergang geteilt sichtbar ist.

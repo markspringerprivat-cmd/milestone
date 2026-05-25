@@ -5,7 +5,7 @@
   const BATTLE_STORE = 'koenigreichSinneV4Battle';
   const RETURN_STORE = 'koenigreichSinneV4BoardReturn';
   const SOUND_STORE = 'koenigreichSinneV4Muted';
-  const STATE_VERSION = 'v4_32levels_food_minigame_rare_fruit';
+  const STATE_VERSION = 'v4_33levels_food_wraparound';
   const APP_ROOT = new URL('./', document.baseURI);
   const pageUrl = target => new URL(target, APP_ROOT).href;
   const assetUrl = target => new URL(target, APP_ROOT).href;
@@ -886,6 +886,15 @@
     const hud = $('miniHud');
     if (!hero || !stage) return;
 
+    const heroClone = hero.cloneNode(false);
+    heroClone.id = 'miniHeroClone';
+    heroClone.className = `${hero.className} mini-hero-clone`;
+    heroClone.alt = '';
+    heroClone.setAttribute('aria-hidden', 'true');
+    heroClone.style.visibility = 'hidden';
+    heroClone.style.opacity = '1';
+    hero.after(heroClone);
+
     const miniMeta = { slot: Number(qs('slot')) || 0, isBoss:false };
     stage.style.setProperty('--mini-stage-bg', `url("${popupBgForMeta(miniMeta)}")`);
 
@@ -975,12 +984,12 @@
     const TARGET_GOOD = 10;
     const MAX_HEARTS = 3;
     const MAX_GOOD_ACTIVE = 1;
-    const MAX_BAD_ACTIVE = 5;
+    const MAX_BAD_ACTIVE = 4;
     const FOOD_POOL_SIZE = MAX_GOOD_ACTIVE + MAX_BAD_ACTIVE + 6;
     const FOOD_BASE_SIZE = 62;
     const GOOD_SPAWN_MS = 5000;
-    const BAD_SPAWN_START_MS = 760;
-    const BAD_SPAWN_END_MS = 540;
+    const BAD_SPAWN_START_MS = 950;
+    const BAD_SPAWN_END_MS = 720;
     const HURT_FREEZE_MS = 500;
     const INVULNERABLE_MS = 3000;
 
@@ -1071,12 +1080,12 @@
 
     function localClamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
     function updateMetrics() {
-      const prevRatio = heroRatio || 0.5;
+      const prevRatio = Number.isFinite(heroRatio) ? heroRatio : 0.5;
       stageW = Math.max(1, stage.clientWidth || window.innerWidth || 1);
       stageH = Math.max(1, stage.clientHeight || window.innerHeight || 1);
       heroW = Math.max(1, hero.clientWidth || 150);
       heroH = Math.max(1, hero.clientHeight || 166);
-      heroX = localClamp(prevRatio * stageW, heroW * 0.5 + 8, stageW - heroW * 0.5 - 8);
+      heroX = ((prevRatio * stageW) % stageW + stageW) % stageW;
       heroRatio = heroX / stageW;
       applyHero();
     }
@@ -1092,6 +1101,7 @@
 
     // Cached hero hitbox values (updated once per frame, not per food item)
     let hbLeft = 0, hbRight = 0, hbTop = 0, hbBottom = 0;
+    let hb2Active = false, hb2Left = 0, hb2Right = 0, hb2Top = 0, hb2Bottom = 0;
     function updateHeroHitbox() {
       const bottom = stageH - 4 - jumpY;
       const top = bottom - heroH;
@@ -1099,12 +1109,30 @@
       hbRight  = heroX + heroW * 0.22;
       hbTop    = top   + heroH * 0.22;
       hbBottom = bottom - 6;
+      hb2Active = false;
+      if (hbLeft < 0) {
+        hb2Active = true;
+        hb2Left = hbLeft + stageW;
+        hb2Right = hbRight + stageW;
+        hb2Top = hbTop;
+        hb2Bottom = hbBottom;
+      } else if (hbRight > stageW) {
+        hb2Active = true;
+        hb2Left = hbLeft - stageW;
+        hb2Right = hbRight - stageW;
+        hb2Top = hbTop;
+        hb2Bottom = hbBottom;
+      }
     }
 
     // Last-applied hero opacity to avoid redundant style writes
     let lastHeroOpacity = '1';
     function setHeroOpacity(v) {
-      if (lastHeroOpacity !== v) { hero.style.opacity = v; lastHeroOpacity = v; }
+      if (lastHeroOpacity !== v) {
+        hero.style.opacity = v;
+        heroClone.style.opacity = v;
+        lastHeroOpacity = v;
+      }
     }
 
     function updateHud() {
@@ -1136,6 +1164,7 @@
     function setSprite(src) {
       if (lastSprite === src) return;
       hero.src = src;
+      heroClone.src = src;
       lastSprite = src;
     }
     function updateSprite(now) {
@@ -1157,7 +1186,18 @@
       setHeroOpacity((Math.floor(now / 140) % 2 === 0) ? '0.32' : '1');
     }
     function applyHero() {
-      hero.style.transform = `translate3d(${Math.round(heroX - heroW / 2)}px, ${Math.round(-jumpY)}px, 0)`;
+      const x = heroX - heroW / 2;
+      const y = -jumpY;
+      hero.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(y)}px, 0)`;
+      let cloneX = null;
+      if (x < 0) cloneX = x + stageW;
+      else if (x + heroW > stageW) cloneX = x - stageW;
+      if (cloneX === null) {
+        heroClone.style.visibility = 'hidden';
+      } else {
+        heroClone.style.visibility = 'visible';
+        heroClone.style.transform = `translate3d(${Math.round(cloneX)}px, ${Math.round(y)}px, 0)`;
+      }
     }
     function playJumpSound() {
       try {
@@ -1267,7 +1307,7 @@
     }
     function currentBadLimit() {
       const p = difficultyProgress();
-      if (p < 0.25) return 4;
+      if (p < 0.45) return 3;
       return MAX_BAD_ACTIVE;
     }
 
@@ -1283,7 +1323,7 @@
       const x = Math.round(size / 2 + Math.random() * Math.max(1, stageW - size * 1.5));
       const y = -size - 8;
       const p = difficultyProgress();
-      const speed = isGood ? 138 + Math.random() * 42 : 178 + p * 34 + Math.random() * 55;
+      const speed = isGood ? 138 + Math.random() * 42 : 150 + p * 25 + Math.random() * 45;
       item.active = true;
       item.kind = kind;
       item.x = x;
@@ -1419,7 +1459,9 @@
         const fRight  = item.x + item.size * 0.82;
         const fTop    = item.y + item.size * 0.18;
         const fBottom = item.y + item.size * 0.82;
-        if (!(hbRight < fLeft || hbLeft > fRight || hbBottom < fTop || hbTop > fBottom)) {
+        const hitMain = !(hbRight < fLeft || hbLeft > fRight || hbBottom < fTop || hbTop > fBottom);
+        const hitWrap = hb2Active && !(hb2Right < fLeft || hb2Left > fRight || hb2Bottom < fTop || hb2Top > fBottom);
+        if (hitMain || hitWrap) {
           const kind = item.kind;
           removeFood(item);
           if (kind === 'good') {
@@ -1450,7 +1492,9 @@
       if (!gameOver && !gameWon) {
         if (now >= hurtFreezeUntil) {
           if (velocity) {
-            heroX = localClamp(heroX + velocity * stageW * 0.38 * dt, heroW * 0.5 + 8, stageW - heroW * 0.5 - 8);
+            heroX += velocity * stageW * 0.38 * dt;
+            if (heroX < 0) heroX += stageW;
+            else if (heroX >= stageW) heroX -= stageW;
             heroRatio = heroX / stageW;
           }
         }
