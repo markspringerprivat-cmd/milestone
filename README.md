@@ -23,3 +23,8 @@ Der Fortschritt wird lokal im Browser gespeichert.
 - `assets/images/battle/`: Kampf- und Ergebnisbilder.
 - `assets/images/qr/`: QR-Codes.
 - `assets/images/ui/`: Spielbrett, Intro/Outro und UI-Bilder.
+
+## Pfad-Hinweis
+
+Alle Projektseiten liegen im Hauptordner. Stylesheets liegen in `css/`, JavaScript in `js/`, und alle Medien liegen unter `assets/`.
+Die JavaScript-Navigation benutzt `pageUrl(...)`, damit `index.html`, `level.html`, `battle.html` und `minigame.html` unabhängig vom Hosting-Unterordner korrekt aufgerufen werden.

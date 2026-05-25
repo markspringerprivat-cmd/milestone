@@ -4,26 +4,26 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Königreich der Sinne</title>
-  <link rel="stylesheet" href="css/style.css?v=v4_18_structured_20260525">
-  <script src="js/app-v4.js?v=v4_18_structured_20260525" defer></script>
+  <link rel="stylesheet" href="./css/style.css?v=v4_20_paths_normalized_20260525">
+  <script src="./js/app-v4.js?v=v4_20_paths_normalized_20260525" defer></script>
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" async></script>
-  <link rel="stylesheet" href="css/v4.css?v=v4_18_structured_20260525">
+  <link rel="stylesheet" href="./css/v4.css?v=v4_20_paths_normalized_20260525">
 </head>
 <body data-page="board">
   <main>
     <section id="introScreen" class="intro-screen" aria-label="Intro">
-      <img src="assets/images/ui/intro.webp" alt="Introbild Königreich der Sinne" class="intro-img">
+      <img src="./assets/images/ui/intro.webp" alt="Introbild Königreich der Sinne" class="intro-img">
       <div class="intro-panel intro-text-panel">
         <button id="startGameBtn" class="intro-start-btn" type="button" aria-label="Spiel starten">
-          <img src="assets/images/ui/intro_text.webp" alt="Angriff auf das Königreich der Sinne" class="intro-text-img">
+          <img src="./assets/images/ui/intro_text.webp" alt="Angriff auf das Königreich der Sinne" class="intro-text-img">
         </button>
       </div>
     </section>
 
     <section id="boardScreen" class="board-screen hidden" aria-label="Spielbrett">
-      <img id="boardImage" src="assets/images/ui/board.webp" alt="Spielbrett der Sinnesorgane" class="board-image">
+      <img id="boardImage" src="./assets/images/ui/board.webp" alt="Spielbrett der Sinnesorgane" class="board-image">
       <div id="boardGuide" class="board-guide hidden" aria-hidden="true">
-        <img src="assets/images/characters/held.webp" alt="Sir Nervus" class="board-guide-hero">
+        <img src="./assets/images/characters/held.webp" alt="Sir Nervus" class="board-guide-hero">
         <div class="board-guide-bubble">Lass uns das Königreich retten.</div>
       </div>
       <div id="mapInner" class="map-inner" aria-label="Levelpunkte auf dem Spielbrett"></div>
@@ -38,7 +38,7 @@
         </article>
 
         <div class="action-row">
-          <a class="game-btn secondary" href="codes.html">QR-Codes anzeigen</a>
+          <a class="game-btn secondary" href="./codes.html">QR-Codes anzeigen</a>
           <button id="resetGameBtn" class="game-btn danger">Spielbrett zurücksetzen</button>
         </div>
       </div>
@@ -46,7 +46,7 @@
 
 
     <section id="outroScreen" class="outro-screen hidden" aria-label="Outro">
-      <img src="assets/images/ui/outro.webp" alt="Königreich gerettet" class="outro-img">
+      <img src="./assets/images/ui/outro.webp" alt="Königreich gerettet" class="outro-img">
       <button id="outroContinueBtn" class="game-btn primary outro-continue-btn" type="button">Zum Spielbrett</button>
     </section>
 
@@ -110,7 +110,7 @@
 
   <div id="levelUnlockedModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="levelUnlockedTitle">
     <div class="modal-card encounter-card outcome-hero">
-      <img src="assets/images/characters/held_gewonnen.webp" class="character-img" alt="Held steckt die Flagge in den Boden">
+      <img src="./assets/images/characters/held_gewonnen.webp" class="character-img" alt="Held steckt die Flagge in den Boden">
       <div class="encounter-text">
         <span id="levelUnlockedKicker" class="kicker">Erfolg</span>
         <h2 id="levelUnlockedTitle">Neues Level freigeschaltet</h2>

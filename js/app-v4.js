@@ -5,7 +5,10 @@
   const BATTLE_STORE = 'koenigreichSinneV4Battle';
   const RETURN_STORE = 'koenigreichSinneV4BoardReturn';
   const SOUND_STORE = 'koenigreichSinneV4Muted';
-  const STATE_VERSION = 'v4_18levels_structured_assets';
+  const STATE_VERSION = 'v4_20levels_paths_normalized';
+  const APP_ROOT = new URL('./', document.baseURI);
+  const pageUrl = target => new URL(target, APP_ROOT).href;
+  const assetUrl = target => new URL(target, APP_ROOT).href;
 
   const SENSES = {
     sehen: {
@@ -143,6 +146,28 @@
     falsch_1: 'assets/audio/falsch_1.mp3', falsch_2: 'assets/audio/falsch_2.mp3', falsch_3: 'assets/audio/falsch_3.mp3'
   };
 
+  function normalizeAssetPaths() {
+    Object.values(SENSES).forEach(item => {
+      item.enemy = assetUrl(item.enemy);
+      item.defeated = assetUrl(item.defeated);
+    });
+    BOSS.enemy = assetUrl(BOSS.enemy);
+    BOSS.defeated = assetUrl(BOSS.defeated);
+    for (let i = 0; i < STAGE_BACKGROUNDS.length; i += 1) STAGE_BACKGROUNDS[i] = assetUrl(STAGE_BACKGROUNDS[i]);
+    for (let i = 0; i < POPUP_BACKGROUNDS.length; i += 1) POPUP_BACKGROUNDS[i] = assetUrl(POPUP_BACKGROUNDS[i]);
+    ASSETS.correct = ASSETS.correct.map(assetUrl);
+    ASSETS.wrong = ASSETS.wrong.map(assetUrl);
+    ASSETS.final = assetUrl(ASSETS.final);
+    ASSETS.hero = assetUrl(ASSETS.hero);
+    ASSETS.winHero = assetUrl(ASSETS.winHero);
+    ASSETS.loseHero = assetUrl(ASSETS.loseHero);
+    ASSETS.escapeHero = assetUrl(ASSETS.escapeHero);
+    ASSETS.versus = assetUrl(ASSETS.versus);
+    Object.keys(ASSETS.text).forEach(key => { ASSETS.text[key] = assetUrl(ASSETS.text[key]); });
+    Object.keys(AUDIO_FILES).forEach(key => { AUDIO_FILES[key] = assetUrl(AUDIO_FILES[key]); });
+  }
+  normalizeAssetPaths();
+
   const $ = id => document.getElementById(id);
   const qs = name => new URLSearchParams(location.search).get(name);
   const hide = node => node && node.classList.add('hidden');
@@ -229,13 +254,14 @@
     });
   }
   function preloadBattleAssets(data, meta) {
-    preloadAssets(['assets/images/ui/intro_text.webp','assets/images/ui/outro.webp',ASSETS.hero, ASSETS.versus, ASSETS.text.kampf, ASSETS.text.richtig, ASSETS.text.falsch, ASSETS.text.gewonnen, ASSETS.text.verloren, data.enemy, data.defeated, ASSETS.loseHero, ASSETS.final, ...ASSETS.correct, ...ASSETS.wrong, bgForMeta(meta), popupBgForMeta(meta), ...Object.values(AUDIO_FILES)]);
+    preloadAssets([ASSETS.hero, ASSETS.versus, ASSETS.text.kampf, ASSETS.text.richtig, ASSETS.text.falsch, ASSETS.text.gewonnen, ASSETS.text.verloren, data.enemy, data.defeated, ASSETS.loseHero, ASSETS.final, ...ASSETS.correct, ...ASSETS.wrong, bgForMeta(meta), popupBgForMeta(meta), ...Object.values(AUDIO_FILES)]);
   }
   function prefetchPage(href) {
-    if (document.querySelector(`link[rel="prefetch"][href="${href}"]`)) return;
+    const url = href.includes('://') || href.startsWith('file:') ? href : pageUrl(href);
+    if (document.querySelector(`link[rel="prefetch"][href="${url}"]`)) return;
     const link = document.createElement('link');
     link.rel = 'prefetch';
-    link.href = href;
+    link.href = url;
     document.head.appendChild(link);
   }
 
@@ -250,7 +276,7 @@
     $('startGameBtn')?.addEventListener('click', startGame);
     $('introScreen')?.addEventListener('click', (ev) => { if (ev.target.closest('#startGameBtn')) return; startGame(); });
     $('outroContinueBtn')?.addEventListener('click', () => { hide($('outroScreen')); showBoard(false); });
-    $('resetGameBtn')?.addEventListener('click', () => { if (confirm('Spielbrett wirklich zurücksetzen?')) { localStorage.removeItem(STORE); localStorage.removeItem(RETURN_STORE); location.href = 'index.html'; } });
+    $('resetGameBtn')?.addEventListener('click', () => { if (confirm('Spielbrett wirklich zurücksetzen?')) { localStorage.removeItem(STORE); localStorage.removeItem(RETURN_STORE); location.href = pageUrl('index.html'); } });
     $('openBoardMenuBtn')?.addEventListener('click', () => document.body.classList.add('board-menu-open'));
     $('closeBoardMenuBtn')?.addEventListener('click', () => document.body.classList.remove('board-menu-open'));
     $('closeScanBtn')?.addEventListener('click', closeScan);
@@ -352,7 +378,7 @@
 
     if (completed) {
       if (!assigned) return;
-      location.href = assigned === 'boss' ? `level.html?type=boss&slot=${index}` : `level.html?sense=${encodeURIComponent(assigned)}&slot=${index}`;
+      location.href = pageUrl(assigned === 'boss' ? `level.html?type=boss&slot=${index}` : `level.html?sense=${encodeURIComponent(assigned)}&slot=${index}`);
       return;
     }
     if (assigned) { showEncounter(assigned, index); return; }
@@ -402,7 +428,7 @@
     const data = isBoss ? BOSS : SENSES[id];
     if (!data) return;
     const meta = { isBoss, slot:index, senseId:id };
-    window.pendingLaunch = { url:isBoss ? `level.html?type=boss&slot=${index}` : `level.html?sense=${encodeURIComponent(id)}&slot=${index}`, meta };
+    window.pendingLaunch = { url: pageUrl(isBoss ? `level.html?type=boss&slot=${index}` : `level.html?sense=${encodeURIComponent(id)}&slot=${index}`), meta };
     const modal = $('encounterModal'); applyStagePopup(modal, meta); modal?.classList.remove('test-placeholder-modal');
     $('launchLevelBtn').textContent = isBoss ? 'Finale starten' : 'Level starten';
     $('encounterBackBtn').textContent = 'Wegrennen';
@@ -442,7 +468,7 @@
   function handleEncounterBack() {
     if (window.pendingLaunch?.minigame) {
       hide($('encounterModal'));
-      location.href = `minigame.html?slot=${window.pendingLaunch.slot}`;
+      location.href = pageUrl(`minigame.html?slot=${window.pendingLaunch.slot}`);
       return;
     }
     escapeToBoard(window.pendingLaunch?.meta);
@@ -499,10 +525,21 @@
   function initLevel() {
     addSpeaker();
     const isBoss = qs('type') === 'boss'; const slot = Number(qs('slot')); const senseId = isBoss ? 'boss' : qs('sense'); const state=getState();
-    if (!Number.isInteger(slot) || slot < 0 || slot >= LEVEL_COUNT) { location.replace('index.html'); return; }
+    if (!Number.isInteger(slot) || slot < 0 || slot >= LEVEL_COUNT) { location.replace(pageUrl('index.html')); return; }
     if (isBoss) {
-      if (state.slots[slot] !== 'boss') { location.replace('index.html'); return; }
-    } else if (!SENSES[senseId] || state.slots[slot] !== senseId) { location.replace('index.html'); return; }
+      if (state.slots[slot] !== 'boss') {
+        state.slots[slot] = 'boss';
+        state.heroIndex = slot;
+        setState(state);
+      }
+    } else if (!SENSES[senseId]) {
+      location.replace(pageUrl('index.html'));
+      return;
+    } else if (state.slots[slot] !== senseId) {
+      state.slots[slot] = senseId;
+      state.heroIndex = slot;
+      setState(state);
+    }
     const data = isBoss ? BOSS : SENSES[senseId]; const meta = { isBoss, slot, senseId };
     document.body.style.setProperty('--stage-bg', `url("${bgForMeta(meta)}")`);
     $('levelBadge').textContent = `Level ${slot+1}`;
@@ -511,9 +548,9 @@
     const questions = getQuestionsForId(senseId);
     const opts = $('quizOptions'); if (opts) opts.innerHTML = questions.map((q,qi)=>`<article class="quiz-question-card"><h3>Frage ${qi+1}: ${esc(q.q)}</h3>${q.a.map((a,ai)=>`<label class="quiz-option"><input type="radio" name="quizAnswer_${qi}" value="${ai}"><span>${esc(a)}</span></label>`).join('')}</article>`).join('');
     preloadBattleAssets(data, meta);
-    prefetchPage('battle.html');
+    prefetchPage(pageUrl('battle.html'));
     $('checkAnswerBtn')?.addEventListener('click', () => startBattleFromLevel(data, meta, questions));
-    $('runAwayBtn')?.addEventListener('click', () => { localStorage.setItem(RETURN_STORE, JSON.stringify({ type:'escape', meta })); location.href='index.html'; });
+    $('runAwayBtn')?.addEventListener('click', () => { localStorage.setItem(RETURN_STORE, JSON.stringify({ type:'escape', meta })); location.href = pageUrl('index.html'); });
   }
   function startBattleFromLevel(data, meta, questions) {
     const selected = questions.map((_,qi)=>document.querySelector(`input[name="quizAnswer_${qi}"]:checked`));
@@ -522,7 +559,7 @@
     const payload = { senseId: data.id, meta, answers, results, time:Date.now() };
     sessionStorage.setItem(BATTLE_STORE, JSON.stringify(payload));
     showTransition('Kampf wird geladen …');
-    setTimeout(() => location.href='battle.html', 420);
+    setTimeout(() => location.href = pageUrl('battle.html'), 420);
   }
   function showTransition(text) {
     let overlay = document.createElement('div'); overlay.className='page-transition-overlay'; overlay.innerHTML=`<div>${esc(text)}</div>`; document.body.appendChild(overlay); requestAnimationFrame(()=>overlay.classList.add('active'));
@@ -531,8 +568,8 @@
   function initBattle() {
     addSpeaker(); stopSound('background');
     let payload; try { payload = JSON.parse(sessionStorage.getItem(BATTLE_STORE) || ''); } catch (_) {}
-    if (!payload || !payload.meta) { location.replace('index.html'); return; }
-    const meta = payload.meta; const data = dataForMeta(meta); if (!data) { location.replace('index.html'); return; }
+    if (!payload || !payload.meta) { location.replace(pageUrl('index.html')); return; }
+    const meta = payload.meta; const data = dataForMeta(meta); if (!data) { location.replace(pageUrl('index.html')); return; }
     document.body.style.setProperty('--battle-bg', `url("${popupBgForMeta(meta)}")`);
     preloadBattleAssets(data, meta);
     if ($('battleKampfText')) $('battleKampfText').src = ASSETS.text.kampf;
@@ -673,8 +710,8 @@
     if (won) {
       const btn = document.createElement('button'); btn.className='game-btn primary'; btn.textContent='Weiter'; btn.onclick=()=>finishBattleWin(meta); action.appendChild(btn);
     } else {
-      const retry = document.createElement('button'); retry.className='game-btn primary'; retry.textContent='Neuer Versuch'; retry.onclick=()=>location.href = meta.isBoss ? 'level.html?type=boss' : `level.html?sense=${encodeURIComponent(meta.senseId)}&slot=${meta.slot}`;
-      const run = document.createElement('button'); run.className='game-btn muted'; run.textContent='Wegrennen'; run.onclick=()=>{ localStorage.setItem(RETURN_STORE, JSON.stringify({ type:'escape', meta })); location.href='index.html'; };
+      const retry = document.createElement('button'); retry.className='game-btn primary'; retry.textContent='Neuer Versuch'; retry.onclick=()=>location.href = pageUrl(meta.isBoss ? `level.html?type=boss&slot=${meta.slot}` : `level.html?sense=${encodeURIComponent(meta.senseId)}&slot=${meta.slot}`);
+      const run = document.createElement('button'); run.className='game-btn muted'; run.textContent='Wegrennen'; run.onclick=()=>{ localStorage.setItem(RETURN_STORE, JSON.stringify({ type:'escape', meta })); location.href = pageUrl('index.html'); };
       action.append(retry,run);
     }
   }
@@ -690,7 +727,7 @@
     }
     setState(state); sessionStorage.removeItem(BATTLE_STORE);
     localStorage.setItem(RETURN_STORE, JSON.stringify({ type:'unlocked', meta }));
-    location.href='index.html';
+    location.href = pageUrl('index.html');
   }
 
 
@@ -985,8 +1022,8 @@
 
     settingsBtn?.addEventListener('click', () => { stopMovement(); show(menu); });
     closeMenu?.addEventListener('click', () => hide(menu));
-    boardBtn?.addEventListener('click', () => { stopSound('minigame_background'); location.href = 'index.html'; });
-    resultBoardBtn?.addEventListener('click', () => { stopSound('minigame_background'); location.href = 'index.html'; });
+    boardBtn?.addEventListener('click', () => { stopSound('minigame_background'); location.href = pageUrl('index.html'); });
+    resultBoardBtn?.addEventListener('click', () => { stopSound('minigame_background'); location.href = pageUrl('index.html'); });
 
     function createOrb(type) {
       const rect = stage.getBoundingClientRect();
@@ -1056,7 +1093,7 @@
             localStorage.setItem(RETURN_STORE, JSON.stringify({ type:'unlocked', meta:{ slot, placeholder:true } }));
           }
           stopSound('minigame_background');
-          location.href = 'index.html';
+          location.href = pageUrl('index.html');
         };
       } else {
         gameOver = true;
@@ -1233,7 +1270,7 @@
   function initCodes() {
     addSpeaker(); $('printCodesBtn')?.addEventListener('click', () => print());
     const grid=$('qrGrid'); if (!grid) return;
-    grid.innerHTML = [...Object.values(SENSES), BOSS].map(s=>`<article class="qr-card"><img src="assets/images/qr/qr_${s.id}.png" alt="QR-Code ${esc(s.label)}"><h2>${esc(s.label)}</h2><p>${esc(s.code)}</p></article>`).join('');
+    grid.innerHTML = [...Object.values(SENSES), BOSS].map(s=>`<article class="qr-card"><img src="${assetUrl(`assets/images/qr/qr_${s.id}.png`)}" alt="QR-Code ${esc(s.label)}"><h2>${esc(s.label)}</h2><p>${esc(s.code)}</p></article>`).join('');
   }
 
   document.addEventListener('DOMContentLoaded', () => {
