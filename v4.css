@@ -1248,3 +1248,45 @@ body[data-page="minigame"]{
   .mini-heart{width:46px!important;height:46px!important;}
   .mini-hedgehog{bottom:4px!important;}
 }
+
+
+/* === Minigame final fix v15 === */
+.mini-game-page{background:transparent!important;}
+.mini-game-stage{
+  background: var(--mini-stage-bg, none) center center / cover no-repeat !important;
+}
+.mini-game-stage::before{display:none!important;content:none!important;}
+.mini-ground{display:none!important;}
+.mini-hero{
+  width:min(27vw,150px)!important;
+  height:min(20svh,166px)!important;
+  bottom:4px!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+  z-index:9!important;
+}
+.mini-hero.walking{animation:miniWalkBob .24s ease-in-out infinite alternate!important;}
+.mini-hearts{
+  top:max(10px, env(safe-area-inset-top) + 6px)!important;
+  gap:10px!important;
+  padding:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  z-index:20!important;
+}
+.mini-heart{width:56px!important;height:56px!important;opacity:.96!important;}
+.mini-hedgehog{
+  position:absolute!important;
+  bottom:8px!important;
+  left:auto!important;
+  z-index:12!important;
+  display:none;
+  filter:drop-shadow(0 8px 12px rgba(0,0,0,.3))!important;
+  pointer-events:none!important;
+}
+.mini-hazard{z-index:11!important;}
+@media(max-width:560px){
+  .mini-hero{width:min(31vw,140px)!important;height:min(21svh,154px)!important;}
+  .mini-heart{width:48px!important;height:48px!important;}
+  .mini-hedgehog{bottom:6px!important;}
+}

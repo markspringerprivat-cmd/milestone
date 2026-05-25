@@ -5,7 +5,7 @@
   const BATTLE_STORE = 'koenigreichSinneV4Battle';
   const RETURN_STORE = 'koenigreichSinneV4BoardReturn';
   const SOUND_STORE = 'koenigreichSinneV4Muted';
-  const STATE_VERSION = 'v4_14levels_minigame_polish';
+  const STATE_VERSION = 'v4_15levels_minigame_fix';
 
   const SENSES = {
     sehen: {
@@ -713,10 +713,7 @@
     if (!hero || !stage) return;
 
     const miniMeta = { slot: Number(qs('slot')) || 0, isBoss:false };
-    stage.style.backgroundImage = `url("${popupBgForMeta(miniMeta)}")`;
-    stage.style.backgroundSize = 'cover';
-    stage.style.backgroundPosition = 'center';
-    stage.style.backgroundRepeat = 'no-repeat';
+    stage.style.setProperty('--mini-stage-bg', `url("${popupBgForMeta(miniMeta)}")`);
 
     const SPRITES = {
       right1: 'mini_right_1.png',
@@ -743,13 +740,13 @@
     jumpAudio.volume = 0.82;
 
     const TARGET_DODGES = 10;
-    const MAX_HAZARDS = 7;
-    const SPAWN_MS = 1850;
+    const MAX_HAZARDS = 6;
+    const SPAWN_MS = 1550;
     const MAX_HEARTS = 3;
     const HURT_FREEZE_MS = 500;
     const INVULNERABLE_MS = 3000;
     const HEDGE_FRAME_MS = 300;
-    const HEDGE_RESPAWN_MS = 260;
+    const HEDGE_RESPAWN_MS = 520;
 
     let x = 50;
     let direction = 1;
@@ -766,7 +763,7 @@
     let dodged = 0;
     let gameOver = false;
     let gameWon = false;
-    let lastSpawn = performance.now() + 700;
+    let lastSpawn = performance.now() + 650;
     let lives = MAX_HEARTS;
     let hurtFreezeUntil = 0;
     let invulnerableUntil = 0;
@@ -850,9 +847,9 @@
         return;
       }
       if (velocity < 0) {
-        setSprite((Math.floor(now / 300) % 2 === 0) ? SPRITES.left1 : SPRITES.left2);
+        setSprite((Math.floor(now / 220) % 2 === 0) ? SPRITES.left1 : SPRITES.left2);
       } else if (velocity > 0) {
-        setSprite((Math.floor(now / 300) % 2 === 0) ? SPRITES.right1 : SPRITES.right2);
+        setSprite((Math.floor(now / 220) % 2 === 0) ? SPRITES.right1 : SPRITES.right2);
       } else {
         setSprite(direction < 0 ? SPRITES.left1 : SPRITES.right1);
       }
@@ -878,7 +875,7 @@
     function jump() {
       if (jumping || gameOver || gameWon || performance.now() < hurtFreezeUntil) return;
       jumping = true;
-      jumpVelocity = 790;
+      jumpVelocity = 760;
       hero.classList.add('jumping');
       playJumpSound();
       setSprite(direction < 0 ? SPRITES.jumpLeft : SPRITES.jumpRight);
@@ -967,7 +964,7 @@
       node.style.left = `${xPx}px`;
       node.style.top = `${-size - 8}px`;
       stage.appendChild(node);
-      hazards.push({ node, x: xPx, y: -size - 8, size, speed: 175 + Math.random() * 95 });
+      hazards.push({ node, x: xPx, y: -size - 8, size, speed: 180 + Math.random() * 110 });
       spawned += 1;
     }
 
@@ -1070,8 +1067,8 @@
       const stageRect = stage.getBoundingClientRect();
       hedgehog.direction = (hedgehog.cycle % 2 === 0) ? -1 : 1;
       hedgehog.cycle += 1;
-      hedgehog.width = Math.round(clamp(stageRect.width * 0.13, 86, 118));
-      hedgehog.speed = clamp(stageRect.width * 0.34, 260, 360);
+      hedgehog.width = Math.round(clamp(stageRect.width * 0.14, 88, 122));
+      hedgehog.speed = clamp(stageRect.width * 0.28, 235, 310);
       hedgehog.frame = 0;
       hedgehog.lastFrameSwap = now;
       hedgehog.active = true;
@@ -1079,7 +1076,8 @@
       hedgehogNode.style.display = 'block';
       hedgehogNode.style.width = `${hedgehog.width}px`;
       hedgehogNode.src = hedgeFrames(hedgehog.direction)[0];
-      hedgehogNode.style.left = `${hedgehog.x}px`;
+      hedgehogNode.style.setProperty('left', `${hedgehog.x}px`, 'important');
+      hedgehogNode.style.setProperty('bottom', '8px', 'important');
     }
     function updateHedgehog(dt, now) {
       if (!hedgehog.active) {
@@ -1088,7 +1086,8 @@
       }
       const stageRect = stage.getBoundingClientRect();
       hedgehog.x += hedgehog.speed * dt * hedgehog.direction;
-      hedgehogNode.style.left = `${hedgehog.x}px`;
+      hedgehogNode.style.setProperty('left', `${hedgehog.x}px`, 'important');
+      hedgehogNode.style.setProperty('bottom', '8px', 'important');
       if (now - hedgehog.lastFrameSwap >= HEDGE_FRAME_MS) {
         hedgehog.frame = (hedgehog.frame + 1) % 2;
         hedgehogNode.src = hedgeFrames(hedgehog.direction)[hedgehog.frame];
@@ -1112,7 +1111,7 @@
       last = now;
       if (!gameOver && !gameWon) {
         if (now >= hurtFreezeUntil) {
-          if (velocity) x = clamp(x + velocity * 34 * dt, 8, 92);
+          if (velocity) x = clamp(x + velocity * 30 * dt, 8, 92);
           if (jumping) {
             jumpY += jumpVelocity * dt;
             jumpVelocity -= 1750 * dt;
