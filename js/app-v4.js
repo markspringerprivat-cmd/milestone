@@ -5,35 +5,35 @@
   const BATTLE_STORE = 'koenigreichSinneV4Battle';
   const RETURN_STORE = 'koenigreichSinneV4BoardReturn';
   const SOUND_STORE = 'koenigreichSinneV4Muted';
-  const STATE_VERSION = 'v4_17levels_minigame_audio_controls';
+  const STATE_VERSION = 'v4_18levels_structured_assets';
 
   const SENSES = {
     sehen: {
-      id: 'sehen', label: 'Sehen', enemyName: 'Sehlina', code: 'SINNE-SEHEN', enemy: 'sehen.webp', defeated: 'sehen_besiegt.webp',
+      id: 'sehen', label: 'Sehen', enemyName: 'Sehlina', code: 'SINNE-SEHEN', enemy: 'assets/images/characters/sehen.webp', defeated: 'assets/images/characters/sehen_besiegt.webp',
       title: 'Level: Sehen', speech: '„Meine Illusionen blenden dich. Mal sehen, ob du den richtigen Reiz erkennst!”',
       intro: 'Hier geht es um das Auge, Lichtreize und die Verarbeitung von Sehinformationen.',
       content: ['Das Auge nimmt Lichtreize aus der Umgebung auf. Hornhaut und Linse bündeln das Licht, sodass auf der Netzhaut ein Bild entsteht.', 'Auf der Netzhaut sitzen Sinneszellen. Sie wandeln Licht in elektrische Signale um. Diese Signale gelangen über den Sehnerv zum Gehirn, wo sie verarbeitet und zu einem Bild zusammengesetzt werden.']
     },
     hoeren: {
-      id: 'hoeren', label: 'Hören', enemyName: 'Höhribert', code: 'SINNE-HOEREN', enemy: 'hoeren.webp', defeated: 'hoeren_besiegt.webp',
+      id: 'hoeren', label: 'Hören', enemyName: 'Höhribert', code: 'SINNE-HOEREN', enemy: 'assets/images/characters/hoeren.webp', defeated: 'assets/images/characters/hoeren_besiegt.webp',
       title: 'Level: Hören', speech: '„Ich verdrehe jede Schallwelle. Ob du trotzdem den richtigen Ton triffst?”',
       intro: 'Hier geht es um das Ohr, Schallwellen und den Gleichgewichtssinn.',
       content: ['Das Ohr nimmt Schallwellen auf. Die Ohrmuschel leitet den Schall zum Trommelfell weiter. Dieses gerät in Schwingung.', 'Die Gehörknöchelchen verstärken die Schwingungen. In der Hörschnecke werden sie in Nervensignale umgewandelt. Außerdem ist das Innenohr wichtig für das Gleichgewicht.']
     },
     riechen: {
-      id: 'riechen', label: 'Riechen', enemyName: 'Riechard', code: 'SINNE-RIECHEN', enemy: 'riechen.webp', defeated: 'riechen_besiegt.webp',
+      id: 'riechen', label: 'Riechen', enemyName: 'Riechard', code: 'SINNE-RIECHEN', enemy: 'assets/images/characters/riechen.webp', defeated: 'assets/images/characters/riechen_besiegt.webp',
       title: 'Level: Riechen', speech: '„Mein Nebel liegt in der Luft. Folge der Spur, wenn du dich traust!”',
       intro: 'Hier geht es um die Nase, Geruchsstoffe und die Bedeutung des Riechens im Alltag.',
       content: ['Die Nase erkennt Geruchsstoffe in der Luft. Beim Einatmen gelangen Duftmoleküle zur Riechschleimhaut.', 'Dort sitzen Riechzellen, die passende Moleküle erkennen und Signale an das Gehirn senden. Gerüche können warnen, Erinnerungen auslösen und den Geschmack beeinflussen.']
     },
     schmecken: {
-      id: 'schmecken', label: 'Schmecken', enemyName: 'König Schmatz', code: 'SINNE-SCHMECKEN', enemy: 'schmecken.webp', defeated: 'schmecken_besiegt.webp',
+      id: 'schmecken', label: 'Schmecken', enemyName: 'König Schmatz', code: 'SINNE-SCHMECKEN', enemy: 'assets/images/characters/schmecken.webp', defeated: 'assets/images/characters/schmecken_besiegt.webp',
       title: 'Level: Schmecken', speech: '„Süß, sauer, salzig? Ich bringe alles durcheinander. Beweise deinen Geschmack!”',
       intro: 'Hier geht es um die Zunge, Geschmacksrichtungen und das Zusammenspiel der Sinne.',
       content: ['Auf der Zunge befinden sich Geschmacksknospen. Sie erkennen Stoffe aus der Nahrung und ermöglichen Geschmackswahrnehmungen.', 'Häufig unterscheidet man süß, sauer, salzig, bitter und umami. Geschmack entsteht aber nicht nur auf der Zunge: Geruch, Temperatur und Konsistenz wirken mit.']
     },
     fuehlen: {
-      id: 'fuehlen', label: 'Fühlen', enemyName: 'Dr. Tastibald', code: 'SINNE-FUEHLEN', enemy: 'fuehlen.webp', defeated: 'fuehlen_besiegt.webp',
+      id: 'fuehlen', label: 'Fühlen', enemyName: 'Dr. Tastibald', code: 'SINNE-FUEHLEN', enemy: 'assets/images/characters/fuehlen.webp', defeated: 'assets/images/characters/fuehlen_besiegt.webp',
       title: 'Level: Fühlen', speech: '„Meine Panzer fühlen alles. Spürst du, was Schutz wirklich bedeutet?”',
       intro: 'Hier geht es um die Haut, Berührung, Temperatur, Schmerz und Schutz.',
       content: ['Die Haut ist das größte Sinnesorgan des Körpers. Sie enthält Rezeptoren für Berührung, Druck, Wärme, Kälte und Schmerz.', 'Gleichzeitig schützt die Haut vor Verletzungen, Krankheitserregern und Austrocknung. Sie ist also Sinnesorgan und Schutzschicht zugleich.']
@@ -41,7 +41,7 @@
   };
 
   const BOSS = {
-    id: 'boss', label: 'Boss', code: 'SINNE-BOSS', enemyName: 'Sinntron 3000', enemy: 'boss.webp', defeated: 'boss_besiegt.webp', title: 'Finale: Boss der Sinne',
+    id: 'boss', label: 'Boss', code: 'SINNE-BOSS', enemyName: 'Sinntron 3000', enemy: 'assets/images/characters/boss.webp', defeated: 'assets/images/characters/boss_besiegt.webp', title: 'Finale: Boss der Sinne',
     speech: '„Alle Sinne gegen mich? Dann zeig, dass du das Königreich wirklich verstanden hast!”',
     intro: 'Im finalen Level geht es um das Zusammenspiel aller Sinnesorgane.',
     content: ['Sinnesorgane nehmen Reize aus der Umwelt oder aus dem Körper auf. Das Gehirn verarbeitet diese Informationen und ordnet sie ein.', 'Viele Wahrnehmungen entstehen durch das Zusammenspiel mehrerer Sinne. Beim Essen wirken zum Beispiel Geschmack, Geruch, Temperatur, Konsistenz und Sehen zusammen.']
@@ -111,36 +111,36 @@
     { x: 35.7, y: 11.2 }
   ];
   const BOARD_RATIO = 941 / 1672;
-  const STAGE_BACKGROUNDS = ['stage_gras.webp', 'stage_sand.webp', 'stage_eis.webp', 'stage_lava.webp', 'stage_himmel.webp', 'stage_all.webp'];
-  const POPUP_BACKGROUNDS = ['popup_gras.webp', 'popup_sand.webp', 'popup_eis.webp', 'popup_lava.webp', 'popup_himmel.webp', 'popup_all.webp'];
+  const STAGE_BACKGROUNDS = ['assets/images/stages/stage_gras.webp', 'assets/images/stages/stage_sand.webp', 'assets/images/stages/stage_eis.webp', 'assets/images/stages/stage_lava.webp', 'assets/images/stages/stage_himmel.webp', 'assets/images/stages/stage_all.webp'];
+  const POPUP_BACKGROUNDS = ['assets/images/popups/popup_gras.webp', 'assets/images/popups/popup_sand.webp', 'assets/images/popups/popup_eis.webp', 'assets/images/popups/popup_lava.webp', 'assets/images/popups/popup_himmel.webp', 'assets/images/popups/popup_all.webp'];
   const isPlaceholderSlot = index => PLACEHOLDER_LEVELS.includes(Number(index));
   const isQrSlot = index => QR_LEVELS.includes(Number(index));
   const stageIndexForSlot = slot => Math.max(0, Math.min(5, Math.floor((Number(slot) || 0) / 2)));
 
   const ASSETS = {
-    correct: ['richtig_1.webp', 'richtig_2.webp', 'richtig_3.webp'],
-    wrong: ['falsch_1.webp', 'falsch_2.webp', 'falsch_3.webp'],
-    final: 'final.webp',
-    hero: 'held.webp',
-    winHero: 'held_gewonnen.webp',
-    loseHero: 'held_verloren.webp',
-    escapeHero: 'held_entkommen.webp',
-    versus: 'versus_final.webp',
+    correct: ['assets/images/battle/richtig_1.webp', 'assets/images/battle/richtig_2.webp', 'assets/images/battle/richtig_3.webp'],
+    wrong: ['assets/images/battle/falsch_1.webp', 'assets/images/battle/falsch_2.webp', 'assets/images/battle/falsch_3.webp'],
+    final: 'assets/images/battle/final.webp',
+    hero: 'assets/images/characters/held.webp',
+    winHero: 'assets/images/characters/held_gewonnen.webp',
+    loseHero: 'assets/images/characters/held_verloren.webp',
+    escapeHero: 'assets/images/characters/held_entkommen.webp',
+    versus: 'assets/images/battle/versus_final.webp',
     text: {
-      kampf: 'kampf_text.webp',
-      richtig: 'richtig_text.webp',
-      falsch: 'falsch_text.webp',
-      gewonnen: 'gewonnen_text.webp',
-      verloren: 'verloren_text.webp'
+      kampf: 'assets/images/battle/kampf_text.webp',
+      richtig: 'assets/images/battle/richtig_text.webp',
+      falsch: 'assets/images/battle/falsch_text.webp',
+      gewonnen: 'assets/images/battle/gewonnen_text.webp',
+      verloren: 'assets/images/battle/verloren_text.webp'
     }
   };
 
   const AUDIO_FILES = {
-    background: 'background.mp3', battle_background: 'battle_background.mp3', minigame_background: 'minigame_background.mp3',
-    levelstart: 'levelstart.mp3', levelunlocked: 'levelunlocked.mp3', fight: 'fight.mp3', win: 'win.mp3', lose: 'lose.mp3',
-    final: 'final.mp3', hurt: 'hurt.mp3', glass_break: 'glass_break.mp3', collect: 'collect.mp3',
-    richtig_1: 'richtig_1.mp3', richtig_2: 'richtig_2.mp3', richtig_3: 'richtig_3.mp3',
-    falsch_1: 'falsch_1.mp3', falsch_2: 'falsch_2.mp3', falsch_3: 'falsch_3.mp3'
+    background: 'assets/audio/background.mp3', battle_background: 'assets/audio/battle_background.mp3', minigame_background: 'assets/audio/minigame_background.mp3',
+    levelstart: 'assets/audio/levelstart.mp3', levelunlocked: 'assets/audio/levelunlocked.mp3', fight: 'assets/audio/fight.mp3', win: 'assets/audio/win.mp3', lose: 'assets/audio/lose.mp3',
+    final: 'assets/audio/final.mp3', hurt: 'assets/audio/hurt.mp3', glass_break: 'assets/audio/glass_break.mp3', collect: 'assets/audio/collect.mp3',
+    richtig_1: 'assets/audio/richtig_1.mp3', richtig_2: 'assets/audio/richtig_2.mp3', richtig_3: 'assets/audio/richtig_3.mp3',
+    falsch_1: 'assets/audio/falsch_1.mp3', falsch_2: 'assets/audio/falsch_2.mp3', falsch_3: 'assets/audio/falsch_3.mp3'
   };
 
   const $ = id => document.getElementById(id);
@@ -229,7 +229,7 @@
     });
   }
   function preloadBattleAssets(data, meta) {
-    preloadAssets(['intro_text.webp','outro.webp',ASSETS.hero, ASSETS.versus, ASSETS.text.kampf, ASSETS.text.richtig, ASSETS.text.falsch, ASSETS.text.gewonnen, ASSETS.text.verloren, data.enemy, data.defeated, ASSETS.loseHero, ASSETS.final, ...ASSETS.correct, ...ASSETS.wrong, bgForMeta(meta), popupBgForMeta(meta), ...Object.values(AUDIO_FILES)]);
+    preloadAssets(['assets/images/ui/intro_text.webp','assets/images/ui/outro.webp',ASSETS.hero, ASSETS.versus, ASSETS.text.kampf, ASSETS.text.richtig, ASSETS.text.falsch, ASSETS.text.gewonnen, ASSETS.text.verloren, data.enemy, data.defeated, ASSETS.loseHero, ASSETS.final, ...ASSETS.correct, ...ASSETS.wrong, bgForMeta(meta), popupBgForMeta(meta), ...Object.values(AUDIO_FILES)]);
   }
   function prefetchPage(href) {
     if (document.querySelector(`link[rel="prefetch"][href="${href}"]`)) return;
@@ -320,12 +320,12 @@
       btn.className = `map-token v4-node ${isPlaceholderSlot(index) ? 'placeholder-node' : 'quiz-node'}`;
       btn.style.left = `${pos.x}%`; btn.style.top = `${pos.y}%`;
       const assigned = state.slots[index]; const done = state.completed[index]; const isActive = index === active;
-      if (done) btn.innerHTML = `<img class="done-flag-token" src="flag_complete.webp" alt="abgeschlossen"><span class="token-label">Level ${index+1}</span>`;
+      if (done) btn.innerHTML = `<img class="done-flag-token" src="assets/images/ui/flag_complete.webp" alt="abgeschlossen"><span class="token-label">Level ${index+1}</span>`;
       else if (isActive) btn.innerHTML = `<span class="token-label open-level-pill">Level ${index+1}</span>`;
-      else btn.innerHTML = `<img class="lock-token" src="lock.png" alt="Schloss"><span class="token-label">Level ${index+1}</span>`;
+      else btn.innerHTML = `<img class="lock-token" src="assets/images/ui/lock.png" alt="Schloss"><span class="token-label">Level ${index+1}</span>`;
       btn.addEventListener('click', () => onLevelNode(index)); inner.appendChild(btn);
     });
-    const hero = document.createElement('button'); hero.type='button'; hero.id='movingHero'; hero.className='map-token moving-hero-token'; hero.innerHTML='<img class="hero-token" src="held.webp" alt="Sir Nervus">'; inner.appendChild(hero);
+    const hero = document.createElement('button'); hero.type='button'; hero.id='movingHero'; hero.className='map-token moving-hero-token'; hero.innerHTML='<img class="hero-token" src="assets/images/characters/held.webp" alt="Sir Nervus">'; inner.appendChild(hero);
     if (heroIndex !== null) setHeroAt(heroIndex, true); else { hero.classList.add('hidden'); hero.style.left='92%'; hero.style.top='96%'; }
     renderGuide(state);
   }
@@ -725,26 +725,26 @@
     stage.style.setProperty('--mini-stage-bg', `url("${popupBgForMeta(miniMeta)}")`);
 
     const SPRITES = {
-      right1: 'mini_right_1.png',
-      right2: 'mini_right_2.png',
-      left1: 'mini_left_1.png',
-      left2: 'mini_left_2.png',
-      jumpRight: 'mini_jump_right.png',
-      fallRight: 'mini_fall_right.png',
-      jumpLeft: 'mini_jump_left.png',
-      fallLeft: 'mini_fall_left.png',
-      damageTop: 'mini_damage_top.png',
-      damageBottom: 'mini_damage_bottom.png',
-      heartFull: 'mini_heart_full.png',
-      heartBroken: 'mini_heart_broken.png',
-      hedgehogLeft1: 'mini_hedgehog_left_1.png',
-      hedgehogLeft2: 'mini_hedgehog_left_2.png',
-      hedgehogRight1: 'mini_hedgehog_right_1.png',
-      hedgehogRight2: 'mini_hedgehog_right_2.png'
+      right1: 'assets/images/minigame/mini_right_1.png',
+      right2: 'assets/images/minigame/mini_right_2.png',
+      left1: 'assets/images/minigame/mini_left_1.png',
+      left2: 'assets/images/minigame/mini_left_2.png',
+      jumpRight: 'assets/images/minigame/mini_jump_right.png',
+      fallRight: 'assets/images/minigame/mini_fall_right.png',
+      jumpLeft: 'assets/images/minigame/mini_jump_left.png',
+      fallLeft: 'assets/images/minigame/mini_fall_left.png',
+      damageTop: 'assets/images/minigame/mini_damage_top.png',
+      damageBottom: 'assets/images/minigame/mini_damage_bottom.png',
+      heartFull: 'assets/images/minigame/mini_heart_full.png',
+      heartBroken: 'assets/images/minigame/mini_heart_broken.png',
+      hedgehogLeft1: 'assets/images/minigame/mini_hedgehog_left_1.png',
+      hedgehogLeft2: 'assets/images/minigame/mini_hedgehog_left_2.png',
+      hedgehogRight1: 'assets/images/minigame/mini_hedgehog_right_1.png',
+      hedgehogRight2: 'assets/images/minigame/mini_hedgehog_right_2.png'
     };
     Object.values(SPRITES).forEach(src => { const img = new Image(); img.src = src; });
 
-    const jumpAudio = new Audio('jump_sound.mp3');
+    const jumpAudio = new Audio('assets/audio/jump_sound.mp3');
     jumpAudio.preload = 'auto';
     jumpAudio.volume = 0.82;
 
@@ -1233,7 +1233,7 @@
   function initCodes() {
     addSpeaker(); $('printCodesBtn')?.addEventListener('click', () => print());
     const grid=$('qrGrid'); if (!grid) return;
-    grid.innerHTML = [...Object.values(SENSES), BOSS].map(s=>`<article class="qr-card"><img src="qr_${s.id}.png" alt="QR-Code ${esc(s.label)}"><h2>${esc(s.label)}</h2><p>${esc(s.code)}</p></article>`).join('');
+    grid.innerHTML = [...Object.values(SENSES), BOSS].map(s=>`<article class="qr-card"><img src="assets/images/qr/qr_${s.id}.png" alt="QR-Code ${esc(s.label)}"><h2>${esc(s.label)}</h2><p>${esc(s.code)}</p></article>`).join('');
   }
 
   document.addEventListener('DOMContentLoaded', () => {
