@@ -81,3 +81,11 @@ Die JavaScript-Navigation benutzt `pageUrl(...)`, damit `index.html`, `level.htm
 - Der Ritter bewegt sich etwas schneller.
 - Chilis und verdorbene Fische erscheinen früher und mit dem Fortschritt etwas häufiger.
 - Sammel-/Schadenssounds im Minigame nutzen kleine Audio-Pools, damit Einsammeln weniger ruckelt.
+
+## Update v30
+
+- Einsammeln wurde geglättet: Items werden nicht mehr per `display:none` entfernt, sondern unsichtbar geschaltet und im Pool behalten.
+- Fallende Items haben jetzt feste DOM-Größen; unterschiedliche Größe läuft über `transform: scale(...)`.
+- Der HUD-Zähler wird leicht verzögert gebündelt aktualisiert.
+- Collect-Sound wird minimal verzögert gestartet, damit die sichtbare Kollisionsreaktion nicht im gleichen Frame blockiert.
+- Drop-Shadow/Filter auf fallenden Items wurde entfernt.

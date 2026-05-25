@@ -5,7 +5,7 @@
   const BATTLE_STORE = 'koenigreichSinneV4Battle';
   const RETURN_STORE = 'koenigreichSinneV4BoardReturn';
   const SOUND_STORE = 'koenigreichSinneV4Muted';
-  const STATE_VERSION = 'v4_29levels_food_minigame_dodge_only';
+  const STATE_VERSION = 'v4_30levels_food_minigame_pickup_smooth';
   const APP_ROOT = new URL('./', document.baseURI);
   const pageUrl = target => new URL(target, APP_ROOT).href;
   const assetUrl = target => new URL(target, APP_ROOT).href;
@@ -954,15 +954,19 @@
       glass_break: makeMiniSoundPool('glass_break', 2)
     };
     const miniSfxCursor = { collect:0, hurt:0, glass_break:0 };
-    function playMiniSfx(key) {
+    function playMiniSfx(key, delayMs = 0) {
       const pool = miniSfxPools[key];
       if (!pool || !pool.length || muted) return;
-      const a = pool[miniSfxCursor[key]++ % pool.length];
-      try {
-        a.pause();
-        a.currentTime = 0;
-        a.play().catch(() => {});
-      } catch (_) {}
+      const run = () => {
+        const a = pool[miniSfxCursor[key]++ % pool.length];
+        try {
+          a.pause();
+          a.currentTime = 0;
+          a.play().catch(() => {});
+        } catch (_) {}
+      };
+      if (delayMs > 0) window.setTimeout(run, delayMs);
+      else run();
     }
     try {
       ['collect','hurt','glass_break','minigame_background'].forEach(key => getAudio(key)?.load?.());
@@ -973,6 +977,7 @@
     const MAX_GOOD_ACTIVE = 4;
     const MAX_BAD_ACTIVE = 3;
     const FOOD_POOL_SIZE = MAX_GOOD_ACTIVE + MAX_BAD_ACTIVE + 6;
+    const FOOD_BASE_SIZE = 62;
     const GOOD_SPAWN_MS = 760;
     const BAD_SPAWN_START_MS = 3200;
     const BAD_SPAWN_END_MS = 1550;
@@ -996,6 +1001,7 @@
     let activeBad = 0;
     let collectedGood = 0;
     let badCycle = 0;
+    let hudUpdateTimer = 0;
     let gameOver = false;
     let gameWon = false;
     let lastGoodSpawn = performance.now() + 650;
@@ -1034,10 +1040,13 @@
       node.alt = '';
       node.setAttribute('aria-hidden', 'true');
       node.dataset.poolIndex = String(index);
-      node.style.display = 'none';
-      node.style.transform = 'translate3d(-9999px,-9999px,0)';
+      node.style.width = `${FOOD_BASE_SIZE}px`;
+      node.style.height = `${FOOD_BASE_SIZE}px`;
+      node.style.visibility = 'hidden';
+      node.style.opacity = '0';
+      node.style.transform = 'translate3d(-9999px,-9999px,0) scale(1)';
       stage.appendChild(node);
-      return { node, active:false, kind:'', x:0, y:0, size:0, speed:0 };
+      return { node, active:false, kind:'', x:0, y:0, size:0, scale:1, speed:0 };
     });
 
     const tutorial = document.createElement('div');
@@ -1075,6 +1084,13 @@
 
     function updateHud() {
       if (hud) hud.textContent = `Obst ${collectedGood} / ${TARGET_GOOD}`;
+    }
+    function scheduleHudUpdate() {
+      if (!hud || hudUpdateTimer) return;
+      hudUpdateTimer = window.setTimeout(() => {
+        hudUpdateTimer = 0;
+        updateHud();
+      }, 55);
     }
     function updateHearts() {
       heartNodes.forEach((node, index) => {
@@ -1240,7 +1256,8 @@
       const src = isGood
         ? GOOD_FOOD[Math.floor(Math.random() * GOOD_FOOD.length)]
         : (kind === 'chili' ? BAD_FOOD.chili : BAD_FOOD.fish);
-      const size = isGood ? Math.round(46 + Math.random() * 12) : Math.round(50 + Math.random() * 12);
+      const scale = isGood ? (0.82 + Math.random() * 0.18) : (0.92 + Math.random() * 0.16);
+      const size = FOOD_BASE_SIZE * scale;
       const x = Math.round(size / 2 + Math.random() * Math.max(1, stageW - size * 1.5));
       const y = -size - 8;
       const p = difficultyProgress();
@@ -1250,13 +1267,13 @@
       item.x = x;
       item.y = y;
       item.size = size;
+      item.scale = scale;
       item.speed = speed;
-      item.node.src = src;
+      if (item.node.src !== src) item.node.src = src;
       item.node.className = `mini-food ${isGood ? 'good-food' : 'bad-food'} ${kind}`;
-      item.node.style.width = `${size}px`;
-      item.node.style.height = `${size}px`;
-      item.node.style.display = 'block';
-      item.node.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+      item.node.style.visibility = 'visible';
+      item.node.style.opacity = '1';
+      item.node.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(y)}px, 0) scale(${scale.toFixed(3)})`;
       if (isGood) activeGood += 1;
       else activeBad += 1;
       return true;
@@ -1270,9 +1287,11 @@
       item.x = 0;
       item.y = 0;
       item.size = 0;
+      item.scale = 1;
       item.speed = 0;
-      item.node.style.display = 'none';
-      item.node.style.transform = 'translate3d(-9999px,-9999px,0)';
+      item.node.style.opacity = '0';
+      item.node.style.visibility = 'hidden';
+      item.node.style.transform = 'translate3d(-9999px,-9999px,0) scale(1)';
     }
     function intersects(a, b) {
       return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom);
@@ -1310,6 +1329,10 @@
 
     function showMiniResult(won) {
       stopMiniLoop();
+      if (hudUpdateTimer) {
+        clearTimeout(hudUpdateTimer);
+        hudUpdateTimer = 0;
+      }
       stopSound('minigame_background');
       if (resultImage) {
         resultImage.src = won ? ASSETS.text.gewonnen : ASSETS.text.verloren;
@@ -1378,15 +1401,19 @@
         const item = foodItems[i];
         if (!item.active) continue;
         item.y += item.speed * dt;
-        item.node.style.transform = `translate3d(${Math.round(item.x)}px, ${Math.round(item.y)}px, 0)`;
+        item.node.style.transform = `translate3d(${Math.round(item.x)}px, ${Math.round(item.y)}px, 0) scale(${item.scale.toFixed(3)})`;
         if (intersects(hRect, foodHitbox(item))) {
           const kind = item.kind;
           removeFood(item);
           if (kind === 'good') {
             collectedGood = Math.min(TARGET_GOOD, collectedGood + 1);
-            playMiniSfx('collect');
-            updateHud();
-            if (collectedGood >= TARGET_GOOD) showMiniResult(true);
+            playMiniSfx('collect', 18);
+            if (collectedGood >= TARGET_GOOD) {
+              updateHud();
+              showMiniResult(true);
+            } else {
+              scheduleHudUpdate();
+            }
           } else {
             damageHero(kind);
           }

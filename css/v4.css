@@ -1712,3 +1712,17 @@ body[data-page="minigame"]{
     border-radius:26px!important;
   }
 }
+
+
+/* === Food pickup smoothing v30 === */
+.mini-food{
+  display:block!important;
+  filter:none!important;
+  width:62px!important;
+  height:62px!important;
+  transform-origin:center center!important;
+  transition:opacity .055s linear!important;
+}
+.mini-food[style*="visibility: hidden"]{
+  pointer-events:none!important;
+}
