@@ -48,3 +48,11 @@ Die JavaScript-Navigation benutzt `pageUrl(...)`, damit `index.html`, `level.htm
 - Minigame-Kugeln werden jetzt über einen festen Object-Pool wiederverwendet.
 - Während des Spiels werden keine Kugel-Elemente mehr per `appendChild()` neu erzeugt oder per `.remove()` gelöscht.
 - Die aktiven Kugeln werden über feste Slots und aktive Zähler verwaltet, damit das Spiel bei längerer Laufzeit stabiler bleibt.
+
+## Update v26
+
+- Battle-Sounds `richtig_1..3` und `falsch_1..3` werden jetzt über vorgewärmte Audio-Pools abgespielt, statt bei jedem Treffer eine neue Audio-Datei zu erzeugen.
+- Minigame-Loop hat jetzt eine klare `requestAnimationFrame`-Verwaltung mit `cancelAnimationFrame`.
+- Bei Minigame-Ende oder Navigation wird der Loop gestoppt.
+- Nach Tab-/Sichtbarkeitswechsel wird die Zeitbasis zurückgesetzt, damit kein großer Physik-Sprung entsteht.
+- Zusätzliche GPU-/Compositing-Hinweise für Minigame- und Battle-Elemente.

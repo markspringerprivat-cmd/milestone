@@ -5,7 +5,7 @@
   const BATTLE_STORE = 'koenigreichSinneV4Battle';
   const RETURN_STORE = 'koenigreichSinneV4BoardReturn';
   const SOUND_STORE = 'koenigreichSinneV4Muted';
-  const STATE_VERSION = 'v4_25levels_orb_pool_stable';
+  const STATE_VERSION = 'v4_26levels_loop_audio_stability';
   const APP_ROOT = new URL('./', document.baseURI);
   const pageUrl = target => new URL(target, APP_ROOT).href;
   const assetUrl = target => new URL(target, APP_ROOT).href;
@@ -178,21 +178,57 @@
 
   let muted = localStorage.getItem(SOUND_STORE) === '1';
   const audio = new Map();
+  const oneShotPools = new Map();
+  const ONE_SHOT_SOUND_KEYS = ['richtig_1','richtig_2','richtig_3','falsch_1','falsch_2','falsch_3'];
+
+  function audioVolumeForKey(key) {
+    if (key === 'background') return .045;
+    if (key === 'battle_background') return .11;
+    if (key === 'minigame_background') return .24;
+    if (key === 'collect') return .82;
+    if (key === 'hurt' || key === 'glass_break') return .88;
+    return /^(richtig|falsch)_/.test(key) ? .95 : .85;
+  }
+
   function getAudio(key) {
     if (!AUDIO_FILES[key]) return null;
     if (!audio.has(key)) {
       const a = new Audio(AUDIO_FILES[key]);
       a.preload = 'auto';
-      if (key === 'background') a.volume = .045;
-      else if (key === 'battle_background') a.volume = .11;
-      else if (key === 'minigame_background') a.volume = .24;
-      else if (key === 'collect') a.volume = .82;
-      else if (key === 'hurt' || key === 'glass_break') a.volume = .88;
-      else a.volume = /^(richtig|falsch)_/.test(key) ? .95 : .85;
+      a.volume = audioVolumeForKey(key);
+      try { a.load(); } catch (_) {}
       audio.set(key, a);
     }
     return audio.get(key);
   }
+
+  function warmOneShotPools(keys = ONE_SHOT_SOUND_KEYS) {
+    keys.forEach(key => {
+      if (!AUDIO_FILES[key] || oneShotPools.has(key)) return;
+      const pool = Array.from({ length: 3 }, () => {
+        const a = new Audio(AUDIO_FILES[key]);
+        a.preload = 'auto';
+        a.volume = audioVolumeForKey(key);
+        try { a.load(); } catch (_) {}
+        return a;
+      });
+      pool.cursor = 0;
+      oneShotPools.set(key, pool);
+    });
+  }
+
+  async function playPooledOneShot(key) {
+    if (!oneShotPools.has(key)) warmOneShotPools([key]);
+    const pool = oneShotPools.get(key);
+    if (!pool || !pool.length) return;
+    const a = pool[pool.cursor++ % pool.length];
+    try {
+      a.pause();
+      a.currentTime = 0;
+      await a.play();
+    } catch (_) {}
+  }
+
   async function playSound(key, { loop = false, restart = true } = {}) {
     if (muted) return;
     const a = getAudio(key); if (!a) return;
@@ -200,10 +236,7 @@
       a.loop = loop;
       const oneShot = !loop && /^(richtig|falsch)_\d$/.test(key);
       if (oneShot) {
-        const sfx = new Audio(AUDIO_FILES[key]);
-        sfx.volume = a.volume;
-        sfx.preload = 'auto';
-        await sfx.play();
+        await playPooledOneShot(key);
         return;
       }
       if (restart) a.currentTime = 0;
@@ -263,6 +296,7 @@
   }
   function preloadBattleAssets(data, meta) {
     preloadAssets([ASSETS.hero, ASSETS.versus, ASSETS.text.kampf, ASSETS.text.richtig, ASSETS.text.falsch, ASSETS.text.gewonnen, ASSETS.text.verloren, data.enemy, data.defeated, ASSETS.loseHero, ASSETS.final, ...ASSETS.correct, ...ASSETS.wrong, bgForMeta(meta), popupBgForMeta(meta), ...Object.values(AUDIO_FILES)]);
+    warmOneShotPools();
   }
   function prefetchPage(href) {
     const url = href.includes('://') || href.startsWith('file:') ? href : pageUrl(href);
@@ -686,6 +720,7 @@
   function pickNoRepeat(list, prev) { const pool = list.filter(x=>x!==prev); return (pool.length?pool:list)[Math.floor(Math.random()*(pool.length?pool:list).length)]; }
   let lastCorrect=null,lastWrong=null;
   async function runBattleSequence(payload, data, meta) {
+    warmOneShotPools();
     setBattleMode('sequence');
     await playSound('fight');
     playSound('battle_background', { loop:true });
@@ -937,6 +972,8 @@
     let blinkUntil = 0;
     let hurtSprite = '';
     let pendingGameOver = false;
+    let rafId = null;
+    let loopActive = false;
 
     let heartsWrap = $('miniLives');
     if (!heartsWrap) {
@@ -1083,7 +1120,7 @@
         const a = jumpAudios[jumpAudioIndex++ % jumpAudios.length];
         a.pause();
         a.currentTime = 0;
-        requestAnimationFrame(() => a.play().catch(() => {}));
+        a.play().catch(() => {});
       } catch (_) {}
     }
     function jump() {
@@ -1157,12 +1194,15 @@
     });
 
     window.addEventListener('blur', stopMovement);
-    document.addEventListener('visibilitychange', () => { if (document.hidden) stopMovement(); });
+    document.addEventListener('visibilitychange', () => {
+      last = performance.now();
+      if (document.hidden) stopMovement();
+    });
 
     settingsBtn?.addEventListener('click', () => { stopMovement(); show(menu); });
     closeMenu?.addEventListener('click', () => hide(menu));
-    boardBtn?.addEventListener('click', () => { stopSound('minigame_background'); location.href = pageUrl('index.html'); });
-    resultBoardBtn?.addEventListener('click', () => { stopSound('minigame_background'); location.href = pageUrl('index.html'); });
+    boardBtn?.addEventListener('click', () => { stopMiniLoop(); stopSound('minigame_background'); location.href = pageUrl('index.html'); });
+    resultBoardBtn?.addEventListener('click', () => { stopMiniLoop(); stopSound('minigame_background'); location.href = pageUrl('index.html'); });
 
     const ensureMiniMusic = () => playSound('minigame_background', { loop:true, restart:false });
     ['pointerdown','touchstart','keydown','click'].forEach(type => {
@@ -1237,7 +1277,20 @@
       };
     }
 
+    function stopMiniLoop() {
+      loopActive = false;
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+    }
+    function requestMiniTick() {
+      if (!loopActive) return;
+      rafId = requestAnimationFrame(tick);
+    }
+
     function showMiniResult(won) {
+      stopMiniLoop();
       stopSound('minigame_background');
       if (resultImage) {
         resultImage.src = won ? ASSETS.text.gewonnen : ASSETS.text.verloren;
@@ -1269,7 +1322,7 @@
         if (resultText) resultText.textContent = 'Du hast alle Herzen verloren.';
         if (retryBtn) retryBtn.textContent = 'Neuer Versuch';
         if (resultBoardBtn) show(resultBoardBtn);
-        retryBtn.onclick = () => { location.reload(); };
+        retryBtn.onclick = () => { stopMiniLoop(); location.reload(); };
       }
       orbs.forEach(removeOrb);
       activeOrangeOrbs = 0;
@@ -1397,8 +1450,12 @@
     }
 
     function tick(now) {
-      const dt = Math.min(0.03, (now - last) / 1000 || 0);
+      if (!loopActive) return;
+      if (!Number.isFinite(now)) now = performance.now();
+      const elapsed = now - last;
+      const dt = elapsed > 120 ? 0 : Math.min(0.03, Math.max(0, elapsed / 1000 || 0));
       last = now;
+
       if (!gameOver && !gameWon) {
         if (now >= hurtFreezeUntil) {
           if (velocity) {
@@ -1428,7 +1485,8 @@
           return;
         }
       }
-      requestAnimationFrame(tick);
+
+      if (!gameOver && !gameWon) requestMiniTick();
     }
 
     updateMetrics();
@@ -1440,7 +1498,9 @@
     spriteReady.finally(() => {
       updateMetrics();
       hero.style.visibility = 'visible';
-      requestAnimationFrame(tick);
+      loopActive = true;
+      last = performance.now();
+      requestMiniTick();
     });
   }
 

@@ -1546,3 +1546,23 @@ body[data-page="minigame"]{
   animation:none!important;
   transform-origin:center center!important;
 }
+
+
+/* === Loop/audio stability v26 === */
+.mini-game-stage{
+  contain:layout paint style!important;
+  isolation:isolate!important;
+}
+.mini-hero,
+.mini-hazard,
+.mini-hedgehog{
+  will-change:transform, opacity!important;
+  backface-visibility:hidden!important;
+  transform-style:preserve-3d!important;
+}
+.battle-seq-img,
+.battle-text-img,
+.battle-outcome{
+  will-change:transform, opacity!important;
+  backface-visibility:hidden!important;
+}
