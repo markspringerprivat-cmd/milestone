@@ -5,7 +5,7 @@
   const BATTLE_STORE = 'koenigreichSinneV4Battle';
   const RETURN_STORE = 'koenigreichSinneV4BoardReturn';
   const SOUND_STORE = 'koenigreichSinneV4Muted';
-  const STATE_VERSION = 'v4_22levels_minigame_smooth';
+  const STATE_VERSION = 'v4_23levels_fix_minigame_controls';
   const APP_ROOT = new URL('./', document.baseURI);
   const pageUrl = target => new URL(target, APP_ROOT).href;
   const assetUrl = target => new URL(target, APP_ROOT).href;
@@ -185,7 +185,7 @@
       a.preload = 'auto';
       if (key === 'background') a.volume = .045;
       else if (key === 'battle_background') a.volume = .11;
-      else if (key === 'minigame_background') a.volume = .30;
+      else if (key === 'minigame_background') a.volume = .24;
       else if (key === 'collect') a.volume = .82;
       else if (key === 'hurt' || key === 'glass_break') a.volume = .88;
       else a.volume = /^(richtig|falsch)_/.test(key) ? .95 : .85;
@@ -198,6 +198,14 @@
     const a = getAudio(key); if (!a) return;
     try {
       a.loop = loop;
+      const oneShot = !loop && /^(richtig|falsch)_\d$/.test(key);
+      if (oneShot) {
+        const sfx = new Audio(AUDIO_FILES[key]);
+        sfx.volume = a.volume;
+        sfx.preload = 'auto';
+        await sfx.play();
+        return;
+      }
       if (restart) a.currentTime = 0;
       await a.play();
     } catch (_) {}
@@ -283,6 +291,7 @@
     $('backToBoardBtn')?.addEventListener('click', () => escapeToBoard(activeScanMeta()));
     $('manualUnlockBtn')?.addEventListener('click', () => unlockByCode($('manualCodeInput')?.value || ''));
     $('randomUnlockBtn')?.addEventListener('click', () => unlockRandom());
+    $('skipLevelBtn')?.addEventListener('click', skipCurrentLevel);
     $('toggleScannerBtn')?.addEventListener('click', () => { document.querySelector('.camera-box')?.classList.toggle('hidden'); });
     $('scanJumpBottomBtn')?.addEventListener('click', () => $('randomUnlockBtn')?.scrollIntoView({ behavior:'smooth', block:'center' }));
     $('scanJumpTopBtn')?.addEventListener('click', () => $('scanTitle')?.scrollIntoView({ behavior:'smooth', block:'start' }));
@@ -296,7 +305,20 @@
   function showBoard(firstStart=false) {
     hide($('introScreen')); show($('boardScreen')); show($('openBoardMenuBtn')); show($('belowBoard'));
     updateMapGeometry(); renderBoard();
-    if (!firstStart) playSound('background', { loop:true, restart:true });
+    if (firstStart) {
+      setTimeout(async () => {
+        const state = getState();
+        if (state.heroIndex === null && !state.introUsed) {
+          $('boardGuide')?.classList.add('go-away');
+          await sleep(450);
+          hide($('boardGuide'));
+          await animateHeroTo(0, { fromIntro:true });
+          openScan(0);
+        }
+      }, 450);
+    } else {
+      playSound('background', { loop:true, restart:true });
+    }
   }
 
   function updateMapGeometry() {
@@ -414,7 +436,7 @@
     const latest = getState(); const assigned = latest.slots[index];
 
     if (isPlaceholderSlot(index)) {
-      if (completed) return;
+      if (completed && index !== 1) return;
       showPlaceholder(index);
       return;
     }
@@ -434,6 +456,20 @@
     stopSound('background'); scanIndex = index; $('manualCodeInput').value=''; setScanMessage(''); applyStagePopup($('scanModal'), { slot:index, isBoss:false }); show($('scanModal')); startScanner();
   }
   function closeScan() { stopScanner(); hide($('scanModal')); scanIndex = null; playSound('background', { loop:true, restart:true }); }
+  function skipCurrentLevel() {
+    const index = Number.isInteger(scanIndex) ? scanIndex : currentSlot(getState());
+    if (!Number.isInteger(index) || index < 0 || index >= LEVEL_COUNT) return;
+    stopScanner();
+    hide($('scanModal'));
+    scanIndex = null;
+    const state = getState();
+    state.completed[index] = true;
+    state.heroIndex = index;
+    setState(state);
+    renderBoard();
+    localStorage.setItem(RETURN_STORE, JSON.stringify({ type:'unlocked', meta:{ slot:index, skipped:true } }));
+    applyReturnModal();
+  }
   function setScanMessage(text, bad=false) { const msg=$('scanMessage'); if (!msg) return; msg.textContent=text; msg.className = text ? `message ${bad?'bad':'ok'}` : 'message hidden'; }
   async function startScanner() {
     const info = $('cameraInfo'); if (info) info.textContent='Kamera wird vorbereitet …';
@@ -485,14 +521,15 @@
     modal?.classList.toggle('test-placeholder-modal', index === 1);
 
     if (index === 1) {
+      const done = Boolean(getState().completed[index]);
       window.pendingLaunch = { placeholder:true, minigame:true, slot:index, meta };
-      $('launchLevelBtn').textContent = 'Weiter';
-      $('encounterBackBtn').textContent = 'Spiel starten';
+      $('launchLevelBtn').textContent = done ? 'Spiel erneut starten' : 'Spiel starten';
+      $('encounterBackBtn').textContent = done ? 'Zurück' : 'Überspringen';
       $('encounterImage').src = ASSETS.hero;
       $('encounterImage').alt = 'Sir Nervus';
-      $('encounterKicker').textContent = '';
+      $('encounterKicker').textContent = done ? 'Level wiederholen' : '';
       $('encounterTitle').textContent = 'Test';
-      $('encounterSpeech').textContent = '';
+      $('encounterSpeech').textContent = done ? 'Du kannst das Minispiel erneut spielen.' : '';
       show(modal);
       return;
     }
@@ -510,8 +547,9 @@
 
   function handleEncounterBack() {
     if (window.pendingLaunch?.minigame) {
-      hide($('encounterModal'));
-      location.href = pageUrl(`minigame.html?slot=${window.pendingLaunch.slot}`);
+      const slot = window.pendingLaunch.slot;
+      if (getState().completed[slot]) { hide($('encounterModal')); return; }
+      completePlaceholder(slot);
       return;
     }
     escapeToBoard(window.pendingLaunch?.meta);
@@ -519,6 +557,11 @@
 
   function handleLaunchLevel() {
     if (!window.pendingLaunch) return;
+    if (window.pendingLaunch.minigame) {
+      hide($('encounterModal'));
+      location.href = pageUrl(`minigame.html?slot=${window.pendingLaunch.slot}`);
+      return;
+    }
     if (window.pendingLaunch.placeholder) { completePlaceholder(window.pendingLaunch.slot); return; }
     location.href = window.pendingLaunch.url;
   }
@@ -1042,6 +1085,7 @@
       const down = (ev) => {
         blockDefault(ev);
         if (gameOver || gameWon) return;
+        ensureMiniMusic?.();
         btn.classList.add('pressed');
         if (side === 'left') pressedLeft = true;
         if (side === 'right') pressedRight = true;
@@ -1071,6 +1115,7 @@
     jumpBtn?.addEventListener('pointerdown', (ev) => {
       blockDefault(ev);
       if (gameOver || gameWon) return;
+      ensureMiniMusic?.();
       jumpBtn.classList.add('pressed');
       jump();
       try { jumpBtn.setPointerCapture?.(ev.pointerId); } catch (_) {}
@@ -1094,6 +1139,11 @@
     closeMenu?.addEventListener('click', () => hide(menu));
     boardBtn?.addEventListener('click', () => { stopSound('minigame_background'); location.href = pageUrl('index.html'); });
     resultBoardBtn?.addEventListener('click', () => { stopSound('minigame_background'); location.href = pageUrl('index.html'); });
+
+    const ensureMiniMusic = () => playSound('minigame_background', { loop:true, restart:false });
+    ['pointerdown','touchstart','keydown','click'].forEach(type => {
+      document.addEventListener(type, ensureMiniMusic, { passive:true });
+    });
 
     function createOrb(type) {
       const size = type === 'orange' ? Math.round(30 + Math.random() * 18) : Math.round(28 + Math.random() * 12);

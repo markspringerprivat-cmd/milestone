@@ -1456,7 +1456,6 @@ body[data-page="minigame"]{
   z-index:26!important;
   bottom:6px!important;
   image-rendering:auto!important;
-  transform:translateZ(0)!important;
 }
 .mini-warning-arrow{
   z-index:28!important;
@@ -1510,4 +1509,13 @@ body[data-page="minigame"]{
 .mini-heart{
   width:66px!important;
   height:66px!important;
+}
+
+
+/* === Critical minigame movement fix v23 === */
+.mini-hazard{
+  animation:none!important;
+}
+.mini-hedgehog{
+  transform:none;
 }
