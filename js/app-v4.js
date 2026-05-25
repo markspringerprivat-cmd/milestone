@@ -5,7 +5,7 @@
   const BATTLE_STORE = 'koenigreichSinneV4Battle';
   const RETURN_STORE = 'koenigreichSinneV4BoardReturn';
   const SOUND_STORE = 'koenigreichSinneV4Muted';
-  const STATE_VERSION = 'v4_33levels_food_wraparound';
+  const STATE_VERSION = 'v4_34levels_memory_minigame2';
   const APP_ROOT = new URL('./', document.baseURI);
   const pageUrl = target => new URL(target, APP_ROOT).href;
   const assetUrl = target => new URL(target, APP_ROOT).href;
@@ -254,7 +254,7 @@
       muted = !muted; localStorage.setItem(SOUND_STORE, muted ? '1' : '0'); b.textContent = muted ? '🔇' : '🔊';
       if (muted) Array.from(audio.keys()).forEach(stopSound);
       else if (document.body.dataset.page === 'board' && !$('boardScreen')?.classList.contains('hidden')) playSound('background', { loop:true });
-      else if (document.body.dataset.page === 'minigame') playSound('minigame_background', { loop:true, restart:false });
+      else if (document.body.dataset.page === 'minigame' || document.body.dataset.page === 'minigame2') playSound('minigame_background', { loop:true, restart:false });
     });
     document.body.appendChild(b);
   }
@@ -473,7 +473,7 @@
     const latest = getState(); const assigned = latest.slots[index];
 
     if (isPlaceholderSlot(index)) {
-      if (completed && index !== 1) return;
+      if (completed && index !== 1 && index !== 3) return;
       showPlaceholder(index);
       return;
     }
@@ -571,6 +571,20 @@
       return;
     }
 
+    if (index === 3) {
+      const done = Boolean(getState().completed[index]);
+      window.pendingLaunch = { placeholder:true, minigame2:true, slot:index, meta };
+      $('launchLevelBtn').textContent = done ? 'Memory erneut starten' : 'Spiel starten';
+      $('encounterBackBtn').textContent = done ? 'Zurück' : 'Überspringen';
+      $('encounterImage').src = assetUrl('assets/images/minigame2/auge.png');
+      $('encounterImage').alt = 'Auge';
+      $('encounterKicker').textContent = 'Sehsinn-Memory';
+      $('encounterTitle').textContent = 'Augen auf!';
+      $('encounterSpeech').textContent = done ? 'Du kannst das Sehsinn-Memory erneut spielen.' : 'Finde gleiche Symbole und springe über Blendkugeln. So trainierst du genaues Hinsehen, Formen erkennen und schnelle Reaktion auf sichtbare Warnsignale.';
+      show(modal);
+      return;
+    }
+
     window.pendingLaunch = { placeholder:true, slot:index, meta };
     $('launchLevelBtn').textContent = index === LEVEL_COUNT - 1 ? 'Zum Finale' : 'Weiter';
     $('encounterBackBtn').textContent = 'Wegrennen';
@@ -583,7 +597,7 @@
   }
 
   function handleEncounterBack() {
-    if (window.pendingLaunch?.minigame) {
+    if (window.pendingLaunch?.minigame || window.pendingLaunch?.minigame2) {
       const slot = window.pendingLaunch.slot;
       if (getState().completed[slot]) { hide($('encounterModal')); return; }
       completePlaceholder(slot);
@@ -597,6 +611,11 @@
     if (window.pendingLaunch.minigame) {
       hide($('encounterModal'));
       location.href = pageUrl(`minigame.html?slot=${window.pendingLaunch.slot}`);
+      return;
+    }
+    if (window.pendingLaunch.minigame2) {
+      hide($('encounterModal'));
+      location.href = pageUrl(`minigame2.html?slot=${window.pendingLaunch.slot}`);
       return;
     }
     if (window.pendingLaunch.placeholder) { completePlaceholder(window.pendingLaunch.slot); return; }
@@ -1529,6 +1548,397 @@
   }
 
 
+
+  function initMiniGame2() {
+    addSpeaker();
+    stopSound('background');
+    stopSound('battle_background');
+    playSound('minigame_background', { loop:true, restart:true });
+
+    const stage = document.querySelector('.memory2-stage');
+    const grid = $('memory2Grid');
+    const hero = $('memory2Hero');
+    const jumpBtn = $('memory2JumpBtn');
+    const hud = $('memory2Hud');
+    const leftWarn = $('memory2WarnLeft');
+    const rightWarn = $('memory2WarnRight');
+    const projectile = $('memory2Projectile');
+    const resultModal = $('memory2Result');
+    const resultImage = $('memory2ResultImage');
+    const resultTitle = $('memory2ResultTitle');
+    const resultText = $('memory2ResultText');
+    const retryBtn = $('memory2RetryBtn');
+    const boardBtn = $('memory2BoardBtn');
+    const settingsBtn = $('memory2SettingsBtn');
+    const menu = $('memory2Menu');
+    const menuBoardBtn = $('memory2MenuBoardBtn');
+    const closeMenuBtn = $('memory2CloseMenuBtn');
+    if (!stage || !grid || !hero || !jumpBtn || !projectile) return;
+
+    const slot = Number(qs('slot')) || 3;
+    stage.style.setProperty('--memory2-bg', `url("${assetUrl('assets/images/popups/popup_sand.webp')}")`);
+
+    const CARD_BACK = assetUrl('assets/images/minigame2/karte.png');
+    const MEMORY_SYMBOLS = [
+      ['nase', 'Nase'], ['mund', 'Mund'], ['auge', 'Auge'], ['sonne', 'Sonne'],
+      ['blatt', 'Blatt'], ['brille', 'Brille'], ['hand', 'Hand'], ['erdbeere', 'Erdbeere'],
+      ['schwert', 'Schwert'], ['helm', 'Helm'], ['schild', 'Schild'], ['ohr', 'Ohr']
+    ].map(([id, label]) => ({ id, label, src: assetUrl(`assets/images/minigame2/${id}.png`) }));
+    const HERO = {
+      stand: assetUrl('assets/images/minigame/mini_walk_right_1.png'),
+      jump: assetUrl('assets/images/minigame/mini_jump_right.png'),
+      fall: assetUrl('assets/images/minigame/mini_fall_right.png'),
+      hurt: assetUrl('assets/images/minigame/mini_bad_food.png')
+    };
+    const HEART = {
+      full: assetUrl('assets/images/minigame/mini_heart_full.png'),
+      broken: assetUrl('assets/images/minigame/mini_heart_broken.png')
+    };
+
+    const MAX_HEARTS = 3;
+    const WARNING_MS = 1150;
+    const PROJECTILE_MIN_DELAY = 3000;
+    const PROJECTILE_MAX_DELAY = 6000;
+    const PROJECTILE_SIZE = 46;
+    const PROJECTILE_TRAVEL_MS = 1850;
+    const JUMP_VELOCITY = 720;
+    const GRAVITY = 1420;
+    const HURT_FREEZE_MS = 450;
+    const INVULNERABLE_MS = 2200;
+
+    let cards = [];
+    let firstCard = null;
+    let secondCard = null;
+    let checking = false;
+    let matchedPairs = 0;
+    let lives = MAX_HEARTS;
+    let jumping = false;
+    let jumpY = 0;
+    let jumpVelocity = 0;
+    let heroW = 128;
+    let heroH = 150;
+    let heroX = 0;
+    let heroBaseY = 0;
+    let stageW = 1;
+    let stageH = 1;
+    let last = performance.now();
+    let rafId = null;
+    let loopActive = false;
+    let gameOver = false;
+    let gameWon = false;
+    let hurtUntil = 0;
+    let invulnerableUntil = 0;
+    let blinkUntil = 0;
+    let lastHeroSrc = '';
+    let nextProjectileAt = performance.now() + 1800;
+    let projectilePhase = 'idle';
+    let projectileDir = 1;
+    let projectileStart = 0;
+    let projectileX = -9999;
+    let projectileY = 0;
+
+    const heartWrap = $('memory2Lives');
+    const heartNodes = Array.from({ length: MAX_HEARTS }, (_, index) => {
+      const img = document.createElement('img');
+      img.className = 'memory2-heart';
+      img.alt = index === 0 ? 'Leben' : '';
+      if (index > 0) img.setAttribute('aria-hidden', 'true');
+      heartWrap?.appendChild(img);
+      return img;
+    });
+
+    const jumpAudios = Array.from({ length: 3 }, () => {
+      const a = new Audio(assetUrl('assets/audio/jump_sound.mp3'));
+      a.preload = 'auto';
+      a.volume = .72;
+      try { a.load(); } catch (_) {}
+      return a;
+    });
+    let jumpAudioIndex = 0;
+
+    function preloadImage(src) {
+      return new Promise(resolve => {
+        const img = new Image();
+        img.decoding = 'async';
+        img.onload = img.onerror = () => resolve(img);
+        img.src = src;
+        if (img.decode) img.decode().then(() => resolve(img)).catch(() => {});
+      });
+    }
+    Promise.all([CARD_BACK, ...MEMORY_SYMBOLS.map(s => s.src), ...Object.values(HERO), ...Object.values(HEART)].map(preloadImage)).then(() => {
+      hero.style.visibility = 'visible';
+    });
+
+    function shuffle(list) {
+      const arr = list.slice();
+      for (let i = arr.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function makeCards() {
+      cards = shuffle(MEMORY_SYMBOLS.flatMap(symbol => [
+        { ...symbol, pairKey: symbol.id, cardId: `${symbol.id}-a`, matched:false, flipped:false },
+        { ...symbol, pairKey: symbol.id, cardId: `${symbol.id}-b`, matched:false, flipped:false }
+      ]));
+      grid.innerHTML = cards.map((card, index) => `
+        <button class="memory2-card" type="button" data-index="${index}" aria-label="Memory-Karte ${index + 1}">
+          <span class="memory2-card-inner">
+            <span class="memory2-card-face memory2-card-back"><img src="${CARD_BACK}" alt="Rückseite"></span>
+            <span class="memory2-card-face memory2-card-front"><img src="${card.src}" alt="${esc(card.label)}"></span>
+          </span>
+        </button>`).join('');
+      grid.querySelectorAll('.memory2-card').forEach(btn => btn.addEventListener('click', () => flipCard(Number(btn.dataset.index))));
+    }
+
+    function updateHud() {
+      if (hud) hud.textContent = `Paare ${matchedPairs} / ${MEMORY_SYMBOLS.length}`;
+    }
+    function updateHearts() {
+      heartNodes.forEach((node, index) => {
+        node.src = index < lives ? HEART.full : HEART.broken;
+        node.classList.toggle('broken', index >= lives);
+      });
+    }
+    function setHero(src) {
+      if (lastHeroSrc === src) return;
+      hero.src = src;
+      lastHeroSrc = src;
+    }
+    function updateHeroSprite(now) {
+      if (now < hurtUntil) { setHero(HERO.hurt); return; }
+      if (jumping) setHero(jumpVelocity >= 0 ? HERO.jump : HERO.fall);
+      else setHero(HERO.stand);
+    }
+    function updateMetrics() {
+      stageW = Math.max(1, stage.clientWidth || window.innerWidth || 1);
+      stageH = Math.max(1, stage.clientHeight || window.innerHeight || 1);
+      heroW = hero.clientWidth || 128;
+      heroH = hero.clientHeight || 150;
+      heroX = stageW / 2;
+      heroBaseY = stageH - 16;
+      projectileY = heroBaseY - Math.max(42, heroH * .26);
+      applyHero();
+      applyProjectile();
+    }
+    window.addEventListener('resize', updateMetrics, { passive:true });
+
+    function applyHero() {
+      hero.style.transform = `translate3d(${Math.round(heroX - heroW / 2)}px, ${Math.round(-jumpY)}px, 0)`;
+    }
+    function applyProjectile() {
+      projectile.style.transform = `translate3d(${Math.round(projectileX)}px, ${Math.round(projectileY)}px, 0)`;
+    }
+    function playJump() {
+      if (muted) return;
+      try {
+        const a = jumpAudios[jumpAudioIndex++ % jumpAudios.length];
+        a.pause(); a.currentTime = 0; a.play().catch(() => {});
+      } catch (_) {}
+    }
+    function jump() {
+      if (gameOver || gameWon || jumping || performance.now() < hurtUntil) return;
+      jumping = true;
+      jumpVelocity = JUMP_VELOCITY;
+      playJump();
+    }
+
+    jumpBtn.addEventListener('pointerdown', ev => {
+      ev.preventDefault();
+      playSound('minigame_background', { loop:true, restart:false });
+      jumpBtn.classList.add('pressed');
+      jump();
+      try { jumpBtn.setPointerCapture?.(ev.pointerId); } catch (_) {}
+    }, { passive:false });
+    ['pointerup','pointercancel','pointerleave','lostpointercapture'].forEach(type => jumpBtn.addEventListener(type, ev => {
+      ev?.preventDefault?.();
+      jumpBtn.classList.remove('pressed');
+    }, { passive:false }));
+    settingsBtn?.addEventListener('click', () => show(menu));
+    closeMenuBtn?.addEventListener('click', () => hide(menu));
+    menuBoardBtn?.addEventListener('click', () => { stopLoop(); stopSound('minigame_background'); location.href = pageUrl('index.html'); });
+    boardBtn?.addEventListener('click', () => { stopLoop(); stopSound('minigame_background'); location.href = pageUrl('index.html'); });
+
+    function flipCard(index) {
+      if (checking || gameOver || gameWon) return;
+      const card = cards[index];
+      if (!card || card.matched || card.flipped) return;
+      card.flipped = true;
+      const node = grid.querySelector(`[data-index="${index}"]`);
+      node?.classList.add('flipped');
+      if (firstCard === null) { firstCard = index; return; }
+      secondCard = index;
+      checking = true;
+      const a = cards[firstCard];
+      const b = cards[secondCard];
+      if (a.pairKey === b.pairKey) {
+        a.matched = b.matched = true;
+        node?.classList.add('matched');
+        grid.querySelector(`[data-index="${firstCard}"]`)?.classList.add('matched');
+        matchedPairs += 1;
+        updateHud();
+        firstCard = null; secondCard = null; checking = false;
+        if (matchedPairs >= MEMORY_SYMBOLS.length) showResult(true);
+      } else {
+        window.setTimeout(() => {
+          [firstCard, secondCard].forEach(i => {
+            if (i === null) return;
+            cards[i].flipped = false;
+            grid.querySelector(`[data-index="${i}"]`)?.classList.remove('flipped');
+          });
+          firstCard = null; secondCard = null; checking = false;
+        }, 720);
+      }
+    }
+
+    function scheduleNextProjectile(now) {
+      projectilePhase = 'idle';
+      projectile.classList.remove('active');
+      projectileX = -9999;
+      applyProjectile();
+      nextProjectileAt = now + PROJECTILE_MIN_DELAY + Math.random() * (PROJECTILE_MAX_DELAY - PROJECTILE_MIN_DELAY);
+    }
+    function startWarning(now) {
+      projectilePhase = 'warning';
+      projectileDir = Math.random() < .5 ? 1 : -1;
+      projectileStart = now + WARNING_MS;
+      if (projectileDir > 0) leftWarn.classList.add('active');
+      else rightWarn.classList.add('active');
+    }
+    function startProjectile(now) {
+      projectilePhase = 'flying';
+      projectileStart = now;
+      leftWarn.classList.remove('active');
+      rightWarn.classList.remove('active');
+      projectile.classList.add('active');
+      projectileX = projectileDir > 0 ? -PROJECTILE_SIZE - 8 : stageW + PROJECTILE_SIZE + 8;
+      applyProjectile();
+    }
+    function updateProjectile(now) {
+      if (gameOver || gameWon) return;
+      if (projectilePhase === 'idle') {
+        if (now >= nextProjectileAt) startWarning(now);
+        return;
+      }
+      if (projectilePhase === 'warning') {
+        if (now >= projectileStart) startProjectile(now);
+        return;
+      }
+      const travel = (now - projectileStart) / PROJECTILE_TRAVEL_MS;
+      if (projectileDir > 0) projectileX = -PROJECTILE_SIZE + (stageW + PROJECTILE_SIZE * 2) * travel;
+      else projectileX = stageW + PROJECTILE_SIZE - (stageW + PROJECTILE_SIZE * 2) * travel;
+      applyProjectile();
+      if (checkProjectileHit()) damageHero(now);
+      const finished = projectileDir > 0 ? projectileX > stageW + PROJECTILE_SIZE : projectileX < -PROJECTILE_SIZE * 2;
+      if (finished) scheduleNextProjectile(now);
+    }
+    function checkProjectileHit() {
+      if (performance.now() < invulnerableUntil || projectilePhase !== 'flying') return false;
+      const heroBottom = heroBaseY - jumpY;
+      const heroTop = heroBottom - heroH;
+      const hLeft = heroX - heroW * .20;
+      const hRight = heroX + heroW * .20;
+      const hTop = heroTop + heroH * .18;
+      const hBottom = heroBottom - heroH * .08;
+      const pLeft = projectileX + 7;
+      const pRight = projectileX + PROJECTILE_SIZE - 7;
+      const pTop = projectileY + 7;
+      const pBottom = projectileY + PROJECTILE_SIZE - 7;
+      return !(hRight < pLeft || hLeft > pRight || hBottom < pTop || hTop > pBottom);
+    }
+    function damageHero(now) {
+      if (gameOver || gameWon || now < invulnerableUntil) return;
+      lives = Math.max(0, lives - 1);
+      playSound('hurt');
+      playSound('glass_break');
+      updateHearts();
+      hurtUntil = now + HURT_FREEZE_MS;
+      blinkUntil = hurtUntil + INVULNERABLE_MS;
+      invulnerableUntil = blinkUntil;
+      scheduleNextProjectile(now + 300);
+      if (lives <= 0) showResult(false);
+    }
+    function updateBlink(now) {
+      if (now >= blinkUntil || now < hurtUntil) { hero.style.opacity = '1'; return; }
+      hero.style.opacity = (Math.floor(now / 140) % 2 === 0) ? '.32' : '1';
+    }
+
+    function showResult(won) {
+      stopLoop();
+      stopSound('minigame_background');
+      if (resultImage) {
+        resultImage.src = won ? ASSETS.text.gewonnen : ASSETS.text.verloren;
+        resultImage.alt = won ? 'Gewonnen' : 'Verloren';
+        show(resultImage);
+      }
+      if (won) {
+        gameWon = true;
+        resultTitle.textContent = 'Gewonnen';
+        resultText.textContent = 'Du hast alle Symbolpaare gefunden und Sir Nervus sicher an den Blendkugeln vorbeigeführt.';
+        retryBtn.textContent = 'Zurück zum Spielfeld';
+        hide(boardBtn);
+        retryBtn.onclick = () => {
+          const state = getState();
+          state.completed[slot] = true;
+          state.heroIndex = slot;
+          setState(state);
+          localStorage.setItem(RETURN_STORE, JSON.stringify({ type:'unlocked', meta:{ slot, placeholder:true } }));
+          location.href = pageUrl('index.html');
+        };
+      } else {
+        gameOver = true;
+        resultTitle.textContent = 'Verloren';
+        resultText.textContent = 'Sir Nervus wurde zu oft von Blendkugeln getroffen.';
+        retryBtn.textContent = 'Neuer Versuch';
+        retryBtn.onclick = () => { stopLoop(); location.reload(); };
+        show(boardBtn);
+      }
+      show(resultModal);
+    }
+
+    function stopLoop() {
+      loopActive = false;
+      if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
+    }
+    function requestTick() {
+      if (!loopActive) return;
+      rafId = requestAnimationFrame(tick);
+    }
+    function tick(now) {
+      if (!loopActive) return;
+      if (!Number.isFinite(now)) now = performance.now();
+      const dt = Math.min(.032, Math.max(0, (now - last) / 1000 || 0));
+      last = now;
+      if (!gameOver && !gameWon) {
+        if (now >= hurtUntil && jumping) {
+          jumpY += jumpVelocity * dt;
+          jumpVelocity -= GRAVITY * dt;
+          if (jumpY <= 0) { jumpY = 0; jumpVelocity = 0; jumping = false; }
+        }
+        updateHeroSprite(now);
+        applyHero();
+        updateBlink(now);
+        updateProjectile(now);
+      }
+      requestTick();
+    }
+
+    document.addEventListener('visibilitychange', () => { last = performance.now(); });
+    window.addEventListener('blur', () => {});
+    makeCards();
+    updateHud();
+    updateHearts();
+    updateMetrics();
+    setHero(HERO.stand);
+    hero.style.visibility = 'hidden';
+    loopActive = true;
+    last = performance.now();
+    scheduleNextProjectile(last + 900);
+    requestTick();
+  }
+
   function initCodes() {
     addSpeaker(); $('printCodesBtn')?.addEventListener('click', () => print());
     const grid=$('qrGrid'); if (!grid) return;
@@ -1541,6 +1951,7 @@
     else if (page === 'level') initLevel();
     else if (page === 'battle') initBattle();
     else if (page === 'minigame') initMiniGame();
+    else if (page === 'minigame2') initMiniGame2();
     else if (page === 'codes') initCodes();
   });
 })();

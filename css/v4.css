@@ -1740,3 +1740,211 @@ body[data-page="minigame"]{
   contain:layout paint!important;
   z-index:22!important;
 }
+
+
+/* === Sehsinn-Memory Minigame 2 v34 === */
+.memory2-page{
+  position:fixed!important;
+  inset:0!important;
+  width:100vw!important;
+  height:100svh!important;
+  overflow:hidden!important;
+  background:#121722!important;
+  touch-action:none!important;
+  user-select:none!important;
+}
+.memory2-stage{
+  position:absolute!important;
+  inset:0 0 calc(118px + env(safe-area-inset-bottom)) 0!important;
+  overflow:hidden!important;
+  background:var(--memory2-bg, none) center center/cover no-repeat!important;
+  contain:layout paint style!important;
+  isolation:isolate!important;
+}
+.memory2-stage::before{
+  content:""!important;
+  position:absolute!important;
+  inset:0!important;
+  background:linear-gradient(180deg, rgba(255,247,211,.10), rgba(44,34,22,.14))!important;
+  pointer-events:none!important;
+  z-index:0!important;
+}
+.memory2-topbar{
+  position:absolute!important;
+  top:max(10px, env(safe-area-inset-top) + 6px)!important;
+  left:12px!important;
+  right:12px!important;
+  display:flex!important;
+  justify-content:space-between!important;
+  align-items:center!important;
+  gap:10px!important;
+  z-index:20!important;
+  pointer-events:none!important;
+}
+.memory2-hud{
+  position:static!important;
+  font-size:clamp(.95rem,3vw,1.2rem)!important;
+}
+.memory2-lives{
+  display:flex!important;
+  gap:4px!important;
+  align-items:center!important;
+  padding:4px 8px!important;
+  border-radius:999px!important;
+  background:rgba(255,255,255,.68)!important;
+  box-shadow:0 8px 18px rgba(0,0,0,.16)!important;
+}
+.memory2-heart{
+  width:42px!important;
+  height:42px!important;
+  object-fit:contain!important;
+}
+.memory2-grid{
+  position:absolute!important;
+  left:50%!important;
+  top:calc(max(58px, env(safe-area-inset-top) + 54px))!important;
+  transform:translateX(-50%)!important;
+  width:min(94vw, 680px)!important;
+  height:calc(100% - 210px)!important;
+  display:grid!important;
+  grid-template-columns:repeat(4, minmax(0, 1fr))!important;
+  grid-template-rows:repeat(6, minmax(0, 1fr))!important;
+  gap:clamp(5px,1.2vw,10px)!important;
+  z-index:4!important;
+}
+.memory2-card{
+  appearance:none!important;
+  border:0!important;
+  padding:0!important;
+  margin:0!important;
+  background:transparent!important;
+  border-radius:14px!important;
+  perspective:700px!important;
+  touch-action:manipulation!important;
+  cursor:pointer!important;
+  min-width:0!important;
+  min-height:0!important;
+}
+.memory2-card-inner{
+  position:relative!important;
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  transform-style:preserve-3d!important;
+  transition:transform .24s ease!important;
+  will-change:transform!important;
+}
+.memory2-card.flipped .memory2-card-inner,
+.memory2-card.matched .memory2-card-inner{
+  transform:rotateY(180deg)!important;
+}
+.memory2-card-face{
+  position:absolute!important;
+  inset:0!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  backface-visibility:hidden!important;
+  border-radius:14px!important;
+  overflow:hidden!important;
+  filter:drop-shadow(0 4px 8px rgba(0,0,0,.16))!important;
+}
+.memory2-card-front{ transform:rotateY(180deg)!important; }
+.memory2-card img{
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+  display:block!important;
+  pointer-events:none!important;
+}
+.memory2-card.matched{
+  opacity:.82!important;
+}
+.memory2-warning{
+  position:absolute!important;
+  top:auto!important;
+  bottom:78px!important;
+  width:64px!important;
+  height:64px!important;
+  display:none!important;
+  align-items:center!important;
+  justify-content:center!important;
+  z-index:28!important;
+  font-size:3.2rem!important;
+  font-weight:900!important;
+  color:#fff4aa!important;
+  text-shadow:0 0 8px #ff8a00, 0 0 18px rgba(255,162,0,.9), 0 4px 8px rgba(0,0,0,.45)!important;
+  animation:memory2Blink .34s steps(2,end) infinite!important;
+  pointer-events:none!important;
+}
+.memory2-warning.left{left:12px!important;}
+.memory2-warning.right{right:12px!important;}
+.memory2-warning.active{display:flex!important;}
+@keyframes memory2Blink{50%{opacity:.25;transform:scale(.94)}}
+.memory2-projectile{
+  position:absolute!important;
+  left:0!important;
+  top:0!important;
+  width:46px!important;
+  height:46px!important;
+  border-radius:50%!important;
+  z-index:24!important;
+  background:radial-gradient(circle at 32% 28%, #fffbe7 0 14%, #ffe066 18% 42%, #f5a400 55%, #c55a00 82%)!important;
+  box-shadow:0 0 16px rgba(255,220,70,.85), 0 0 28px rgba(255,150,0,.58)!important;
+  will-change:transform!important;
+  pointer-events:none!important;
+  opacity:0!important;
+}
+.memory2-projectile.active{opacity:1!important;}
+.memory2-hero{
+  position:absolute!important;
+  left:0!important;
+  right:auto!important;
+  bottom:16px!important;
+  width:min(31vw,142px)!important;
+  height:min(21svh,162px)!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+  z-index:26!important;
+  will-change:transform, opacity!important;
+  backface-visibility:hidden!important;
+  contain:layout paint!important;
+  pointer-events:none!important;
+}
+.memory2-controls{
+  position:absolute!important;
+  left:0!important;
+  right:0!important;
+  bottom:0!important;
+  height:calc(118px + env(safe-area-inset-bottom))!important;
+  padding:14px max(14px, env(safe-area-inset-left) + 12px) calc(14px + env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-right) + 12px)!important;
+  display:flex!important;
+  align-items:stretch!important;
+  justify-content:center!important;
+  background:linear-gradient(180deg, rgba(19,24,36,.64), rgba(18,22,31,.94))!important;
+  border-top:2px solid rgba(255,255,255,.18)!important;
+  z-index:40!important;
+}
+.memory2-jump-btn{
+  width:100%!important;
+  max-width:720px!important;
+  height:100%!important;
+  border:0!important;
+  border-radius:32px!important;
+  background:linear-gradient(180deg,#fff3b0,#f5b83f)!important;
+  color:#3d2500!important;
+  font-size:clamp(3rem,12vw,5.2rem)!important;
+  font-weight:900!important;
+  line-height:1!important;
+  box-shadow:0 12px 24px rgba(0,0,0,.25), inset 0 3px 0 rgba(255,255,255,.7)!important;
+  touch-action:none!important;
+}
+.memory2-jump-btn.pressed{transform:translateY(2px) scale(.99)!important;}
+@media(max-width:560px){
+  .memory2-stage{inset:0 0 calc(108px + env(safe-area-inset-bottom)) 0!important;}
+  .memory2-grid{width:96vw!important;height:calc(100% - 192px)!important;gap:5px!important;top:calc(max(54px, env(safe-area-inset-top) + 48px))!important;}
+  .memory2-heart{width:34px!important;height:34px!important;}
+  .memory2-hero{width:min(34vw,130px)!important;height:min(20svh,150px)!important;}
+  .memory2-controls{height:calc(108px + env(safe-area-inset-bottom))!important;padding:12px 10px calc(12px + env(safe-area-inset-bottom))!important;}
+  .memory2-warning{bottom:68px!important;width:54px!important;height:54px!important;font-size:2.8rem!important;}
+}

@@ -103,3 +103,12 @@ Die JavaScript-Navigation benutzt `pageUrl(...)`, damit `index.html`, `level.htm
 - Es sind jetzt 1-2 weniger schlechte Items gleichzeitig aktiv.
 - Der Ritter kann horizontal um das Spielfeld laufen: rechts raus = links wieder rein, links raus = rechts wieder rein.
 - Am Rand wird eine zweite Ritterdarstellung eingeblendet, damit die Figur beim Übergang geteilt sichtbar ist.
+
+## Update v34
+
+- Neues `minigame2.html` für Level 4 hinzugefügt.
+- Minigame 2 ist ein Sehsinn-Memory mit 4×6 Karten und 12 Paaren.
+- Level 4 auf dem Spielbrett startet jetzt das neue Memory-Minispiel.
+- Während des Memorys kommen Blendkugeln von links oder rechts. Ein Warnpfeil zeigt die Richtung an.
+- Unten gibt es nur einen großen Sprung-Button.
+- Als Hintergrund wird `popup_sand.webp` genutzt.
