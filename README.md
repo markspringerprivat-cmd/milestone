@@ -112,3 +112,13 @@ Die JavaScript-Navigation benutzt `pageUrl(...)`, damit `index.html`, `level.htm
 - Während des Memorys kommen Blendkugeln von links oder rechts. Ein Warnpfeil zeigt die Richtung an.
 - Unten gibt es nur einen großen Sprung-Button.
 - Als Hintergrund wird `popup_sand.webp` genutzt.
+
+## Update v35
+
+- Minigame2: Ritter pulsiert im Stand leicht.
+- Minigame2: `flip.mp3` wird beim Umdrehen einer Karte abgespielt.
+- Minigame2: `pair.mp3` wird bei einem gefundenen Paar abgespielt.
+- Minigame2: schwarze Ränder der Memory-Kartenbilder wurden per Transparenz entfernt.
+- Minigame2: Blendkugel-Bahn wird beim Start jeder Kugel neu auf die Ritterebene über der Navigationsleiste gesetzt.
+- Minigame2: Herzen sind oben mittig positioniert.
+- Minigame2: Warnpfeile sind größer und neon-rot hervorgehoben.

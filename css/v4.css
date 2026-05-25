@@ -1948,3 +1948,61 @@ body[data-page="minigame"]{
   .memory2-controls{height:calc(108px + env(safe-area-inset-bottom))!important;padding:12px 10px calc(12px + env(safe-area-inset-bottom))!important;}
   .memory2-warning{bottom:68px!important;width:54px!important;height:54px!important;font-size:2.8rem!important;}
 }
+
+
+/* === Memory Minigame 2 polish v35 === */
+.memory2-topbar{
+  justify-content:center!important;
+  pointer-events:none!important;
+}
+.memory2-hud{
+  position:absolute!important;
+  left:12px!important;
+  top:50%!important;
+  transform:translateY(-50%)!important;
+}
+.memory2-lives{
+  margin:0 auto!important;
+  pointer-events:none!important;
+}
+.memory2-card-face{
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.memory2-card img{
+  background:transparent!important;
+}
+.memory2-warning{
+  bottom:82px!important;
+  width:92px!important;
+  height:92px!important;
+  font-size:5.15rem!important;
+  color:#ff174d!important;
+  text-shadow:
+    0 0 4px #fff,
+    0 0 12px #ff174d,
+    0 0 26px #ff003c,
+    0 0 40px rgba(255,0,60,.95),
+    0 6px 10px rgba(0,0,0,.5)!important;
+  filter:drop-shadow(0 0 10px rgba(255,255,255,.85))!important;
+}
+.memory2-warning.left{left:18px!important;}
+.memory2-warning.right{right:18px!important;}
+@keyframes memory2Blink{50%{opacity:.3;transform:scale(1.12)}}
+.memory2-hero:not(.jumping):not(.hurt){
+  animation:memory2IdlePulse 1.15s ease-in-out infinite!important;
+}
+@keyframes memory2IdlePulse{
+  0%,100%{filter:drop-shadow(0 8px 12px rgba(0,0,0,.20));}
+  50%{filter:drop-shadow(0 10px 16px rgba(0,0,0,.26)) brightness(1.04);}
+}
+.memory2-projectile{
+  bottom:auto!important;
+  top:0!important;
+}
+@media(max-width:560px){
+  .memory2-hud{left:8px!important;font-size:.92rem!important;}
+  .memory2-warning{bottom:74px!important;width:78px!important;height:78px!important;font-size:4.35rem!important;}
+  .memory2-warning.left{left:10px!important;}
+  .memory2-warning.right{right:10px!important;}
+}

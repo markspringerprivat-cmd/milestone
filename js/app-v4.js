@@ -5,7 +5,7 @@
   const BATTLE_STORE = 'koenigreichSinneV4Battle';
   const RETURN_STORE = 'koenigreichSinneV4BoardReturn';
   const SOUND_STORE = 'koenigreichSinneV4Muted';
-  const STATE_VERSION = 'v4_34levels_memory_minigame2';
+  const STATE_VERSION = 'v4_35memory2_polish';
   const APP_ROOT = new URL('./', document.baseURI);
   const pageUrl = target => new URL(target, APP_ROOT).href;
   const assetUrl = target => new URL(target, APP_ROOT).href;
@@ -142,6 +142,7 @@
     background: 'assets/audio/background.mp3', battle_background: 'assets/audio/battle_background.mp3', minigame_background: 'assets/audio/minigame_background.mp3',
     levelstart: 'assets/audio/levelstart.mp3', levelunlocked: 'assets/audio/levelunlocked.mp3', fight: 'assets/audio/fight.mp3', win: 'assets/audio/win.mp3', lose: 'assets/audio/lose.mp3',
     final: 'assets/audio/final.mp3', hurt: 'assets/audio/hurt.mp3', glass_break: 'assets/audio/glass_break.mp3', collect: 'assets/audio/collect.mp3',
+    flip: 'assets/audio/flip.mp3', pair: 'assets/audio/pair.mp3',
     richtig_1: 'assets/audio/richtig_1.mp3', richtig_2: 'assets/audio/richtig_2.mp3', richtig_3: 'assets/audio/richtig_3.mp3',
     falsch_1: 'assets/audio/falsch_1.mp3', falsch_2: 'assets/audio/falsch_2.mp3', falsch_3: 'assets/audio/falsch_3.mp3'
   };
@@ -186,6 +187,8 @@
     if (key === 'battle_background') return .11;
     if (key === 'minigame_background') return .24;
     if (key === 'collect') return .82;
+    if (key === 'flip') return .70;
+    if (key === 'pair') return .82;
     if (key === 'hurt' || key === 'glass_break') return .88;
     return /^(richtig|falsch)_/.test(key) ? .95 : .85;
   }
@@ -1655,6 +1658,10 @@
       return a;
     });
     let jumpAudioIndex = 0;
+    try {
+      getAudio('flip')?.load?.();
+      getAudio('pair')?.load?.();
+    } catch (_) {}
 
     function preloadImage(src) {
       return new Promise(resolve => {
@@ -1708,6 +1715,8 @@
       lastHeroSrc = src;
     }
     function updateHeroSprite(now) {
+      hero.classList.toggle('hurt', now < hurtUntil);
+      hero.classList.toggle('jumping', jumping);
       if (now < hurtUntil) { setHero(HERO.hurt); return; }
       if (jumping) setHero(jumpVelocity >= 0 ? HERO.jump : HERO.fall);
       else setHero(HERO.stand);
@@ -1719,7 +1728,7 @@
       heroH = hero.clientHeight || 150;
       heroX = stageW / 2;
       heroBaseY = stageH - 16;
-      projectileY = heroBaseY - Math.max(42, heroH * .26);
+      projectileY = Math.max(12, stageH - 86);
       applyHero();
       applyProjectile();
     }
@@ -1766,6 +1775,7 @@
       const card = cards[index];
       if (!card || card.matched || card.flipped) return;
       card.flipped = true;
+      playSound('flip');
       const node = grid.querySelector(`[data-index="${index}"]`);
       node?.classList.add('flipped');
       if (firstCard === null) { firstCard = index; return; }
@@ -1774,6 +1784,7 @@
       const a = cards[firstCard];
       const b = cards[secondCard];
       if (a.pairKey === b.pairKey) {
+        playSound('pair');
         a.matched = b.matched = true;
         node?.classList.add('matched');
         grid.querySelector(`[data-index="${firstCard}"]`)?.classList.add('matched');
@@ -1808,6 +1819,8 @@
       else rightWarn.classList.add('active');
     }
     function startProjectile(now) {
+      updateMetrics();
+      projectileY = Math.max(12, stageH - 86);
       projectilePhase = 'flying';
       projectileStart = now;
       leftWarn.classList.remove('active');
