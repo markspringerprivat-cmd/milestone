@@ -42,3 +42,9 @@ Die JavaScript-Navigation benutzt `pageUrl(...)`, damit `index.html`, `level.htm
 - Minigame-Bewegungen laufen nun über `transform: translate3d(...)` statt über `left/top`.
 - Kollisionen im Minigame werden mathematisch aus gespeicherten Positionen berechnet, ohne `getBoundingClientRect()` pro Frame.
 - Igel, Kugeln und Ritter werden im Spiel mit GPU-freundlichen Transform-Werten bewegt.
+
+## Update v25
+
+- Minigame-Kugeln werden jetzt über einen festen Object-Pool wiederverwendet.
+- Während des Spiels werden keine Kugel-Elemente mehr per `appendChild()` neu erzeugt oder per `.remove()` gelöscht.
+- Die aktiven Kugeln werden über feste Slots und aktive Zähler verwaltet, damit das Spiel bei längerer Laufzeit stabiler bleibt.

@@ -5,7 +5,7 @@
   const BATTLE_STORE = 'koenigreichSinneV4Battle';
   const RETURN_STORE = 'koenigreichSinneV4BoardReturn';
   const SOUND_STORE = 'koenigreichSinneV4Muted';
-  const STATE_VERSION = 'v4_24levels_intro_jump_polish';
+  const STATE_VERSION = 'v4_25levels_orb_pool_stable';
   const APP_ROOT = new URL('./', document.baseURI);
   const pageUrl = target => new URL(target, APP_ROOT).href;
   const assetUrl = target => new URL(target, APP_ROOT).href;
@@ -901,6 +901,7 @@
     const MAX_HEARTS = 3;
     const MAX_ORANGE_ACTIVE = 2;
     const MAX_BLUE_ACTIVE = 2;
+    const ORB_POOL_SIZE = MAX_ORANGE_ACTIVE + MAX_BLUE_ACTIVE + 4;
     const ORANGE_SPAWN_MS = 2850;
     const BLUE_SPAWN_MS = 1850;
     const HURT_FREEZE_MS = 500;
@@ -923,6 +924,8 @@
     let last = performance.now();
     let lastSprite = '';
     let orbs = [];
+    let activeOrangeOrbs = 0;
+    let activeBlueOrbs = 0;
     let collectedBlue = 0;
     let gameOver = false;
     let gameWon = false;
@@ -981,6 +984,19 @@
       stage.appendChild(warningRight);
     }
 
+    // Object pool: Kugeln werden einmal erzeugt und danach nur wiederverwendet.
+    // Dadurch entstehen während des Spiels keine laufenden appendChild/remove()-Spitzen.
+    orbs = Array.from({ length: ORB_POOL_SIZE }, (_, index) => {
+      const node = document.createElement('div');
+      node.className = 'mini-hazard orb-pooled';
+      node.setAttribute('aria-hidden', 'true');
+      node.dataset.poolIndex = String(index);
+      node.style.display = 'none';
+      node.style.transform = 'translate3d(-9999px,-9999px,0)';
+      stage.appendChild(node);
+      return { node, active:false, type:'', x:0, y:0, size:0, speed:0 };
+    });
+
     const hedgehog = {
       phase: 'idle',
       direction: -1,
@@ -1009,7 +1025,7 @@
     }
     window.addEventListener('resize', updateMetrics, { passive:true });
 
-    function countOrbs(type) { return orbs.filter(o => o.type === type).length; }
+    function countOrbs(type) { return type === 'orange' ? activeOrangeOrbs : activeBlueOrbs; }
     function updateHud() { if (hud) hud.textContent = `Blau ${collectedBlue} / ${TARGET_BLUE}`; }
     function updateHearts() {
       heartNodes.forEach((node, index) => {
@@ -1154,20 +1170,40 @@
     });
 
     function createOrb(type) {
+      const orb = orbs.find(item => !item.active);
+      if (!orb) return false;
       const size = type === 'orange' ? Math.round(30 + Math.random() * 18) : Math.round(28 + Math.random() * 12);
-      const node = document.createElement('div');
-      node.className = `mini-hazard orb-${type}`;
-      node.setAttribute('aria-hidden', 'true');
-      node.style.width = `${size}px`;
-      node.style.height = `${size}px`;
       const x = Math.round(size / 2 + Math.random() * Math.max(1, stageW - size * 1.5));
       const y = -size - 8;
-      node.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-      stage.appendChild(node);
       const speed = type === 'orange' ? 170 + Math.random() * 70 : 160 + Math.random() * 55;
-      orbs.push({ node, type, x, y, size, speed });
+      orb.active = true;
+      orb.type = type;
+      orb.x = x;
+      orb.y = y;
+      orb.size = size;
+      orb.speed = speed;
+      orb.node.className = `mini-hazard orb-${type}`;
+      orb.node.style.width = `${size}px`;
+      orb.node.style.height = `${size}px`;
+      orb.node.style.display = 'block';
+      orb.node.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+      if (type === 'orange') activeOrangeOrbs += 1;
+      else activeBlueOrbs += 1;
+      return true;
     }
-    function removeOrb(orb) { orb.node?.remove(); }
+    function removeOrb(orb) {
+      if (!orb || !orb.active) return;
+      if (orb.type === 'orange') activeOrangeOrbs = Math.max(0, activeOrangeOrbs - 1);
+      else if (orb.type === 'blue') activeBlueOrbs = Math.max(0, activeBlueOrbs - 1);
+      orb.active = false;
+      orb.type = '';
+      orb.x = 0;
+      orb.y = 0;
+      orb.size = 0;
+      orb.speed = 0;
+      orb.node.style.display = 'none';
+      orb.node.style.transform = 'translate3d(-9999px,-9999px,0)';
+    }
     function intersects(a, b) {
       return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom);
     }
@@ -1236,7 +1272,8 @@
         retryBtn.onclick = () => { location.reload(); };
       }
       orbs.forEach(removeOrb);
-      orbs = [];
+      activeOrangeOrbs = 0;
+      activeBlueOrbs = 0;
       hedgehog.phase = 'idle';
       hedgehogNode.style.display = 'none';
       warningLeft.classList.remove('active');
@@ -1261,23 +1298,24 @@
     }
 
     function updateOrbs(dt, now) {
-      if (!gameOver && !gameWon && countOrbs('orange') < MAX_ORANGE_ACTIVE && now - lastOrangeSpawn >= ORANGE_SPAWN_MS) {
+      if (!gameOver && !gameWon && activeOrangeOrbs < MAX_ORANGE_ACTIVE && now - lastOrangeSpawn >= ORANGE_SPAWN_MS) {
         createOrb('orange');
         lastOrangeSpawn = now;
       }
-      if (!gameOver && !gameWon && countOrbs('blue') < MAX_BLUE_ACTIVE && now - lastBlueSpawn >= BLUE_SPAWN_MS) {
+      if (!gameOver && !gameWon && activeBlueOrbs < MAX_BLUE_ACTIVE && now - lastBlueSpawn >= BLUE_SPAWN_MS) {
         createOrb('blue');
         lastBlueSpawn = now;
       }
       const hRect = heroHitbox();
-      for (let i = orbs.length - 1; i >= 0; i--) {
+      for (let i = 0; i < orbs.length; i += 1) {
         const orb = orbs[i];
+        if (!orb.active) continue;
         orb.y += orb.speed * dt;
         orb.node.style.transform = `translate3d(${Math.round(orb.x)}px, ${Math.round(orb.y)}px, 0)`;
         if (intersects(hRect, orbHitbox(orb))) {
+          const type = orb.type;
           removeOrb(orb);
-          orbs.splice(i, 1);
-          if (orb.type === 'orange') {
+          if (type === 'orange') {
             damageHero('top');
           } else {
             collectedBlue = Math.min(TARGET_BLUE, collectedBlue + 1);
@@ -1287,10 +1325,7 @@
           }
           continue;
         }
-        if (orb.y > stageH + orb.size) {
-          removeOrb(orb);
-          orbs.splice(i, 1);
-        }
+        if (orb.y > stageH + orb.size) removeOrb(orb);
       }
     }
 

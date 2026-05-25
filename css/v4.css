@@ -1535,3 +1535,14 @@ body[data-page="minigame"]{
 .mini-hero{
   filter:drop-shadow(0 8px 12px rgba(0,0,0,.18))!important;
 }
+
+
+/* === Stable orb pool v25 === */
+.mini-hazard.orb-pooled{
+  display:none!important;
+}
+.mini-hazard.orb-orange,
+.mini-hazard.orb-blue{
+  animation:none!important;
+  transform-origin:center center!important;
+}
