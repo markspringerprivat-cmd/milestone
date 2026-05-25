@@ -5,7 +5,7 @@
   const BATTLE_STORE = 'koenigreichSinneV4Battle';
   const RETURN_STORE = 'koenigreichSinneV4BoardReturn';
   const SOUND_STORE = 'koenigreichSinneV4Muted';
-  const STATE_VERSION = 'v4_30levels_food_minigame_pickup_smooth';
+  const STATE_VERSION = 'v4_32levels_food_minigame_rare_fruit';
   const APP_ROOT = new URL('./', document.baseURI);
   const pageUrl = target => new URL(target, APP_ROOT).href;
   const assetUrl = target => new URL(target, APP_ROOT).href;
@@ -972,15 +972,15 @@
       ['collect','hurt','glass_break','minigame_background'].forEach(key => getAudio(key)?.load?.());
     } catch (_) {}
 
-    const TARGET_GOOD = 50;
+    const TARGET_GOOD = 10;
     const MAX_HEARTS = 3;
-    const MAX_GOOD_ACTIVE = 4;
-    const MAX_BAD_ACTIVE = 3;
+    const MAX_GOOD_ACTIVE = 1;
+    const MAX_BAD_ACTIVE = 5;
     const FOOD_POOL_SIZE = MAX_GOOD_ACTIVE + MAX_BAD_ACTIVE + 6;
     const FOOD_BASE_SIZE = 62;
-    const GOOD_SPAWN_MS = 760;
-    const BAD_SPAWN_START_MS = 3200;
-    const BAD_SPAWN_END_MS = 1550;
+    const GOOD_SPAWN_MS = 5000;
+    const BAD_SPAWN_START_MS = 760;
+    const BAD_SPAWN_END_MS = 540;
     const HURT_FREEZE_MS = 500;
     const INVULNERABLE_MS = 3000;
 
@@ -1058,7 +1058,7 @@
       <div class="mini-tutorial-card">
         <p class="mini-tutorial-kicker">Geschmackssinn</p>
         <h2 id="miniTutorialTitle">Bereite Sir Nervus auf den Weg vor</h2>
-        <p>Bewege Sir Nervus nur nach <strong>links</strong> und <strong>rechts</strong>. Sammle <strong>50 lecker schmeckende Obststücke</strong> und weiche den <strong>scharfen Chilischoten</strong> sowie dem <strong>verdorbenen Fisch</strong> aus.</p>
+        <p>Bewege Sir Nervus nur nach <strong>links</strong> und <strong>rechts</strong>. Sammle <strong>10 lecker schmeckende Obststücke</strong>. Etwa alle fünf Sekunden kommt ein zufälliges Obstteil herunter – dazwischen fallen vor allem <strong>scharfe Chilischoten</strong> und <strong>verdorbener Fisch</strong>, denen du ausweichen musst.</p>
         <p>Der Geschmackssinn hilft uns, Speisen zu unterscheiden: süßes oder frisches Essen kann angenehm schmecken, sehr scharfe oder verdorbene Dinge warnen den Körper. In diesem Minispiel trainierst du genau diese Entscheidung: gutes Essen sammeln, gefährliche Reize vermeiden.</p>
         <div class="mini-tutorial-actions">
           <button id="miniTutorialStartBtn" class="game-btn" type="button">Spiel starten</button>
@@ -1247,8 +1247,8 @@
       ensureMiniMusic();
       loopActive = true;
       last = performance.now();
-      lastGoodSpawn = last - GOOD_SPAWN_MS;
-      lastBadSpawn = last + 2400;
+      lastGoodSpawn = last - GOOD_SPAWN_MS + 1200;
+      lastBadSpawn = last - BAD_SPAWN_START_MS;
       requestMiniTick();
     }
     tutorialStartBtn?.addEventListener('click', startFoodGame);
@@ -1267,8 +1267,7 @@
     }
     function currentBadLimit() {
       const p = difficultyProgress();
-      if (p < 0.18) return 1;
-      if (p < 0.62) return 2;
+      if (p < 0.25) return 4;
       return MAX_BAD_ACTIVE;
     }
 
@@ -1284,7 +1283,7 @@
       const x = Math.round(size / 2 + Math.random() * Math.max(1, stageW - size * 1.5));
       const y = -size - 8;
       const p = difficultyProgress();
-      const speed = isGood ? 165 + Math.random() * 65 : 170 + p * 45 + Math.random() * 65;
+      const speed = isGood ? 138 + Math.random() * 42 : 178 + p * 34 + Math.random() * 55;
       item.active = true;
       item.kind = kind;
       item.x = x;
@@ -1355,7 +1354,7 @@
         gameWon = true;
         stopMovement();
         if (resultTitle) resultTitle.textContent = 'Gewonnen';
-        if (resultText) resultText.textContent = 'Du hast 50 gute Obststücke eingesammelt.';
+        if (resultText) resultText.textContent = 'Du hast 10 gute Obststücke eingesammelt.';
         if (retryBtn) retryBtn.textContent = 'Zurück zum Spielfeld';
         if (resultBoardBtn) hide(resultBoardBtn);
         retryBtn.onclick = () => {

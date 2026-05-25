@@ -89,3 +89,10 @@ Die JavaScript-Navigation benutzt `pageUrl(...)`, damit `index.html`, `level.htm
 - Der HUD-Zähler wird leicht verzögert gebündelt aktualisiert.
 - Collect-Sound wird minimal verzögert gestartet, damit die sichtbare Kollisionsreaktion nicht im gleichen Frame blockiert.
 - Drop-Shadow/Filter auf fallenden Items wurde entfernt.
+
+## Update v32
+
+- Ziel im Obst-Minispiel ist jetzt wieder 10 gesammelte Obstteile.
+- Gute Obstteile erscheinen nur noch ungefähr alle fünf Sekunden.
+- Dazwischen fallen überwiegend Chilis und verdorbene Fische.
+- Die Anzahl der aktiven Obstteile ist auf eins begrenzt, damit beim Einsammeln deutlich weniger Aktionen/Sounds ausgelöst werden.
