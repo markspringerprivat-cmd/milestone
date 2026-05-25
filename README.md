@@ -73,3 +73,11 @@ Die JavaScript-Navigation benutzt `pageUrl(...)`, damit `index.html`, `level.htm
 - Vor dem Start erscheint ein Lern-/Anleitungs-Popup zum Geschmackssinn.
 - Das Minigame startet erst nach Klick auf `Spiel starten`.
 - Chilis und verdorbene Fische erscheinen am Anfang selten und werden mit dem Fortschritt etwas häufiger.
+
+## Update v29
+
+- Minigame-Steuerung ist jetzt nur noch Links/Rechts.
+- Die Steuerungsleiste besteht aus zwei großen Hälften: links laufen und rechts laufen.
+- Der Ritter bewegt sich etwas schneller.
+- Chilis und verdorbene Fische erscheinen früher und mit dem Fortschritt etwas häufiger.
+- Sammel-/Schadenssounds im Minigame nutzen kleine Audio-Pools, damit Einsammeln weniger ruckelt.

@@ -5,7 +5,7 @@
   const BATTLE_STORE = 'koenigreichSinneV4Battle';
   const RETURN_STORE = 'koenigreichSinneV4BoardReturn';
   const SOUND_STORE = 'koenigreichSinneV4Muted';
-  const STATE_VERSION = 'v4_28levels_food_minigame_intro_ramp';
+  const STATE_VERSION = 'v4_29levels_food_minigame_dodge_only';
   const APP_ROOT = new URL('./', document.baseURI);
   const pageUrl = target => new URL(target, APP_ROOT).href;
   const assetUrl = target => new URL(target, APP_ROOT).href;
@@ -939,6 +939,31 @@
       return a;
     });
     let jumpAudioIndex = 0;
+    function makeMiniSoundPool(key, count = 3) {
+      return Array.from({ length: count }, () => {
+        const a = new Audio(AUDIO_FILES[key]);
+        a.preload = 'auto';
+        a.volume = audioVolumeForKey(key);
+        try { a.load(); } catch (_) {}
+        return a;
+      });
+    }
+    const miniSfxPools = {
+      collect: makeMiniSoundPool('collect', 4),
+      hurt: makeMiniSoundPool('hurt', 2),
+      glass_break: makeMiniSoundPool('glass_break', 2)
+    };
+    const miniSfxCursor = { collect:0, hurt:0, glass_break:0 };
+    function playMiniSfx(key) {
+      const pool = miniSfxPools[key];
+      if (!pool || !pool.length || muted) return;
+      const a = pool[miniSfxCursor[key]++ % pool.length];
+      try {
+        a.pause();
+        a.currentTime = 0;
+        a.play().catch(() => {});
+      } catch (_) {}
+    }
     try {
       ['collect','hurt','glass_break','minigame_background'].forEach(key => getAudio(key)?.load?.());
     } catch (_) {}
@@ -946,11 +971,11 @@
     const TARGET_GOOD = 50;
     const MAX_HEARTS = 3;
     const MAX_GOOD_ACTIVE = 4;
-    const MAX_BAD_ACTIVE = 2;
-    const FOOD_POOL_SIZE = MAX_GOOD_ACTIVE + MAX_BAD_ACTIVE + 5;
-    const GOOD_SPAWN_MS = 820;
-    const BAD_SPAWN_START_MS = 4600;
-    const BAD_SPAWN_END_MS = 2400;
+    const MAX_BAD_ACTIVE = 3;
+    const FOOD_POOL_SIZE = MAX_GOOD_ACTIVE + MAX_BAD_ACTIVE + 6;
+    const GOOD_SPAWN_MS = 760;
+    const BAD_SPAWN_START_MS = 3200;
+    const BAD_SPAWN_END_MS = 1550;
     const HURT_FREEZE_MS = 500;
     const INVULNERABLE_MS = 3000;
 
@@ -1024,7 +1049,7 @@
       <div class="mini-tutorial-card">
         <p class="mini-tutorial-kicker">Geschmackssinn</p>
         <h2 id="miniTutorialTitle">Bereite Sir Nervus auf den Weg vor</h2>
-        <p>Sammle <strong>50 lecker schmeckende Obststücke</strong>. Weiche dabei den <strong>scharfen Chilischoten</strong> und dem <strong>verdorbenen Fisch</strong> aus.</p>
+        <p>Bewege Sir Nervus nur nach <strong>links</strong> und <strong>rechts</strong>. Sammle <strong>50 lecker schmeckende Obststücke</strong> und weiche den <strong>scharfen Chilischoten</strong> sowie dem <strong>verdorbenen Fisch</strong> aus.</p>
         <p>Der Geschmackssinn hilft uns, Speisen zu unterscheiden: süßes oder frisches Essen kann angenehm schmecken, sehr scharfe oder verdorbene Dinge warnen den Körper. In diesem Minispiel trainierst du genau diese Entscheidung: gutes Essen sammeln, gefährliche Reize vermeiden.</p>
         <div class="mini-tutorial-actions">
           <button id="miniTutorialStartBtn" class="game-btn" type="button">Spiel starten</button>
@@ -1080,13 +1105,6 @@
         hero.classList.remove('walking');
         return;
       }
-      if (jumping) {
-        const jumpDir = direction < 0 ? -1 : 1;
-        if (jumpDir < 0) setSprite(jumpVelocity >= 0 ? SPRITES.jumpLeft : SPRITES.fallLeft);
-        else setSprite(jumpVelocity >= 0 ? SPRITES.jumpRight : SPRITES.fallRight);
-        hero.classList.remove('walking');
-        return;
-      }
       if (velocity < 0) setSprite((Math.floor(now / 230) % 2 === 0) ? SPRITES.walkLeft1 : SPRITES.walkLeft2);
       else if (velocity > 0) setSprite((Math.floor(now / 230) % 2 === 0) ? SPRITES.walkRight1 : SPRITES.walkRight2);
       else setSprite(direction < 0 ? SPRITES.walkLeft1 : SPRITES.walkRight1);
@@ -1111,11 +1129,7 @@
       } catch (_) {}
     }
     function jump() {
-      if (jumping || gameOver || gameWon || performance.now() < hurtFreezeUntil) return;
-      jumping = true;
-      jumpVelocity = 760;
-      hero.classList.add('jumping');
-      playJumpSound();
+      // Dieses Minispiel wird nur mit Links/Rechts gesteuert.
     }
     function stopMovement() {
       pressedLeft = false;
@@ -1159,19 +1173,13 @@
 
     bindHold(leftBtn, 'left');
     bindHold(rightBtn, 'right');
-    jumpBtn?.addEventListener('pointerdown', (ev) => {
-      blockDefault(ev);
-      if (gameOver || gameWon) return;
-      ensureMiniMusic?.();
-      jumpBtn.classList.add('pressed');
-      jump();
-      try { jumpBtn.setPointerCapture?.(ev.pointerId); } catch (_) {}
-    }, { passive:false });
-    ['pointerup','pointercancel','pointerleave','lostpointercapture'].forEach(type => jumpBtn?.addEventListener(type, (ev) => {
-      ev?.preventDefault?.(); ev?.stopPropagation?.(); jumpBtn.classList.remove('pressed');
-    }, { passive:false }));
+    if (jumpBtn) {
+      jumpBtn.disabled = true;
+      jumpBtn.hidden = true;
+      jumpBtn.setAttribute('aria-hidden', 'true');
+    }
 
-    [controls, jumpBtn, leftBtn, rightBtn].forEach(node => {
+    [controls, leftBtn, rightBtn].forEach(node => {
       if (!node) return;
       node.addEventListener('contextmenu', blockDefault);
       node.addEventListener('selectstart', blockDefault);
@@ -1220,7 +1228,8 @@
     }
     function currentBadLimit() {
       const p = difficultyProgress();
-      if (p < 0.35) return 1;
+      if (p < 0.18) return 1;
+      if (p < 0.62) return 2;
       return MAX_BAD_ACTIVE;
     }
 
@@ -1235,7 +1244,7 @@
       const x = Math.round(size / 2 + Math.random() * Math.max(1, stageW - size * 1.5));
       const y = -size - 8;
       const p = difficultyProgress();
-      const speed = isGood ? 150 + Math.random() * 60 : 155 + p * 35 + Math.random() * 60;
+      const speed = isGood ? 165 + Math.random() * 65 : 170 + p * 45 + Math.random() * 65;
       item.active = true;
       item.kind = kind;
       item.x = x;
@@ -1344,8 +1353,8 @@
       const now = performance.now();
       if (gameOver || gameWon || now < invulnerableUntil) return;
       lives = Math.max(0, lives - 1);
-      playSound('hurt');
-      playSound('glass_break');
+      playMiniSfx('hurt');
+      playMiniSfx('glass_break');
       updateHearts();
       hurtSprite = kind === 'chili' ? SPRITES.hot : SPRITES.badFood;
       hurtFreezeUntil = now + HURT_FREEZE_MS;
@@ -1375,7 +1384,7 @@
           removeFood(item);
           if (kind === 'good') {
             collectedGood = Math.min(TARGET_GOOD, collectedGood + 1);
-            playSound('collect');
+            playMiniSfx('collect');
             updateHud();
             if (collectedGood >= TARGET_GOOD) showMiniResult(true);
           } else {
@@ -1397,19 +1406,8 @@
       if (!gameOver && !gameWon) {
         if (now >= hurtFreezeUntil) {
           if (velocity) {
-            heroX = localClamp(heroX + velocity * stageW * 0.28 * dt, heroW * 0.5 + 8, stageW - heroW * 0.5 - 8);
+            heroX = localClamp(heroX + velocity * stageW * 0.38 * dt, heroW * 0.5 + 8, stageW - heroW * 0.5 - 8);
             heroRatio = heroX / stageW;
-          }
-          if (jumping) {
-            jumpY += jumpVelocity * dt;
-            jumpVelocity -= 1680 * dt;
-            if (jumpY <= 0) {
-              jumpY = 0;
-              jumpVelocity = 0;
-              jumping = false;
-              hero.classList.remove('jumping');
-              recomputeVelocity();
-            }
           }
         }
         updateSprite(now);

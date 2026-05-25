@@ -1672,3 +1672,43 @@ body[data-page="minigame"]{
 .mini-tutorial-actions .game-btn{
   min-width:190px!important;
 }
+
+
+/* === Food minigame dodge-only controls v29 === */
+.mini-controls-halves{
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:14px!important;
+  height:calc(128px + env(safe-area-inset-bottom))!important;
+  padding:14px max(14px, env(safe-area-inset-left) + 12px) calc(14px + env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-right) + 12px)!important;
+}
+.mini-controls-halves .mini-half-btn{
+  width:100%!important;
+  height:100%!important;
+  min-height:92px!important;
+  border-radius:30px!important;
+  font-size:clamp(2.4rem,10vw,4.2rem)!important;
+  touch-action:none!important;
+}
+.mini-controls-halves .mini-half-btn::after{
+  content:""!important;
+  position:absolute!important;
+  inset:-8px!important;
+}
+#miniJumpBtn{
+  display:none!important;
+}
+.mini-food{
+  transform:translateZ(0);
+}
+@media(max-width:560px){
+  .mini-controls-halves{
+    gap:10px!important;
+    height:calc(118px + env(safe-area-inset-bottom))!important;
+    padding:12px max(10px, env(safe-area-inset-left) + 8px) calc(12px + env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-right) + 8px)!important;
+  }
+  .mini-controls-halves .mini-half-btn{
+    min-height:84px!important;
+    border-radius:26px!important;
+  }
+}
