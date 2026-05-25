@@ -1290,3 +1290,77 @@ body[data-page="minigame"]{
   .mini-heart{width:48px!important;height:48px!important;}
   .mini-hedgehog{bottom:6px!important;}
 }
+
+
+/* === Minigame blue orb update v16 === */
+.mini-game-page{background:transparent!important;}
+.mini-game-stage{background:var(--mini-stage-bg, none) center center / cover no-repeat!important;}
+.mini-game-stage::before{display:none!important;content:none!important;}
+.mini-ground{display:none!important;}
+.mini-hero{
+  width:min(27vw,150px)!important;
+  height:min(20svh,166px)!important;
+  bottom:4px!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+  z-index:10!important;
+}
+.mini-hero.walking{animation:miniWalkBob .24s ease-in-out infinite alternate!important;}
+.mini-hearts{background:transparent!important;box-shadow:none!important;padding:0!important;gap:10px!important;z-index:20!important;}
+.mini-heart{width:56px!important;height:56px!important;opacity:.96!important;}
+.mini-hedgehog{
+  position:absolute!important;
+  left:-9999px!important;
+  bottom:6px!important;
+  width:92px!important;
+  height:auto!important;
+  z-index:14!important;
+  display:none;
+  object-fit:contain!important;
+  filter:drop-shadow(0 8px 12px rgba(0,0,0,.3))!important;
+  pointer-events:none!important;
+}
+.mini-warning-arrow{
+  position:absolute!important;
+  bottom:42px!important;
+  z-index:18!important;
+  width:46px!important;
+  height:46px!important;
+  border-radius:50%!important;
+  display:none!important;
+  align-items:center!important;
+  justify-content:center!important;
+  font-size:1.8rem!important;
+  font-weight:1000!important;
+  color:#fff!important;
+  background:rgba(255,90,0,.92)!important;
+  border:3px solid rgba(255,255,255,.88)!important;
+  box-shadow:0 10px 24px rgba(0,0,0,.28)!important;
+  animation:miniWarnBlink .45s linear infinite!important;
+  pointer-events:none!important;
+}
+.mini-warning-arrow.left{left:14px!important;}
+.mini-warning-arrow.right{right:14px!important;}
+.mini-warning-arrow.active{display:flex!important;}
+@keyframes miniWarnBlink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.22;transform:scale(.88)}}
+.mini-hazard{z-index:11!important;}
+.mini-hazard.orb-orange{
+  background:
+    radial-gradient(circle at 32% 26%, rgba(255,255,255,.95) 0 12%, rgba(255,255,255,.25) 13% 20%, transparent 21%),
+    radial-gradient(circle at 50% 55%, #ffda45 0 30%, #ff9f1a 55%, #d65b00 100%)!important;
+  border:3px solid rgba(255,255,255,.65)!important;
+  box-shadow:0 10px 18px rgba(0,0,0,.22), inset 0 -7px 10px rgba(119,45,0,.25)!important;
+}
+.mini-hazard.orb-blue{
+  background:
+    radial-gradient(circle at 32% 26%, rgba(255,255,255,.98) 0 12%, rgba(255,255,255,.34) 13% 20%, transparent 21%),
+    radial-gradient(circle at 50% 55%, #8be7ff 0 26%, #3ea8ff 56%, #1152db 100%)!important;
+  border:3px solid rgba(255,255,255,.72)!important;
+  box-shadow:0 10px 18px rgba(0,0,0,.22), inset 0 -7px 10px rgba(0,52,120,.25)!important;
+}
+@media(max-width:560px){
+  .mini-hero{width:min(31vw,140px)!important;height:min(21svh,154px)!important;}
+  .mini-heart{width:48px!important;height:48px!important;}
+  .mini-warning-arrow{bottom:38px!important;width:40px!important;height:40px!important;font-size:1.55rem!important;}
+  .mini-hedgehog{bottom:4px!important;}
+}

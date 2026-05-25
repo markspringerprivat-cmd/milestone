@@ -5,7 +5,7 @@
   const BATTLE_STORE = 'koenigreichSinneV4Battle';
   const RETURN_STORE = 'koenigreichSinneV4BoardReturn';
   const SOUND_STORE = 'koenigreichSinneV4Muted';
-  const STATE_VERSION = 'v4_15levels_minigame_fix';
+  const STATE_VERSION = 'v4_16levels_minigame_blue_orbs';
 
   const SENSES = {
     sehen: {
@@ -690,6 +690,7 @@
 
 
 
+
   function initMiniGame() {
     addSpeaker();
     stopSound('background');
@@ -739,14 +740,17 @@
     jumpAudio.preload = 'auto';
     jumpAudio.volume = 0.82;
 
-    const TARGET_DODGES = 10;
-    const MAX_HAZARDS = 6;
-    const SPAWN_MS = 1550;
+    const TARGET_BLUE = 10;
     const MAX_HEARTS = 3;
+    const MAX_ORANGE_ACTIVE = 3;
+    const MAX_BLUE_ACTIVE = 2;
+    const ORANGE_SPAWN_MS = 2350;
+    const BLUE_SPAWN_MS = 1850;
     const HURT_FREEZE_MS = 500;
     const INVULNERABLE_MS = 3000;
+    const HEDGE_WARNING_MS = 2000;
     const HEDGE_FRAME_MS = 300;
-    const HEDGE_RESPAWN_MS = 520;
+    const HEDGE_COOLDOWN_MS = 500;
 
     let x = 50;
     let direction = 1;
@@ -758,12 +762,12 @@
     let jumpVelocity = 0;
     let last = performance.now();
     let lastSprite = '';
-    let hazards = [];
-    let spawned = 0;
-    let dodged = 0;
+    let orbs = [];
+    let collectedBlue = 0;
     let gameOver = false;
     let gameWon = false;
-    let lastSpawn = performance.now() + 650;
+    let lastOrangeSpawn = performance.now() + 1100;
+    let lastBlueSpawn = performance.now() + 800;
     let lives = MAX_HEARTS;
     let hurtFreezeUntil = 0;
     let invulnerableUntil = 0;
@@ -776,7 +780,6 @@
       heartsWrap = document.createElement('div');
       heartsWrap.id = 'miniLives';
       heartsWrap.className = 'mini-hearts';
-      heartsWrap.setAttribute('aria-label', 'Leben');
       heartsWrap.setAttribute('role', 'status');
       heartsWrap.setAttribute('aria-live', 'polite');
       stage.appendChild(heartsWrap);
@@ -791,26 +794,52 @@
       return img;
     });
 
-    const hedgehogNode = document.createElement('img');
-    hedgehogNode.className = 'mini-hedgehog';
-    hedgehogNode.alt = '';
-    hedgehogNode.setAttribute('aria-hidden', 'true');
-    stage.appendChild(hedgehogNode);
+    let hedgehogNode = $('miniHedgehog');
+    if (!hedgehogNode) {
+      hedgehogNode = document.createElement('img');
+      hedgehogNode.id = 'miniHedgehog';
+      hedgehogNode.className = 'mini-hedgehog';
+      hedgehogNode.alt = '';
+      hedgehogNode.setAttribute('aria-hidden', 'true');
+      stage.appendChild(hedgehogNode);
+    }
+
+    let warningLeft = $('miniWarnLeft');
+    if (!warningLeft) {
+      warningLeft = document.createElement('div');
+      warningLeft.id = 'miniWarnLeft';
+      warningLeft.className = 'mini-warning-arrow left';
+      warningLeft.textContent = '▶';
+      stage.appendChild(warningLeft);
+    }
+    let warningRight = $('miniWarnRight');
+    if (!warningRight) {
+      warningRight = document.createElement('div');
+      warningRight.id = 'miniWarnRight';
+      warningRight.className = 'mini-warning-arrow right';
+      warningRight.textContent = '◀';
+      stage.appendChild(warningRight);
+    }
 
     const hedgehog = {
-      active: false,
+      phase: 'idle', // idle | warning | running
       direction: -1,
       x: 0,
-      width: 108,
+      width: 96,
       frame: 0,
       lastFrameSwap: 0,
-      respawnAt: performance.now() + 600,
+      warningStartAt: performance.now() + 1100,
+      runStartAt: 0,
       cycle: 0,
-      speed: 180
+      speed: 240,
+      warnedSide: ''
     };
 
     function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
-    function updateHud() { if (hud) hud.textContent = `${dodged} / ${TARGET_DODGES}`; }
+    function countOrbs(type) { return orbs.filter(o => o.type === type).length; }
+    function updateHud() {
+      if (hud) hud.textContent = `Blau ${collectedBlue} / ${TARGET_BLUE}`;
+    }
     function updateHearts() {
       heartNodes.forEach((node, index) => {
         const intact = index < lives;
@@ -847,9 +876,9 @@
         return;
       }
       if (velocity < 0) {
-        setSprite((Math.floor(now / 220) % 2 === 0) ? SPRITES.left1 : SPRITES.left2);
+        setSprite((Math.floor(now / 240) % 2 === 0) ? SPRITES.left1 : SPRITES.left2);
       } else if (velocity > 0) {
-        setSprite((Math.floor(now / 220) % 2 === 0) ? SPRITES.right1 : SPRITES.right2);
+        setSprite((Math.floor(now / 240) % 2 === 0) ? SPRITES.right1 : SPRITES.right2);
       } else {
         setSprite(direction < 0 ? SPRITES.left1 : SPRITES.right1);
       }
@@ -880,19 +909,16 @@
       playJumpSound();
       setSprite(direction < 0 ? SPRITES.jumpLeft : SPRITES.jumpRight);
     }
-
     function stopMovement() {
       pressedLeft = false;
       pressedRight = false;
       recomputeVelocity();
     }
-
     function blockDefault(ev) {
       ev.preventDefault();
       ev.stopPropagation();
       return false;
     }
-
     function bindHold(btn, side) {
       if (!btn) return;
       const down = (ev) => {
@@ -951,12 +977,11 @@
     boardBtn?.addEventListener('click', () => location.href = 'index.html');
     resultBoardBtn?.addEventListener('click', () => location.href = 'index.html');
 
-    function spawnHazard() {
-      if (gameOver || gameWon || hazards.length >= MAX_HAZARDS || spawned >= TARGET_DODGES) return;
+    function createOrb(type) {
       const rect = stage.getBoundingClientRect();
-      const size = Math.round(32 + Math.random() * 24);
+      const size = type === 'orange' ? Math.round(32 + Math.random() * 20) : Math.round(28 + Math.random() * 14);
       const node = document.createElement('div');
-      node.className = 'mini-hazard';
+      node.className = `mini-hazard orb-${type}`;
       node.setAttribute('aria-hidden', 'true');
       node.style.width = `${size}px`;
       node.style.height = `${size}px`;
@@ -964,19 +989,42 @@
       node.style.left = `${xPx}px`;
       node.style.top = `${-size - 8}px`;
       stage.appendChild(node);
-      hazards.push({ node, x: xPx, y: -size - 8, size, speed: 180 + Math.random() * 110 });
-      spawned += 1;
+      const speed = type === 'orange' ? 175 + Math.random() * 75 : 165 + Math.random() * 55;
+      orbs.push({ node, type, x: xPx, y: -size - 8, size, speed });
     }
-
-    function removeHazard(h) {
-      h.node?.remove();
+    function removeOrb(orb) { orb.node?.remove(); }
+    function intersects(a, b) {
+      return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom);
     }
-
-    function collide(a, b) {
-      const padX = Math.min(32, a.width * 0.18);
-      const padY = Math.min(38, a.height * 0.12);
-      const aa = { left:a.left + padX, right:a.right - padX, top:a.top + padY, bottom:a.bottom - 4 };
-      return !(aa.right < b.left || aa.left > b.right || aa.bottom < b.top || aa.top > b.bottom);
+    function heroHitbox() {
+      const r = hero.getBoundingClientRect();
+      return {
+        left: r.left + r.width * 0.30,
+        right: r.right - r.width * 0.30,
+        top: r.top + r.height * 0.23,
+        bottom: r.bottom - 6
+      };
+    }
+    function orbHitbox(orb) {
+      const r = orb.node.getBoundingClientRect();
+      return {
+        left: r.left + r.width * 0.16,
+        right: r.right - r.width * 0.16,
+        top: r.top + r.height * 0.16,
+        bottom: r.bottom - r.height * 0.16
+      };
+    }
+    function hedgehogHitbox() {
+      const r = hedgehogNode.getBoundingClientRect();
+      const d = Math.max(18, Math.min(26, Math.min(r.width, r.height) * 0.38));
+      const cx = r.left + r.width * 0.52;
+      const cy = r.top + r.height * 0.58;
+      return {
+        left: cx - d / 2,
+        right: cx + d / 2,
+        top: cy - d / 2,
+        bottom: cy + d / 2
+      };
     }
 
     function showMiniResult(won) {
@@ -984,7 +1032,7 @@
         gameWon = true;
         stopMovement();
         if (resultTitle) resultTitle.textContent = 'Geschafft!';
-        if (resultText) resultText.textContent = 'Du bist zehn Kugeln ausgewichen.';
+        if (resultText) resultText.textContent = 'Du hast zehn blaue Kugeln eingesammelt.';
         if (retryBtn) retryBtn.textContent = 'Weiter';
         if (resultBoardBtn) hide(resultBoardBtn);
         retryBtn.onclick = () => {
@@ -1007,10 +1055,12 @@
         if (resultBoardBtn) show(resultBoardBtn);
         retryBtn.onclick = () => location.reload();
       }
-      hazards.forEach(removeHazard);
-      hazards = [];
-      hedgehog.active = false;
+      orbs.forEach(removeOrb);
+      orbs = [];
+      hedgehog.phase = 'idle';
       hedgehogNode.style.display = 'none';
+      warningLeft.classList.remove('active');
+      warningRight.classList.remove('active');
       show(resultModal);
     }
 
@@ -1028,80 +1078,99 @@
       if (lives <= 0) pendingGameOver = true;
     }
 
-    function updateHazards(dt, now) {
-      if (!gameOver && !gameWon && now - lastSpawn >= SPAWN_MS) {
-        spawnHazard();
-        lastSpawn = now;
+    function updateOrbs(dt, now) {
+      if (!gameOver && !gameWon && countOrbs('orange') < MAX_ORANGE_ACTIVE && now - lastOrangeSpawn >= ORANGE_SPAWN_MS) {
+        createOrb('orange');
+        lastOrangeSpawn = now;
+      }
+      if (!gameOver && !gameWon && countOrbs('blue') < MAX_BLUE_ACTIVE && now - lastBlueSpawn >= BLUE_SPAWN_MS) {
+        createOrb('blue');
+        lastBlueSpawn = now;
       }
       const stageRect = stage.getBoundingClientRect();
-      const heroRect = hero.getBoundingClientRect();
-      for (let i = hazards.length - 1; i >= 0; i--) {
-        const h = hazards[i];
-        h.y += h.speed * dt;
-        h.node.style.top = `${h.y}px`;
-        const hazardRect = h.node.getBoundingClientRect();
-        if (!gameOver && !gameWon && collide(heroRect, hazardRect)) {
-          removeHazard(h);
-          hazards.splice(i, 1);
-          damageHero('top');
+      const hRect = heroHitbox();
+      for (let i = orbs.length - 1; i >= 0; i--) {
+        const orb = orbs[i];
+        orb.y += orb.speed * dt;
+        orb.node.style.top = `${orb.y}px`;
+        if (intersects(hRect, orbHitbox(orb))) {
+          removeOrb(orb);
+          orbs.splice(i, 1);
+          if (orb.type === 'orange') {
+            damageHero('top');
+          } else {
+            collectedBlue = Math.min(TARGET_BLUE, collectedBlue + 1);
+            updateHud();
+            if (collectedBlue >= TARGET_BLUE) showMiniResult(true);
+          }
           continue;
         }
-        if (h.y > stageRect.height + h.size) {
-          removeHazard(h);
-          hazards.splice(i, 1);
-          if (!gameOver && !gameWon) {
-            dodged = Math.min(TARGET_DODGES, dodged + 1);
-            updateHud();
-            if (dodged >= TARGET_DODGES) showMiniResult(true);
-          }
+        if (orb.y > stageRect.height + orb.size) {
+          removeOrb(orb);
+          orbs.splice(i, 1);
         }
       }
     }
 
-    function hedgeFrames(dir) {
-      return dir < 0
-        ? [SPRITES.hedgehogLeft1, SPRITES.hedgehogLeft2]
-        : [SPRITES.hedgehogRight1, SPRITES.hedgehogRight2];
+    function hedgehogFrames(dir) {
+      return dir < 0 ? [SPRITES.hedgehogLeft1, SPRITES.hedgehogLeft2] : [SPRITES.hedgehogRight1, SPRITES.hedgehogRight2];
     }
-    function startHedgehog(now) {
-      const stageRect = stage.getBoundingClientRect();
+    function startHedgehogWarning(now) {
+      hedgehog.phase = 'warning';
       hedgehog.direction = (hedgehog.cycle % 2 === 0) ? -1 : 1;
       hedgehog.cycle += 1;
-      hedgehog.width = Math.round(clamp(stageRect.width * 0.14, 88, 122));
-      hedgehog.speed = clamp(stageRect.width * 0.28, 235, 310);
+      hedgehog.runStartAt = now + HEDGE_WARNING_MS;
+      hedgehog.warnedSide = hedgehog.direction < 0 ? 'right' : 'left';
+      if (hedgehog.warnedSide === 'left') warningLeft.classList.add('active');
+      else warningRight.classList.add('active');
+    }
+    function startHedgehogRun(now) {
+      const stageRect = stage.getBoundingClientRect();
+      hedgehog.phase = 'running';
+      hedgehog.width = Math.round(clamp(stageRect.width * 0.115, 76, 98));
+      hedgehog.speed = clamp(stageRect.width * 0.25, 205, 255);
       hedgehog.frame = 0;
       hedgehog.lastFrameSwap = now;
-      hedgehog.active = true;
       hedgehog.x = hedgehog.direction < 0 ? stageRect.width + hedgehog.width : -hedgehog.width;
       hedgehogNode.style.display = 'block';
       hedgehogNode.style.width = `${hedgehog.width}px`;
-      hedgehogNode.src = hedgeFrames(hedgehog.direction)[0];
+      hedgehogNode.src = hedgehogFrames(hedgehog.direction)[0];
       hedgehogNode.style.setProperty('left', `${hedgehog.x}px`, 'important');
-      hedgehogNode.style.setProperty('bottom', '8px', 'important');
+      hedgehogNode.style.setProperty('bottom', '6px', 'important');
     }
     function updateHedgehog(dt, now) {
-      if (!hedgehog.active) {
-        if (!gameOver && !gameWon && now >= hedgehog.respawnAt) startHedgehog(now);
+      if (hedgehog.phase === 'idle') {
+        if (!gameOver && !gameWon && now >= hedgehog.warningStartAt) startHedgehogWarning(now);
+        return;
+      }
+      if (hedgehog.phase === 'warning') {
+        if (now >= hedgehog.runStartAt) startHedgehogRun(now);
         return;
       }
       const stageRect = stage.getBoundingClientRect();
       hedgehog.x += hedgehog.speed * dt * hedgehog.direction;
       hedgehogNode.style.setProperty('left', `${hedgehog.x}px`, 'important');
-      hedgehogNode.style.setProperty('bottom', '8px', 'important');
       if (now - hedgehog.lastFrameSwap >= HEDGE_FRAME_MS) {
         hedgehog.frame = (hedgehog.frame + 1) % 2;
-        hedgehogNode.src = hedgeFrames(hedgehog.direction)[hedgehog.frame];
+        hedgehogNode.src = hedgehogFrames(hedgehog.direction)[hedgehog.frame];
         hedgehog.lastFrameSwap = now;
+      }
+      const noseVisible = hedgehog.direction < 0 ? hedgehog.x < stageRect.width : (hedgehog.x + hedgehog.width) > 0;
+      if (noseVisible) {
+        warningLeft.classList.remove('active');
+        warningRight.classList.remove('active');
       }
       const offLeft = hedgehog.direction < 0 && hedgehog.x < -hedgehog.width - 20;
       const offRight = hedgehog.direction > 0 && hedgehog.x > stageRect.width + hedgehog.width + 20;
       if (offLeft || offRight) {
-        hedgehog.active = false;
+        hedgehog.phase = 'idle';
         hedgehogNode.style.display = 'none';
-        hedgehog.respawnAt = now + HEDGE_RESPAWN_MS;
+        warningLeft.classList.remove('active');
+        warningRight.classList.remove('active');
+        hedgehog.warningStartAt = now + HEDGE_COOLDOWN_MS;
         return;
       }
-      if (!gameOver && !gameWon && collide(hero.getBoundingClientRect(), hedgehogNode.getBoundingClientRect())) {
+      if (!gameOver && !gameWon && intersects(heroHitbox(), hedgehogHitbox())) {
         damageHero('bottom');
       }
     }
@@ -1111,10 +1180,10 @@
       last = now;
       if (!gameOver && !gameWon) {
         if (now >= hurtFreezeUntil) {
-          if (velocity) x = clamp(x + velocity * 30 * dt, 8, 92);
+          if (velocity) x = clamp(x + velocity * 28 * dt, 8, 92);
           if (jumping) {
             jumpY += jumpVelocity * dt;
-            jumpVelocity -= 1750 * dt;
+            jumpVelocity -= 1680 * dt;
             if (jumpY <= 0) {
               jumpY = 0;
               jumpVelocity = 0;
@@ -1127,7 +1196,7 @@
         updateSprite(now);
         applyHero();
         updateBlink(now);
-        updateHazards(dt, now);
+        updateOrbs(dt, now);
         updateHedgehog(dt, now);
         if (pendingGameOver && now >= hurtFreezeUntil) {
           pendingGameOver = false;
