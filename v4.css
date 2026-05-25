@@ -1196,3 +1196,55 @@ body[data-page="minigame"]{
   .mini-heart{width:34px!important;height:34px!important;}
   .mini-hedgehog{bottom:8px!important;}
 }
+
+
+/* === Minigame polish v14 === */
+.mini-game-page{background:#0f1f2f!important;}
+.mini-game-stage{
+  background-color:#d7eefc!important;
+  background-image:none!important;
+  background-size:cover!important;
+  background-position:center center!important;
+  background-repeat:no-repeat!important;
+}
+.mini-game-stage::before{
+  z-index:1!important;
+  left:0!important; right:0!important;
+  bottom:0!important;
+  height:22%!important;
+  background:linear-gradient(180deg,rgba(255,255,255,0),rgba(0,0,0,.08)), radial-gradient(ellipse at center,rgba(76,145,67,.70) 0%, rgba(39,109,47,.92) 78%)!important;
+  border-top:3px solid rgba(255,255,255,.35)!important;
+}
+.mini-ground{height:14px!important;bottom:0!important;z-index:2!important;background:rgba(22,92,35,.28)!important;}
+.mini-hero{
+  width:min(28vw,154px)!important;
+  height:min(20svh,168px)!important;
+  bottom:4px!important;
+  z-index:7!important;
+}
+.mini-hero.walking{animation:miniWalkBob .26s ease-in-out infinite alternate!important;}
+.mini-hud{left:max(12px, env(safe-area-inset-left) + 10px)!important;}
+.mini-hearts{
+  top:max(10px, env(safe-area-inset-top) + 6px)!important;
+  gap:10px!important;
+  padding:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.mini-heart{
+  width:52px!important;
+  height:52px!important;
+  opacity:.97!important;
+  filter:drop-shadow(0 4px 10px rgba(0,0,0,.22))!important;
+}
+.mini-hedgehog{
+  bottom:6px!important;
+  z-index:6!important;
+  filter:drop-shadow(0 6px 12px rgba(0,0,0,.28))!important;
+}
+.mini-hazard{z-index:8!important;}
+@media(max-width:560px){
+  .mini-hero{width:min(32vw,140px)!important;height:min(21svh,150px)!important;}
+  .mini-heart{width:46px!important;height:46px!important;}
+  .mini-hedgehog{bottom:4px!important;}
+}

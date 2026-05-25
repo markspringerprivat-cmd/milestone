@@ -5,7 +5,7 @@
   const BATTLE_STORE = 'koenigreichSinneV4Battle';
   const RETURN_STORE = 'koenigreichSinneV4BoardReturn';
   const SOUND_STORE = 'koenigreichSinneV4Muted';
-  const STATE_VERSION = 'v4_13levels_minigame_lives_hedgehog';
+  const STATE_VERSION = 'v4_14levels_minigame_polish';
 
   const SENSES = {
     sehen: {
@@ -712,6 +712,12 @@
     const hud = $('miniHud');
     if (!hero || !stage) return;
 
+    const miniMeta = { slot: Number(qs('slot')) || 0, isBoss:false };
+    stage.style.backgroundImage = `url("${popupBgForMeta(miniMeta)}")`;
+    stage.style.backgroundSize = 'cover';
+    stage.style.backgroundPosition = 'center';
+    stage.style.backgroundRepeat = 'no-repeat';
+
     const SPRITES = {
       right1: 'mini_right_1.png',
       right2: 'mini_right_2.png',
@@ -737,13 +743,13 @@
     jumpAudio.volume = 0.82;
 
     const TARGET_DODGES = 10;
-    const MAX_HAZARDS = 5;
-    const SPAWN_MS = 3000;
+    const MAX_HAZARDS = 7;
+    const SPAWN_MS = 1850;
     const MAX_HEARTS = 3;
     const HURT_FREEZE_MS = 500;
     const INVULNERABLE_MS = 3000;
     const HEDGE_FRAME_MS = 300;
-    const HEDGE_RESPAWN_MS = 700;
+    const HEDGE_RESPAWN_MS = 260;
 
     let x = 50;
     let direction = 1;
@@ -760,7 +766,7 @@
     let dodged = 0;
     let gameOver = false;
     let gameWon = false;
-    let lastSpawn = performance.now() + 900;
+    let lastSpawn = performance.now() + 700;
     let lives = MAX_HEARTS;
     let hurtFreezeUntil = 0;
     let invulnerableUntil = 0;
@@ -801,7 +807,7 @@
       width: 108,
       frame: 0,
       lastFrameSwap: 0,
-      respawnAt: performance.now() + 1200,
+      respawnAt: performance.now() + 600,
       cycle: 0,
       speed: 180
     };
@@ -961,7 +967,7 @@
       node.style.left = `${xPx}px`;
       node.style.top = `${-size - 8}px`;
       stage.appendChild(node);
-      hazards.push({ node, x: xPx, y: -size - 8, size, speed: 145 + Math.random() * 70 });
+      hazards.push({ node, x: xPx, y: -size - 8, size, speed: 175 + Math.random() * 95 });
       spawned += 1;
     }
 
@@ -1064,8 +1070,8 @@
       const stageRect = stage.getBoundingClientRect();
       hedgehog.direction = (hedgehog.cycle % 2 === 0) ? -1 : 1;
       hedgehog.cycle += 1;
-      hedgehog.width = Math.round(clamp(stageRect.width * 0.16, 92, 140));
-      hedgehog.speed = clamp(stageRect.width * 0.18, 150, 240);
+      hedgehog.width = Math.round(clamp(stageRect.width * 0.13, 86, 118));
+      hedgehog.speed = clamp(stageRect.width * 0.34, 260, 360);
       hedgehog.frame = 0;
       hedgehog.lastFrameSwap = now;
       hedgehog.active = true;
@@ -1106,7 +1112,7 @@
       last = now;
       if (!gameOver && !gameWon) {
         if (now >= hurtFreezeUntil) {
-          if (velocity) x = clamp(x + velocity * 26 * dt, 8, 92);
+          if (velocity) x = clamp(x + velocity * 34 * dt, 8, 92);
           if (jumping) {
             jumpY += jumpVelocity * dt;
             jumpVelocity -= 1750 * dt;
