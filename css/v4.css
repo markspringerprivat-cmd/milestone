@@ -1425,3 +1425,53 @@ body[data-page="minigame"]{
   .mini-control-btn.jump{width:90px!important;height:72px!important;font-size:2.25rem!important;}
   .mini-control-btn::after{inset:-8px!important;}
 }
+
+
+/* === Minigame and board polish v21 === */
+.mini-heart{
+  width:64px!important;
+  height:64px!important;
+  opacity:.98!important;
+}
+.mini-result-img{
+  display:block!important;
+  width:min(78vw,340px)!important;
+  height:auto!important;
+  object-fit:contain!important;
+  margin:0 auto 8px!important;
+  filter:drop-shadow(0 10px 18px rgba(0,0,0,.22))!important;
+}
+.mini-result-img.hidden{display:none!important;}
+#miniResultTitle{
+  margin-top:0!important;
+}
+.mini-hero{
+  z-index:22!important;
+  image-rendering:auto!important;
+}
+.mini-hazard{
+  z-index:23!important;
+}
+.mini-hedgehog{
+  z-index:26!important;
+  bottom:6px!important;
+  image-rendering:auto!important;
+  transform:translateZ(0)!important;
+}
+.mini-warning-arrow{
+  z-index:28!important;
+}
+.mini-game-stage{
+  isolation:isolate!important;
+  background:var(--mini-stage-bg, none) center center / cover no-repeat!important;
+}
+.mini-controls{
+  z-index:40!important;
+}
+.moving-hero-token{
+  will-change:left, top, opacity!important;
+}
+@media(max-width:560px){
+  .mini-heart{width:56px!important;height:56px!important;}
+  .mini-result-img{width:min(82vw,300px)!important;}
+}

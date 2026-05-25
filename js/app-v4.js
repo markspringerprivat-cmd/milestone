@@ -5,7 +5,7 @@
   const BATTLE_STORE = 'koenigreichSinneV4Battle';
   const RETURN_STORE = 'koenigreichSinneV4BoardReturn';
   const SOUND_STORE = 'koenigreichSinneV4Muted';
-  const STATE_VERSION = 'v4_20levels_paths_normalized';
+  const STATE_VERSION = 'v4_21levels_minigame_battle_polish';
   const APP_ROOT = new URL('./', document.baseURI);
   const pageUrl = target => new URL(target, APP_ROOT).href;
   const assetUrl = target => new URL(target, APP_ROOT).href;
@@ -319,20 +319,63 @@
     const state = getState();
     const current = Number.isInteger(state.heroIndex) ? state.heroIndex : null;
     if (!fromIntro && current === targetIndex) { setHeroAt(targetIndex, true); return Promise.resolve(); }
+    const pos = boardPos(targetIndex);
     return new Promise(resolve => {
       hero.classList.remove('hidden');
       hero.style.opacity = '1';
+
       if (fromIntro || current === null) {
-        hero.style.transition = 'none'; hero.style.left = '92%'; hero.style.top = '96%'; hero.dataset.index = 'intro';
-      } else {
-        setHeroAt(current, true);
+        hero.style.transition = 'none';
+        hero.style.left = '92%';
+        hero.style.top = '96%';
+        hero.dataset.index = 'intro';
+
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          playSound('levelstart');
+          hero.style.transition = 'left .7s ease-in, top .7s ease-in, opacity .25s ease';
+          hero.style.left = '112%';
+          hero.style.top = '96%';
+
+          setTimeout(() => {
+            hero.style.transition = 'none';
+            hero.style.left = '-10%';
+            hero.style.top = '96%';
+            hero.dataset.index = 'intro-left';
+
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+              hero.style.transition = 'left 2s cubic-bezier(.22,1,.36,1), top 2s cubic-bezier(.22,1,.36,1), opacity .25s ease';
+              hero.style.left = `${pos.x}%`;
+              hero.style.top = `${pos.y}%`;
+            }));
+          }, 740);
+        }));
+
+        setTimeout(() => {
+          const s = getState();
+          s.heroIndex = targetIndex;
+          s.introUsed = true;
+          setState(s);
+          setHeroAt(targetIndex, true);
+          resolve();
+        }, 2850);
+        return;
       }
+
+      setHeroAt(current, true);
       requestAnimationFrame(() => requestAnimationFrame(() => {
         hero.style.transition = 'left 2s cubic-bezier(.22,1,.36,1), top 2s cubic-bezier(.22,1,.36,1), opacity .25s ease';
-        const pos = boardPos(targetIndex); hero.style.left = `${pos.x}%`; hero.style.top = `${pos.y}%`;
+        hero.style.left = `${pos.x}%`;
+        hero.style.top = `${pos.y}%`;
         playSound('levelstart');
       }));
-      setTimeout(() => { const s = getState(); s.heroIndex = targetIndex; s.introUsed = true; setState(s); setHeroAt(targetIndex, true); resolve(); }, 2050);
+      setTimeout(() => {
+        const s = getState();
+        s.heroIndex = targetIndex;
+        s.introUsed = true;
+        setState(s);
+        setHeroAt(targetIndex, true);
+        resolve();
+      }, 2050);
     });
   }
 
@@ -611,12 +654,13 @@
       const list = ok ? ASSETS.correct : ASSETS.wrong;
       const src = ok ? (lastCorrect=pickNoRepeat(list,lastCorrect)) : (lastWrong=pickNoRepeat(list,lastWrong));
       const textSrc = ok ? ASSETS.text.richtig : ASSETS.text.falsch;
-      const base = src.replace(/\.webp$/,'');
+      const soundMatch = src.match(/(?:richtig|falsch)_(\d)\.webp(?:$|[?#])/);
+      const soundKey = `${ok ? 'richtig' : 'falsch'}_${soundMatch ? soundMatch[1] : ((i % 3) + 1)}`;
       label.textContent = `Frage ${i+1}`;
       status.textContent = ok ? 'Richtig' : 'Falsch';
       status.className = `battle-status sr-only ${ok?'ok':'bad'}`;
       [...dots.children].forEach((d,di)=>d.className=di===i?'active':'');
-      await playAnswerStep(img, textImg, src, textSrc, ok ? 'Richtige Antwort' : 'Falsche Antwort', base);
+      await playAnswerStep(img, textImg, src, textSrc, ok ? 'Richtige Antwort' : 'Falsche Antwort', soundKey);
     }
     label.textContent = 'Finale';
     status.textContent = '';
@@ -753,6 +797,7 @@
     const resultModal = $('miniResult');
     const resultTitle = $('miniResultTitle');
     const resultText = $('miniResultText');
+    const resultImage = $('miniResultImage');
     const retryBtn = $('miniRetryBtn');
     const resultBoardBtn = $('miniResultBoardBtn');
     const hud = $('miniHud');
@@ -762,26 +807,35 @@
     stage.style.setProperty('--mini-stage-bg', `url("${popupBgForMeta(miniMeta)}")`);
 
     const SPRITES = {
-      right1: 'assets/images/minigame/mini_right_1.png',
-      right2: 'assets/images/minigame/mini_right_2.png',
-      left1: 'assets/images/minigame/mini_left_1.png',
-      left2: 'assets/images/minigame/mini_left_2.png',
-      jumpRight: 'assets/images/minigame/mini_jump_right.png',
-      fallRight: 'assets/images/minigame/mini_fall_right.png',
-      jumpLeft: 'assets/images/minigame/mini_jump_left.png',
-      fallLeft: 'assets/images/minigame/mini_fall_left.png',
-      damageTop: 'assets/images/minigame/mini_damage_top.png',
-      damageBottom: 'assets/images/minigame/mini_damage_bottom.png',
-      heartFull: 'assets/images/minigame/mini_heart_full.png',
-      heartBroken: 'assets/images/minigame/mini_heart_broken.png',
-      hedgehogLeft1: 'assets/images/minigame/mini_hedgehog_left_1.png',
-      hedgehogLeft2: 'assets/images/minigame/mini_hedgehog_left_2.png',
-      hedgehogRight1: 'assets/images/minigame/mini_hedgehog_right_1.png',
-      hedgehogRight2: 'assets/images/minigame/mini_hedgehog_right_2.png'
+      right1: assetUrl('assets/images/minigame/mini_right_1.png'),
+      right2: assetUrl('assets/images/minigame/mini_right_2.png'),
+      left1: assetUrl('assets/images/minigame/mini_left_1.png'),
+      left2: assetUrl('assets/images/minigame/mini_left_2.png'),
+      jumpRight: assetUrl('assets/images/minigame/mini_jump_right.png'),
+      fallRight: assetUrl('assets/images/minigame/mini_fall_right.png'),
+      jumpLeft: assetUrl('assets/images/minigame/mini_jump_left.png'),
+      fallLeft: assetUrl('assets/images/minigame/mini_fall_left.png'),
+      damageTop: assetUrl('assets/images/minigame/mini_damage_top.png'),
+      damageBottom: assetUrl('assets/images/minigame/mini_damage_bottom.png'),
+      heartFull: assetUrl('assets/images/minigame/mini_heart_full.png'),
+      heartBroken: assetUrl('assets/images/minigame/mini_heart_broken.png'),
+      hedgehogLeft1: assetUrl('assets/images/minigame/mini_hedgehog_left_1.png'),
+      hedgehogLeft2: assetUrl('assets/images/minigame/mini_hedgehog_left_2.png'),
+      hedgehogRight1: assetUrl('assets/images/minigame/mini_hedgehog_right_1.png'),
+      hedgehogRight2: assetUrl('assets/images/minigame/mini_hedgehog_right_2.png')
     };
-    Object.values(SPRITES).forEach(src => { const img = new Image(); img.src = src; });
+    function preloadImage(src) {
+      return new Promise(resolve => {
+        const img = new Image();
+        img.decoding = 'async';
+        img.onload = img.onerror = () => resolve();
+        img.src = src;
+      });
+    }
+    const criticalSpriteReady = preloadImage(SPRITES.right1);
+    const spriteReady = Promise.all(Object.values(SPRITES).map(preloadImage));
 
-    const jumpAudio = new Audio('assets/audio/jump_sound.mp3');
+    const jumpAudio = new Audio(assetUrl('assets/audio/jump_sound.mp3'));
     jumpAudio.preload = 'auto';
     jumpAudio.volume = 0.82;
 
@@ -1076,12 +1130,18 @@
     }
 
     function showMiniResult(won) {
+      stopSound('minigame_background');
+      if (resultImage) {
+        resultImage.src = won ? ASSETS.text.gewonnen : ASSETS.text.verloren;
+        resultImage.alt = won ? 'Gewonnen' : 'Verloren';
+        show(resultImage);
+      }
       if (won) {
         gameWon = true;
         stopMovement();
-        if (resultTitle) resultTitle.textContent = 'Geschafft!';
+        if (resultTitle) resultTitle.textContent = 'Gewonnen';
         if (resultText) resultText.textContent = 'Du hast zehn blaue Kugeln eingesammelt.';
-        if (retryBtn) retryBtn.textContent = 'Weiter';
+        if (retryBtn) retryBtn.textContent = 'Zurück zum Spielfeld';
         if (resultBoardBtn) hide(resultBoardBtn);
         retryBtn.onclick = () => {
           const slot = Number(qs('slot'));
@@ -1092,19 +1152,17 @@
             setState(state);
             localStorage.setItem(RETURN_STORE, JSON.stringify({ type:'unlocked', meta:{ slot, placeholder:true } }));
           }
-          stopSound('minigame_background');
           location.href = pageUrl('index.html');
         };
       } else {
         gameOver = true;
         stopMovement();
-        if (resultTitle) resultTitle.textContent = 'Game Over';
-        if (resultText) resultText.textContent = 'Alle drei Herzen sind kaputt. Starte einen neuen Versuch oder kehre zum Spielfeld zurück.';
+        if (resultTitle) resultTitle.textContent = 'Verloren';
+        if (resultText) resultText.textContent = 'Du hast alle Herzen verloren.';
         if (retryBtn) retryBtn.textContent = 'Neuer Versuch';
         if (resultBoardBtn) show(resultBoardBtn);
-        retryBtn.onclick = () => { stopSound('minigame_background'); location.reload(); };
+        retryBtn.onclick = () => { location.reload(); };
       }
-      stopSound('minigame_background');
       orbs.forEach(removeOrb);
       orbs = [];
       hedgehog.phase = 'idle';
@@ -1180,8 +1238,8 @@
     function startHedgehogRun(now) {
       const stageRect = stage.getBoundingClientRect();
       hedgehog.phase = 'running';
-      hedgehog.width = Math.round(clamp(stageRect.width * 0.115, 76, 98));
-      hedgehog.speed = clamp(stageRect.width * 0.21, 180, 225);
+      hedgehog.width = Math.round(clamp(stageRect.width * 0.105, 70, 90));
+      hedgehog.speed = clamp(stageRect.width * 0.20, 170, 215);
       hedgehog.frame = 0;
       hedgehog.lastFrameSwap = now;
       hedgehog.x = hedgehog.direction < 0 ? stageRect.width + hedgehog.width : -hedgehog.width;
@@ -1229,7 +1287,7 @@
     }
 
     function tick(now) {
-      const dt = Math.min(0.025, (now - last) / 1000 || 0);
+      const dt = Math.min(0.028, (now - last) / 1000 || 0);
       last = now;
       if (!gameOver && !gameWon) {
         if (now >= hurtFreezeUntil) {
@@ -1264,7 +1322,12 @@
     updateHearts();
     setSprite(SPRITES.right1);
     applyHero();
-    requestAnimationFrame(tick);
+    hero.style.visibility = 'hidden';
+    criticalSpriteReady.finally(() => {
+      hero.style.visibility = 'visible';
+      requestAnimationFrame(tick);
+    });
+    spriteReady.catch(() => {});
   }
 
   function initCodes() {
