@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Testspiel · Königreich der Sinne</title>
-  <link rel="stylesheet" href="style.css?v=v4_16mini_blueorbs_20260525">
-  <link rel="stylesheet" href="v4.css?v=v4_16mini_blueorbs_20260525">
-  <script src="app-v4.js?v=v4_16mini_blueorbs_20260525" defer></script>
+  <link rel="stylesheet" href="style.css?v=v4_17mini_audio_controls_20260525">
+  <link rel="stylesheet" href="v4.css?v=v4_17mini_audio_controls_20260525">
+  <script src="app-v4.js?v=v4_17mini_audio_controls_20260525" defer></script>
 </head>
 <body data-page="minigame">
   <main class="mini-game-page" aria-label="Testspiel">
@@ -17,10 +17,12 @@
       <img id="miniHero" class="mini-hero" src="mini_right_1.png" alt="Sir Nervus">
     </section>
     <nav class="mini-controls" aria-label="Steuerung">
-      <button id="miniLeftBtn" class="mini-control-btn" type="button" aria-label="Nach links">←</button>
+      <div class="mini-move-controls" aria-label="Laufen">
+        <button id="miniLeftBtn" class="mini-control-btn" type="button" aria-label="Nach links">←</button>
+        <button id="miniRightBtn" class="mini-control-btn" type="button" aria-label="Nach rechts">→</button>
+      </div>
       <div class="mini-control-spacer"></div>
       <button id="miniJumpBtn" class="mini-control-btn jump" type="button" aria-label="Springen">↑</button>
-      <button id="miniRightBtn" class="mini-control-btn" type="button" aria-label="Nach rechts">→</button>
     </nav>
   </main>
   <div id="miniResult" class="mini-menu modal hidden" role="dialog" aria-modal="true" aria-labelledby="miniResultTitle">

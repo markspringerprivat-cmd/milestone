@@ -5,7 +5,7 @@
   const BATTLE_STORE = 'koenigreichSinneV4Battle';
   const RETURN_STORE = 'koenigreichSinneV4BoardReturn';
   const SOUND_STORE = 'koenigreichSinneV4Muted';
-  const STATE_VERSION = 'v4_16levels_minigame_blue_orbs';
+  const STATE_VERSION = 'v4_17levels_minigame_audio_controls';
 
   const SENSES = {
     sehen: {
@@ -136,9 +136,10 @@
   };
 
   const AUDIO_FILES = {
-    background: 'background.mp3', battle_background: 'battle_background.mp3', levelstart: 'levelstart.mp3',
-    levelunlocked: 'levelunlocked.mp3', fight: 'fight.mp3', win: 'win.mp3', lose: 'lose.mp3',
-    final: 'final.mp3', richtig_1: 'richtig_1.mp3', richtig_2: 'richtig_2.mp3', richtig_3: 'richtig_3.mp3',
+    background: 'background.mp3', battle_background: 'battle_background.mp3', minigame_background: 'minigame_background.mp3',
+    levelstart: 'levelstart.mp3', levelunlocked: 'levelunlocked.mp3', fight: 'fight.mp3', win: 'win.mp3', lose: 'lose.mp3',
+    final: 'final.mp3', hurt: 'hurt.mp3', glass_break: 'glass_break.mp3', collect: 'collect.mp3',
+    richtig_1: 'richtig_1.mp3', richtig_2: 'richtig_2.mp3', richtig_3: 'richtig_3.mp3',
     falsch_1: 'falsch_1.mp3', falsch_2: 'falsch_2.mp3', falsch_3: 'falsch_3.mp3'
   };
 
@@ -159,6 +160,9 @@
       a.preload = 'auto';
       if (key === 'background') a.volume = .045;
       else if (key === 'battle_background') a.volume = .11;
+      else if (key === 'minigame_background') a.volume = .30;
+      else if (key === 'collect') a.volume = .82;
+      else if (key === 'hurt' || key === 'glass_break') a.volume = .88;
       else a.volume = /^(richtig|falsch)_/.test(key) ? .95 : .85;
       audio.set(key, a);
     }
@@ -182,7 +186,9 @@
     b.textContent = muted ? '🔇' : '🔊';
     b.addEventListener('click', () => {
       muted = !muted; localStorage.setItem(SOUND_STORE, muted ? '1' : '0'); b.textContent = muted ? '🔇' : '🔊';
-      if (muted) Array.from(audio.keys()).forEach(stopSound); else if (document.body.dataset.page === 'board' && !$('boardScreen')?.classList.contains('hidden')) playSound('background', { loop:true });
+      if (muted) Array.from(audio.keys()).forEach(stopSound);
+      else if (document.body.dataset.page === 'board' && !$('boardScreen')?.classList.contains('hidden')) playSound('background', { loop:true });
+      else if (document.body.dataset.page === 'minigame') playSound('minigame_background', { loop:true, restart:false });
     });
     document.body.appendChild(b);
   }
@@ -694,6 +700,8 @@
   function initMiniGame() {
     addSpeaker();
     stopSound('background');
+    stopSound('battle_background');
+    playSound('minigame_background', { loop:true, restart:true });
 
     const hero = $('miniHero');
     const stage = document.querySelector('.mini-game-stage');
@@ -742,9 +750,9 @@
 
     const TARGET_BLUE = 10;
     const MAX_HEARTS = 3;
-    const MAX_ORANGE_ACTIVE = 3;
+    const MAX_ORANGE_ACTIVE = 2;
     const MAX_BLUE_ACTIVE = 2;
-    const ORANGE_SPAWN_MS = 2350;
+    const ORANGE_SPAWN_MS = 2850;
     const BLUE_SPAWN_MS = 1850;
     const HURT_FREEZE_MS = 500;
     const INVULNERABLE_MS = 3000;
@@ -754,6 +762,7 @@
 
     let x = 50;
     let direction = 1;
+    let airDirection = 1;
     let pressedLeft = false;
     let pressedRight = false;
     let velocity = 0;
@@ -870,7 +879,8 @@
         return;
       }
       if (jumping) {
-        if (direction < 0) setSprite(jumpVelocity >= 0 ? SPRITES.jumpLeft : SPRITES.fallLeft);
+        const jumpDir = airDirection < 0 ? -1 : 1;
+        if (jumpDir < 0) setSprite(jumpVelocity >= 0 ? SPRITES.jumpLeft : SPRITES.fallLeft);
         else setSprite(jumpVelocity >= 0 ? SPRITES.jumpRight : SPRITES.fallRight);
         hero.classList.remove('walking');
         return;
@@ -904,10 +914,11 @@
     function jump() {
       if (jumping || gameOver || gameWon || performance.now() < hurtFreezeUntil) return;
       jumping = true;
+      airDirection = direction < 0 ? -1 : 1;
       jumpVelocity = 760;
       hero.classList.add('jumping');
       playJumpSound();
-      setSprite(direction < 0 ? SPRITES.jumpLeft : SPRITES.jumpRight);
+      setSprite(airDirection < 0 ? SPRITES.jumpLeft : SPRITES.jumpRight);
     }
     function stopMovement() {
       pressedLeft = false;
@@ -974,8 +985,8 @@
 
     settingsBtn?.addEventListener('click', () => { stopMovement(); show(menu); });
     closeMenu?.addEventListener('click', () => hide(menu));
-    boardBtn?.addEventListener('click', () => location.href = 'index.html');
-    resultBoardBtn?.addEventListener('click', () => location.href = 'index.html');
+    boardBtn?.addEventListener('click', () => { stopSound('minigame_background'); location.href = 'index.html'; });
+    resultBoardBtn?.addEventListener('click', () => { stopSound('minigame_background'); location.href = 'index.html'; });
 
     function createOrb(type) {
       const rect = stage.getBoundingClientRect();
@@ -1044,6 +1055,7 @@
             setState(state);
             localStorage.setItem(RETURN_STORE, JSON.stringify({ type:'unlocked', meta:{ slot, placeholder:true } }));
           }
+          stopSound('minigame_background');
           location.href = 'index.html';
         };
       } else {
@@ -1053,8 +1065,9 @@
         if (resultText) resultText.textContent = 'Alle drei Herzen sind kaputt. Starte einen neuen Versuch oder kehre zum Spielfeld zurück.';
         if (retryBtn) retryBtn.textContent = 'Neuer Versuch';
         if (resultBoardBtn) show(resultBoardBtn);
-        retryBtn.onclick = () => location.reload();
+        retryBtn.onclick = () => { stopSound('minigame_background'); location.reload(); };
       }
+      stopSound('minigame_background');
       orbs.forEach(removeOrb);
       orbs = [];
       hedgehog.phase = 'idle';
@@ -1068,6 +1081,8 @@
       const now = performance.now();
       if (gameOver || gameWon || now < invulnerableUntil) return;
       lives = Math.max(0, lives - 1);
+      playSound('hurt');
+      playSound('glass_break');
       updateHearts();
       hurtSprite = kind === 'bottom' ? SPRITES.damageBottom : SPRITES.damageTop;
       hurtFreezeUntil = now + HURT_FREEZE_MS;
@@ -1100,6 +1115,7 @@
             damageHero('top');
           } else {
             collectedBlue = Math.min(TARGET_BLUE, collectedBlue + 1);
+            playSound('collect');
             updateHud();
             if (collectedBlue >= TARGET_BLUE) showMiniResult(true);
           }
@@ -1128,7 +1144,7 @@
       const stageRect = stage.getBoundingClientRect();
       hedgehog.phase = 'running';
       hedgehog.width = Math.round(clamp(stageRect.width * 0.115, 76, 98));
-      hedgehog.speed = clamp(stageRect.width * 0.25, 205, 255);
+      hedgehog.speed = clamp(stageRect.width * 0.21, 180, 225);
       hedgehog.frame = 0;
       hedgehog.lastFrameSwap = now;
       hedgehog.x = hedgehog.direction < 0 ? stageRect.width + hedgehog.width : -hedgehog.width;
@@ -1176,7 +1192,7 @@
     }
 
     function tick(now) {
-      const dt = Math.min(0.033, (now - last) / 1000 || 0);
+      const dt = Math.min(0.025, (now - last) / 1000 || 0);
       last = now;
       if (!gameOver && !gameWon) {
         if (now >= hurtFreezeUntil) {
