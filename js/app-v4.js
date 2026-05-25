@@ -5,7 +5,7 @@
   const BATTLE_STORE = 'koenigreichSinneV4Battle';
   const RETURN_STORE = 'koenigreichSinneV4BoardReturn';
   const SOUND_STORE = 'koenigreichSinneV4Muted';
-  const STATE_VERSION = 'v4_27levels_food_minigame';
+  const STATE_VERSION = 'v4_28levels_food_minigame_intro_ramp';
   const APP_ROOT = new URL('./', document.baseURI);
   const pageUrl = target => new URL(target, APP_ROOT).href;
   const assetUrl = target => new URL(target, APP_ROOT).href;
@@ -943,13 +943,14 @@
       ['collect','hurt','glass_break','minigame_background'].forEach(key => getAudio(key)?.load?.());
     } catch (_) {}
 
-    const TARGET_GOOD = 10;
+    const TARGET_GOOD = 50;
     const MAX_HEARTS = 3;
-    const MAX_GOOD_ACTIVE = 3;
+    const MAX_GOOD_ACTIVE = 4;
     const MAX_BAD_ACTIVE = 2;
-    const FOOD_POOL_SIZE = MAX_GOOD_ACTIVE + MAX_BAD_ACTIVE + 4;
-    const GOOD_SPAWN_MS = 1050;
-    const BAD_SPAWN_MS = 2200;
+    const FOOD_POOL_SIZE = MAX_GOOD_ACTIVE + MAX_BAD_ACTIVE + 5;
+    const GOOD_SPAWN_MS = 820;
+    const BAD_SPAWN_START_MS = 4600;
+    const BAD_SPAWN_END_MS = 2400;
     const HURT_FREEZE_MS = 500;
     const INVULNERABLE_MS = 3000;
 
@@ -1013,6 +1014,26 @@
       stage.appendChild(node);
       return { node, active:false, kind:'', x:0, y:0, size:0, speed:0 };
     });
+
+    const tutorial = document.createElement('div');
+    tutorial.className = 'mini-tutorial-modal hidden';
+    tutorial.setAttribute('role', 'dialog');
+    tutorial.setAttribute('aria-modal', 'true');
+    tutorial.setAttribute('aria-labelledby', 'miniTutorialTitle');
+    tutorial.innerHTML = `
+      <div class="mini-tutorial-card">
+        <p class="mini-tutorial-kicker">Geschmackssinn</p>
+        <h2 id="miniTutorialTitle">Bereite Sir Nervus auf den Weg vor</h2>
+        <p>Sammle <strong>50 lecker schmeckende Obststücke</strong>. Weiche dabei den <strong>scharfen Chilischoten</strong> und dem <strong>verdorbenen Fisch</strong> aus.</p>
+        <p>Der Geschmackssinn hilft uns, Speisen zu unterscheiden: süßes oder frisches Essen kann angenehm schmecken, sehr scharfe oder verdorbene Dinge warnen den Körper. In diesem Minispiel trainierst du genau diese Entscheidung: gutes Essen sammeln, gefährliche Reize vermeiden.</p>
+        <div class="mini-tutorial-actions">
+          <button id="miniTutorialStartBtn" class="game-btn" type="button">Spiel starten</button>
+          <button id="miniTutorialBackBtn" class="game-btn muted" type="button">Zurück zum Spielfeld</button>
+        </div>
+      </div>`;
+    stage.appendChild(tutorial);
+    const tutorialStartBtn = tutorial.querySelector('#miniTutorialStartBtn');
+    const tutorialBackBtn = tutorial.querySelector('#miniTutorialBackBtn');
 
     function localClamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
     function updateMetrics() {
@@ -1174,6 +1195,35 @@
       document.addEventListener(type, ensureMiniMusic, { passive:true });
     });
 
+    function startFoodGame() {
+      hide(tutorial);
+      ensureMiniMusic();
+      loopActive = true;
+      last = performance.now();
+      lastGoodSpawn = last - GOOD_SPAWN_MS;
+      lastBadSpawn = last + 2400;
+      requestMiniTick();
+    }
+    tutorialStartBtn?.addEventListener('click', startFoodGame);
+    tutorialBackBtn?.addEventListener('click', () => {
+      stopMiniLoop();
+      stopSound('minigame_background');
+      location.href = pageUrl('index.html');
+    });
+
+    function difficultyProgress() {
+      return Math.min(1, collectedGood / TARGET_GOOD);
+    }
+    function currentBadSpawnMs() {
+      const p = difficultyProgress();
+      return BAD_SPAWN_START_MS - (BAD_SPAWN_START_MS - BAD_SPAWN_END_MS) * p;
+    }
+    function currentBadLimit() {
+      const p = difficultyProgress();
+      if (p < 0.35) return 1;
+      return MAX_BAD_ACTIVE;
+    }
+
     function createFood(kind) {
       const item = foodItems.find(obj => !obj.active);
       if (!item) return false;
@@ -1184,7 +1234,8 @@
       const size = isGood ? Math.round(46 + Math.random() * 12) : Math.round(50 + Math.random() * 12);
       const x = Math.round(size / 2 + Math.random() * Math.max(1, stageW - size * 1.5));
       const y = -size - 8;
-      const speed = isGood ? 155 + Math.random() * 65 : 170 + Math.random() * 75;
+      const p = difficultyProgress();
+      const speed = isGood ? 150 + Math.random() * 60 : 155 + p * 35 + Math.random() * 60;
       item.active = true;
       item.kind = kind;
       item.x = x;
@@ -1260,7 +1311,7 @@
         gameWon = true;
         stopMovement();
         if (resultTitle) resultTitle.textContent = 'Gewonnen';
-        if (resultText) resultText.textContent = 'Du hast zehn gute Obststücke eingesammelt.';
+        if (resultText) resultText.textContent = 'Du hast 50 gute Obststücke eingesammelt.';
         if (retryBtn) retryBtn.textContent = 'Zurück zum Spielfeld';
         if (resultBoardBtn) hide(resultBoardBtn);
         retryBtn.onclick = () => {
@@ -1309,7 +1360,7 @@
         createFood('good');
         lastGoodSpawn = now;
       }
-      if (!gameOver && !gameWon && activeBad < MAX_BAD_ACTIVE && now - lastBadSpawn >= BAD_SPAWN_MS) {
+      if (!gameOver && !gameWon && activeBad < currentBadLimit() && now - lastBadSpawn >= currentBadSpawnMs()) {
         createFood((badCycle++ % 2 === 0) ? 'chili' : 'fish');
         lastBadSpawn = now;
       }
@@ -1384,9 +1435,8 @@
     spriteReady.finally(() => {
       updateMetrics();
       hero.style.visibility = 'visible';
-      loopActive = true;
-      last = performance.now();
-      requestMiniTick();
+      show(tutorial);
+      tutorialStartBtn?.focus?.();
     });
   }
 

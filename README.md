@@ -66,3 +66,10 @@ Die JavaScript-Navigation benutzt `pageUrl(...)`, damit `index.html`, `level.htm
 - Chili `bad_1` zeigt kurz die Hot-Animation.
 - Verdorbener Fisch `bad_2` zeigt kurz die Bad-Food-Animation.
 - Herzlogik, Hintergrundmusik, Jump-Sound und Unverwundbarkeit bleiben erhalten.
+
+## Update v28
+
+- Das Obst-Ziel im Minigame liegt jetzt bei 50 gesammelten Obststücken.
+- Vor dem Start erscheint ein Lern-/Anleitungs-Popup zum Geschmackssinn.
+- Das Minigame startet erst nach Klick auf `Spiel starten`.
+- Chilis und verdorbene Fische erscheinen am Anfang selten und werden mit dem Fortschritt etwas häufiger.

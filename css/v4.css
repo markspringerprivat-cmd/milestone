@@ -1617,3 +1617,58 @@ body[data-page="minigame"]{
   .mini-hero{width:min(33vw,144px)!important;height:min(22svh,160px)!important;}
   .mini-heart{width:58px!important;height:58px!important;}
 }
+
+
+/* === Food minigame tutorial and ramp v28 === */
+.mini-tutorial-modal{
+  position:absolute!important;
+  inset:0!important;
+  z-index:60!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:18px!important;
+  background:rgba(20,24,34,.42)!important;
+  backdrop-filter:blur(4px)!important;
+}
+.mini-tutorial-modal.hidden{
+  display:none!important;
+}
+.mini-tutorial-card{
+  width:min(92vw,560px)!important;
+  max-height:min(82svh,620px)!important;
+  overflow:auto!important;
+  border-radius:28px!important;
+  padding:22px!important;
+  background:rgba(255,255,255,.94)!important;
+  color:#172033!important;
+  box-shadow:0 22px 60px rgba(0,0,0,.32)!important;
+  border:3px solid rgba(255,255,255,.76)!important;
+  text-align:left!important;
+}
+.mini-tutorial-kicker{
+  margin:0 0 6px!important;
+  font-weight:900!important;
+  letter-spacing:.04em!important;
+  text-transform:uppercase!important;
+  color:#c85b00!important;
+}
+.mini-tutorial-card h2{
+  margin:0 0 12px!important;
+  font-size:clamp(1.35rem,4.2vw,2.05rem)!important;
+}
+.mini-tutorial-card p{
+  margin:0 0 12px!important;
+  font-size:clamp(.98rem,2.8vw,1.08rem)!important;
+  line-height:1.45!important;
+}
+.mini-tutorial-actions{
+  display:flex!important;
+  gap:12px!important;
+  flex-wrap:wrap!important;
+  justify-content:center!important;
+  margin-top:18px!important;
+}
+.mini-tutorial-actions .game-btn{
+  min-width:190px!important;
+}
