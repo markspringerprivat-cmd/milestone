@@ -1046,7 +1046,7 @@
       node.style.opacity = '0';
       node.style.transform = 'translate3d(-9999px,-9999px,0) scale(1)';
       stage.appendChild(node);
-      return { node, active:false, kind:'', x:0, y:0, size:0, scale:1, speed:0 };
+      return { node, active:false, kind:'', x:0, y:0, size:0, scale:1, scaleStr:'1.000', speed:0 };
     });
 
     const tutorial = document.createElement('div');
@@ -1082,15 +1082,38 @@
     }
     window.addEventListener('resize', updateMetrics, { passive:true });
 
+    // Pre-computed scale strings to avoid toFixed() allocation every frame
+    const SCALE_STRINGS = new Map();
+    function scaleStr(s) {
+      let v = SCALE_STRINGS.get(s);
+      if (v === undefined) { v = s.toFixed(3); SCALE_STRINGS.set(s, v); }
+      return v;
+    }
+
+    // Cached hero hitbox values (updated once per frame, not per food item)
+    let hbLeft = 0, hbRight = 0, hbTop = 0, hbBottom = 0;
+    function updateHeroHitbox() {
+      const bottom = stageH - 4 - jumpY;
+      const top = bottom - heroH;
+      hbLeft   = heroX - heroW * 0.22;
+      hbRight  = heroX + heroW * 0.22;
+      hbTop    = top   + heroH * 0.22;
+      hbBottom = bottom - 6;
+    }
+
+    // Last-applied hero opacity to avoid redundant style writes
+    let lastHeroOpacity = '1';
+    function setHeroOpacity(v) {
+      if (lastHeroOpacity !== v) { hero.style.opacity = v; lastHeroOpacity = v; }
+    }
+
     function updateHud() {
       if (hud) hud.textContent = `Obst ${collectedGood} / ${TARGET_GOOD}`;
     }
+    let hudDirty = false;
     function scheduleHudUpdate() {
-      if (!hud || hudUpdateTimer) return;
-      hudUpdateTimer = window.setTimeout(() => {
-        hudUpdateTimer = 0;
-        updateHud();
-      }, 55);
+      if (!hud) return;
+      hudDirty = true;
     }
     function updateHearts() {
       heartNodes.forEach((node, index) => {
@@ -1128,10 +1151,10 @@
     }
     function updateBlink(now) {
       if (now >= blinkUntil || now < hurtFreezeUntil) {
-        hero.style.opacity = '1';
+        setHeroOpacity('1');
         return;
       }
-      hero.style.opacity = (Math.floor(now / 140) % 2 === 0) ? '0.32' : '1';
+      setHeroOpacity((Math.floor(now / 140) % 2 === 0) ? '0.32' : '1');
     }
     function applyHero() {
       hero.style.transform = `translate3d(${Math.round(heroX - heroW / 2)}px, ${Math.round(-jumpY)}px, 0)`;
@@ -1268,12 +1291,13 @@
       item.y = y;
       item.size = size;
       item.scale = scale;
+      item.scaleStr = scaleStr(scale);
       item.speed = speed;
       if (item.node.src !== src) item.node.src = src;
       item.node.className = `mini-food ${isGood ? 'good-food' : 'bad-food'} ${kind}`;
       item.node.style.visibility = 'visible';
       item.node.style.opacity = '1';
-      item.node.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(y)}px, 0) scale(${scale.toFixed(3)})`;
+      item.node.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(y)}px, 0) scale(${item.scaleStr})`;
       if (isGood) activeGood += 1;
       else activeBad += 1;
       return true;
@@ -1288,6 +1312,7 @@
       item.y = 0;
       item.size = 0;
       item.scale = 1;
+      item.scaleStr = '1.000';
       item.speed = 0;
       item.node.style.opacity = '0';
       item.node.style.visibility = 'hidden';
@@ -1295,16 +1320,6 @@
     }
     function intersects(a, b) {
       return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom);
-    }
-    function heroHitbox() {
-      const bottom = stageH - 4 - jumpY;
-      const top = bottom - heroH;
-      return {
-        left: heroX - heroW * 0.22,
-        right: heroX + heroW * 0.22,
-        top: top + heroH * 0.22,
-        bottom: bottom - 6
-      };
     }
     function foodHitbox(item) {
       return {
@@ -1329,10 +1344,7 @@
 
     function showMiniResult(won) {
       stopMiniLoop();
-      if (hudUpdateTimer) {
-        clearTimeout(hudUpdateTimer);
-        hudUpdateTimer = 0;
-      }
+      hudDirty = false;
       stopSound('minigame_background');
       if (resultImage) {
         resultImage.src = won ? ASSETS.text.gewonnen : ASSETS.text.verloren;
@@ -1396,13 +1408,19 @@
         createFood((badCycle++ % 2 === 0) ? 'chili' : 'fish');
         lastBadSpawn = now;
       }
-      const hRect = heroHitbox();
+      updateHeroHitbox();
       for (let i = 0; i < foodItems.length; i += 1) {
         const item = foodItems[i];
         if (!item.active) continue;
         item.y += item.speed * dt;
-        item.node.style.transform = `translate3d(${Math.round(item.x)}px, ${Math.round(item.y)}px, 0) scale(${item.scale.toFixed(3)})`;
-        if (intersects(hRect, foodHitbox(item))) {
+        const iy = Math.round(item.y);
+        item.node.style.transform = `translate3d(${Math.round(item.x)}px, ${iy}px, 0) scale(${item.scaleStr})`;
+        // Inline intersection test against cached hero hitbox (no object allocation)
+        const fLeft   = item.x + item.size * 0.18;
+        const fRight  = item.x + item.size * 0.82;
+        const fTop    = item.y + item.size * 0.18;
+        const fBottom = item.y + item.size * 0.82;
+        if (!(hbRight < fLeft || hbLeft > fRight || hbBottom < fTop || hbTop > fBottom)) {
           const kind = item.kind;
           removeFood(item);
           if (kind === 'good') {
@@ -1441,6 +1459,8 @@
         applyHero();
         updateBlink(now);
         updateFood(dt, now);
+        // Flush deferred HUD update at end of frame (no setTimeout needed)
+        if (hudDirty) { hudDirty = false; updateHud(); }
         if (pendingGameOver && now >= hurtFreezeUntil) {
           pendingGameOver = false;
           showMiniResult(false);
