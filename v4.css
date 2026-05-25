@@ -1154,3 +1154,45 @@ body[data-page="minigame"]{
   .mini-control-btn:active,
   .mini-control-btn.pressed{transform:translateY(3px) scale(.985)!important;}
 }
+
+
+/* === Minigame: Leben, Igel und Schadenszustände === */
+.mini-hearts{
+  position:absolute!important;
+  left:50%!important;
+  top:max(14px, env(safe-area-inset-top) + 8px)!important;
+  transform:translateX(-50%)!important;
+  z-index:8!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:8px!important;
+  padding:8px 14px!important;
+  border-radius:999px!important;
+  background:rgba(255,255,255,.78)!important;
+  box-shadow:0 12px 28px rgba(0,0,0,.16)!important;
+  pointer-events:none!important;
+}
+.mini-heart{
+  width:40px!important;
+  height:40px!important;
+  object-fit:contain!important;
+  filter:drop-shadow(0 3px 8px rgba(0,0,0,.18))!important;
+}
+.mini-heart.broken{transform:scale(.96)!important;}
+.mini-hedgehog{
+  position:absolute!important;
+  left:-9999px!important;
+  bottom:10px!important;
+  width:110px!important;
+  height:auto!important;
+  object-fit:contain!important;
+  display:none;
+  z-index:3!important;
+  filter:drop-shadow(0 10px 14px rgba(0,0,0,.25))!important;
+  pointer-events:none!important;
+}
+@media(max-width:560px){
+  .mini-hearts{gap:6px!important;padding:7px 11px!important;}
+  .mini-heart{width:34px!important;height:34px!important;}
+  .mini-hedgehog{bottom:8px!important;}
+}

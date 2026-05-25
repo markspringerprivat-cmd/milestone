@@ -5,7 +5,7 @@
   const BATTLE_STORE = 'koenigreichSinneV4Battle';
   const RETURN_STORE = 'koenigreichSinneV4BoardReturn';
   const SOUND_STORE = 'koenigreichSinneV4Muted';
-  const STATE_VERSION = 'v4_12levels_minigame_2';
+  const STATE_VERSION = 'v4_13levels_minigame_lives_hedgehog';
 
   const SENSES = {
     sehen: {
@@ -689,6 +689,7 @@
 
 
 
+
   function initMiniGame() {
     addSpeaker();
     stopSound('background');
@@ -716,8 +717,18 @@
       right2: 'mini_right_2.png',
       left1: 'mini_left_1.png',
       left2: 'mini_left_2.png',
-      jump: 'mini_jump.png',
-      fall: 'mini_fall.png'
+      jumpRight: 'mini_jump_right.png',
+      fallRight: 'mini_fall_right.png',
+      jumpLeft: 'mini_jump_left.png',
+      fallLeft: 'mini_fall_left.png',
+      damageTop: 'mini_damage_top.png',
+      damageBottom: 'mini_damage_bottom.png',
+      heartFull: 'mini_heart_full.png',
+      heartBroken: 'mini_heart_broken.png',
+      hedgehogLeft1: 'mini_hedgehog_left_1.png',
+      hedgehogLeft2: 'mini_hedgehog_left_2.png',
+      hedgehogRight1: 'mini_hedgehog_right_1.png',
+      hedgehogRight2: 'mini_hedgehog_right_2.png'
     };
     Object.values(SPRITES).forEach(src => { const img = new Image(); img.src = src; });
 
@@ -728,6 +739,11 @@
     const TARGET_DODGES = 10;
     const MAX_HAZARDS = 5;
     const SPAWN_MS = 3000;
+    const MAX_HEARTS = 3;
+    const HURT_FREEZE_MS = 500;
+    const INVULNERABLE_MS = 3000;
+    const HEDGE_FRAME_MS = 300;
+    const HEDGE_RESPAWN_MS = 700;
 
     let x = 50;
     let direction = 1;
@@ -745,9 +761,61 @@
     let gameOver = false;
     let gameWon = false;
     let lastSpawn = performance.now() + 900;
+    let lives = MAX_HEARTS;
+    let hurtFreezeUntil = 0;
+    let invulnerableUntil = 0;
+    let blinkUntil = 0;
+    let hurtSprite = '';
+    let pendingGameOver = false;
+
+    let heartsWrap = $('miniLives');
+    if (!heartsWrap) {
+      heartsWrap = document.createElement('div');
+      heartsWrap.id = 'miniLives';
+      heartsWrap.className = 'mini-hearts';
+      heartsWrap.setAttribute('aria-label', 'Leben');
+      heartsWrap.setAttribute('role', 'status');
+      heartsWrap.setAttribute('aria-live', 'polite');
+      stage.appendChild(heartsWrap);
+    }
+    heartsWrap.innerHTML = '';
+    const heartNodes = Array.from({ length: MAX_HEARTS }, (_, index) => {
+      const img = document.createElement('img');
+      img.className = 'mini-heart';
+      img.alt = index === 0 ? 'Lebensanzeige' : '';
+      if (index > 0) img.setAttribute('aria-hidden', 'true');
+      heartsWrap.appendChild(img);
+      return img;
+    });
+
+    const hedgehogNode = document.createElement('img');
+    hedgehogNode.className = 'mini-hedgehog';
+    hedgehogNode.alt = '';
+    hedgehogNode.setAttribute('aria-hidden', 'true');
+    stage.appendChild(hedgehogNode);
+
+    const hedgehog = {
+      active: false,
+      direction: -1,
+      x: 0,
+      width: 108,
+      frame: 0,
+      lastFrameSwap: 0,
+      respawnAt: performance.now() + 1200,
+      cycle: 0,
+      speed: 180
+    };
 
     function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
     function updateHud() { if (hud) hud.textContent = `${dodged} / ${TARGET_DODGES}`; }
+    function updateHearts() {
+      heartNodes.forEach((node, index) => {
+        const intact = index < lives;
+        node.src = intact ? SPRITES.heartFull : SPRITES.heartBroken;
+        node.classList.toggle('broken', !intact);
+      });
+      heartsWrap.setAttribute('aria-label', `Leben: ${lives} von ${MAX_HEARTS}`);
+    }
     function currentVelocity() {
       if (pressedLeft && !pressedRight) return -1;
       if (pressedRight && !pressedLeft) return 1;
@@ -756,7 +824,7 @@
     function recomputeVelocity() {
       velocity = currentVelocity();
       if (velocity !== 0) direction = velocity > 0 ? 1 : -1;
-      hero.classList.toggle('walking', velocity !== 0 && !jumping && !gameOver && !gameWon);
+      hero.classList.toggle('walking', velocity !== 0 && !jumping && !gameOver && !gameWon && performance.now() >= hurtFreezeUntil);
     }
     function setSprite(src) {
       if (lastSprite === src) return;
@@ -764,8 +832,14 @@
       lastSprite = src;
     }
     function updateSprite(now) {
+      if (now < hurtFreezeUntil) {
+        setSprite(hurtSprite || SPRITES.damageTop);
+        hero.classList.remove('walking');
+        return;
+      }
       if (jumping) {
-        setSprite(jumpVelocity >= 0 ? SPRITES.jump : SPRITES.fall);
+        if (direction < 0) setSprite(jumpVelocity >= 0 ? SPRITES.jumpLeft : SPRITES.fallLeft);
+        else setSprite(jumpVelocity >= 0 ? SPRITES.jumpRight : SPRITES.fallRight);
         hero.classList.remove('walking');
         return;
       }
@@ -778,6 +852,13 @@
       }
       hero.classList.toggle('walking', velocity !== 0 && !gameOver && !gameWon);
     }
+    function updateBlink(now) {
+      if (now >= blinkUntil || now < hurtFreezeUntil) {
+        hero.style.opacity = '1';
+        return;
+      }
+      hero.style.opacity = (Math.floor(now / 140) % 2 === 0) ? '0.32' : '1';
+    }
     function applyHero() {
       hero.style.left = `${x}%`;
       hero.style.transform = `translateX(-50%) translateY(${-jumpY}px)`;
@@ -789,12 +870,12 @@
       } catch (_) {}
     }
     function jump() {
-      if (jumping || gameOver || gameWon) return;
+      if (jumping || gameOver || gameWon || performance.now() < hurtFreezeUntil) return;
       jumping = true;
       jumpVelocity = 790;
       hero.classList.add('jumping');
       playJumpSound();
-      setSprite(SPRITES.jump);
+      setSprite(direction < 0 ? SPRITES.jumpLeft : SPRITES.jumpRight);
     }
 
     function stopMovement() {
@@ -866,7 +947,6 @@
     closeMenu?.addEventListener('click', () => hide(menu));
     boardBtn?.addEventListener('click', () => location.href = 'index.html');
     resultBoardBtn?.addEventListener('click', () => location.href = 'index.html');
-    retryBtn?.addEventListener('click', () => location.reload());
 
     function spawnHazard() {
       if (gameOver || gameWon || hazards.length >= MAX_HAZARDS || spawned >= TARGET_DODGES) return;
@@ -901,7 +981,7 @@
         gameWon = true;
         stopMovement();
         if (resultTitle) resultTitle.textContent = 'Geschafft!';
-        if (resultText) resultText.textContent = 'Du bist zehn Kreisen ausgewichen.';
+        if (resultText) resultText.textContent = 'Du bist zehn Kugeln ausgewichen.';
         if (retryBtn) retryBtn.textContent = 'Weiter';
         if (resultBoardBtn) hide(resultBoardBtn);
         retryBtn.onclick = () => {
@@ -918,15 +998,31 @@
       } else {
         gameOver = true;
         stopMovement();
-        if (resultTitle) resultTitle.textContent = 'Verloren';
-        if (resultText) resultText.textContent = 'Sir Nervus wurde getroffen.';
+        if (resultTitle) resultTitle.textContent = 'Game Over';
+        if (resultText) resultText.textContent = 'Alle drei Herzen sind kaputt. Starte einen neuen Versuch oder kehre zum Spielfeld zurück.';
         if (retryBtn) retryBtn.textContent = 'Neuer Versuch';
         if (resultBoardBtn) show(resultBoardBtn);
         retryBtn.onclick = () => location.reload();
       }
       hazards.forEach(removeHazard);
       hazards = [];
+      hedgehog.active = false;
+      hedgehogNode.style.display = 'none';
       show(resultModal);
+    }
+
+    function damageHero(kind) {
+      const now = performance.now();
+      if (gameOver || gameWon || now < invulnerableUntil) return;
+      lives = Math.max(0, lives - 1);
+      updateHearts();
+      hurtSprite = kind === 'bottom' ? SPRITES.damageBottom : SPRITES.damageTop;
+      hurtFreezeUntil = now + HURT_FREEZE_MS;
+      blinkUntil = hurtFreezeUntil + INVULNERABLE_MS;
+      invulnerableUntil = blinkUntil;
+      hero.classList.remove('walking');
+      hero.classList.add('jumping');
+      if (lives <= 0) pendingGameOver = true;
     }
 
     function updateHazards(dt, now) {
@@ -942,8 +1038,10 @@
         h.node.style.top = `${h.y}px`;
         const hazardRect = h.node.getBoundingClientRect();
         if (!gameOver && !gameWon && collide(heroRect, hazardRect)) {
-          showMiniResult(false);
-          return;
+          removeHazard(h);
+          hazards.splice(i, 1);
+          damageHero('top');
+          continue;
         }
         if (h.y > stageRect.height + h.size) {
           removeHazard(h);
@@ -957,30 +1055,86 @@
       }
     }
 
+    function hedgeFrames(dir) {
+      return dir < 0
+        ? [SPRITES.hedgehogLeft1, SPRITES.hedgehogLeft2]
+        : [SPRITES.hedgehogRight1, SPRITES.hedgehogRight2];
+    }
+    function startHedgehog(now) {
+      const stageRect = stage.getBoundingClientRect();
+      hedgehog.direction = (hedgehog.cycle % 2 === 0) ? -1 : 1;
+      hedgehog.cycle += 1;
+      hedgehog.width = Math.round(clamp(stageRect.width * 0.16, 92, 140));
+      hedgehog.speed = clamp(stageRect.width * 0.18, 150, 240);
+      hedgehog.frame = 0;
+      hedgehog.lastFrameSwap = now;
+      hedgehog.active = true;
+      hedgehog.x = hedgehog.direction < 0 ? stageRect.width + hedgehog.width : -hedgehog.width;
+      hedgehogNode.style.display = 'block';
+      hedgehogNode.style.width = `${hedgehog.width}px`;
+      hedgehogNode.src = hedgeFrames(hedgehog.direction)[0];
+      hedgehogNode.style.left = `${hedgehog.x}px`;
+    }
+    function updateHedgehog(dt, now) {
+      if (!hedgehog.active) {
+        if (!gameOver && !gameWon && now >= hedgehog.respawnAt) startHedgehog(now);
+        return;
+      }
+      const stageRect = stage.getBoundingClientRect();
+      hedgehog.x += hedgehog.speed * dt * hedgehog.direction;
+      hedgehogNode.style.left = `${hedgehog.x}px`;
+      if (now - hedgehog.lastFrameSwap >= HEDGE_FRAME_MS) {
+        hedgehog.frame = (hedgehog.frame + 1) % 2;
+        hedgehogNode.src = hedgeFrames(hedgehog.direction)[hedgehog.frame];
+        hedgehog.lastFrameSwap = now;
+      }
+      const offLeft = hedgehog.direction < 0 && hedgehog.x < -hedgehog.width - 20;
+      const offRight = hedgehog.direction > 0 && hedgehog.x > stageRect.width + hedgehog.width + 20;
+      if (offLeft || offRight) {
+        hedgehog.active = false;
+        hedgehogNode.style.display = 'none';
+        hedgehog.respawnAt = now + HEDGE_RESPAWN_MS;
+        return;
+      }
+      if (!gameOver && !gameWon && collide(hero.getBoundingClientRect(), hedgehogNode.getBoundingClientRect())) {
+        damageHero('bottom');
+      }
+    }
+
     function tick(now) {
       const dt = Math.min(0.033, (now - last) / 1000 || 0);
       last = now;
       if (!gameOver && !gameWon) {
-        if (velocity) x = clamp(x + velocity * 26 * dt, 8, 92);
-        if (jumping) {
-          jumpY += jumpVelocity * dt;
-          jumpVelocity -= 1750 * dt;
-          if (jumpY <= 0) {
-            jumpY = 0;
-            jumpVelocity = 0;
-            jumping = false;
-            hero.classList.remove('jumping');
-            recomputeVelocity();
+        if (now >= hurtFreezeUntil) {
+          if (velocity) x = clamp(x + velocity * 26 * dt, 8, 92);
+          if (jumping) {
+            jumpY += jumpVelocity * dt;
+            jumpVelocity -= 1750 * dt;
+            if (jumpY <= 0) {
+              jumpY = 0;
+              jumpVelocity = 0;
+              jumping = false;
+              hero.classList.remove('jumping');
+              recomputeVelocity();
+            }
           }
         }
-        updateHazards(dt, now);
         updateSprite(now);
         applyHero();
+        updateBlink(now);
+        updateHazards(dt, now);
+        updateHedgehog(dt, now);
+        if (pendingGameOver && now >= hurtFreezeUntil) {
+          pendingGameOver = false;
+          showMiniResult(false);
+          return;
+        }
       }
       requestAnimationFrame(tick);
     }
 
     updateHud();
+    updateHearts();
     setSprite(SPRITES.right1);
     applyHero();
     requestAnimationFrame(tick);
