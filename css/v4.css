@@ -1519,3 +1519,19 @@ body[data-page="minigame"]{
 .mini-hedgehog{
   transform:none;
 }
+
+
+/* === Intro click and jump smoothing v24 === */
+.board-guide{
+  cursor:pointer!important;
+}
+.board-guide:focus-visible{
+  outline:4px solid rgba(255,255,255,.85)!important;
+  outline-offset:6px!important;
+}
+.mini-hero.walking{
+  animation:none!important;
+}
+.mini-hero{
+  filter:drop-shadow(0 8px 12px rgba(0,0,0,.18))!important;
+}

@@ -5,7 +5,7 @@
   const BATTLE_STORE = 'koenigreichSinneV4Battle';
   const RETURN_STORE = 'koenigreichSinneV4BoardReturn';
   const SOUND_STORE = 'koenigreichSinneV4Muted';
-  const STATE_VERSION = 'v4_23levels_fix_minigame_controls';
+  const STATE_VERSION = 'v4_24levels_intro_jump_polish';
   const APP_ROOT = new URL('./', document.baseURI);
   const pageUrl = target => new URL(target, APP_ROOT).href;
   const assetUrl = target => new URL(target, APP_ROOT).href;
@@ -298,6 +298,8 @@
     $('launchLevelBtn')?.addEventListener('click', handleLaunchLevel);
     $('encounterBackBtn')?.addEventListener('click', handleEncounterBack);
     $('levelUnlockedContinueBtn')?.addEventListener('click', () => { hide($('levelUnlockedModal')); playSound('background', { loop:true }); });
+    $('boardGuide')?.addEventListener('click', startIntroHeroJourney);
+    $('boardGuide')?.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); startIntroHeroJourney(); } });
     window.addEventListener('resize', updateMapGeometry);
     setTimeout(() => applyReturnModal(), 150);
   }
@@ -305,20 +307,7 @@
   function showBoard(firstStart=false) {
     hide($('introScreen')); show($('boardScreen')); show($('openBoardMenuBtn')); show($('belowBoard'));
     updateMapGeometry(); renderBoard();
-    if (firstStart) {
-      setTimeout(async () => {
-        const state = getState();
-        if (state.heroIndex === null && !state.introUsed) {
-          $('boardGuide')?.classList.add('go-away');
-          await sleep(450);
-          hide($('boardGuide'));
-          await animateHeroTo(0, { fromIntro:true });
-          openScan(0);
-        }
-      }, 450);
-    } else {
-      playSound('background', { loop:true, restart:true });
-    }
+    playSound('background', { loop:true, restart:!firstStart });
   }
 
   function updateMapGeometry() {
@@ -425,6 +414,20 @@
     const guide = $('boardGuide'); if (!guide) return;
     const showGuide = state.started && state.heroIndex === null && !state.introUsed && currentSlot(state) === 0;
     guide.classList.toggle('hidden', !showGuide); guide.classList.remove('go-away');
+  }
+
+  let introHeroMoving = false;
+  async function startIntroHeroJourney() {
+    const state = getState();
+    if (introHeroMoving || state.heroIndex !== null || state.introUsed || currentSlot(state) !== 0) return;
+    introHeroMoving = true;
+    const guide = $('boardGuide');
+    guide?.classList.add('go-away');
+    await sleep(450);
+    hide(guide);
+    await animateHeroTo(0, { fromIntro:true });
+    introHeroMoving = false;
+    openScan(0);
   }
 
   async function onLevelNode(index) {
@@ -882,11 +885,15 @@
     preloadImage(ASSETS.text.gewonnen);
     preloadImage(ASSETS.text.verloren);
 
-    const jumpAudio = new Audio(assetUrl('assets/audio/jump_sound.mp3'));
-    jumpAudio.preload = 'auto';
-    jumpAudio.volume = 0.82;
+    const jumpAudios = Array.from({ length: 3 }, () => {
+      const a = new Audio(assetUrl('assets/audio/jump_sound.mp3'));
+      a.preload = 'auto';
+      a.volume = 0.72;
+      try { a.load(); } catch (_) {}
+      return a;
+    });
+    let jumpAudioIndex = 0;
     try {
-      jumpAudio.load();
       ['collect','hurt','glass_break','minigame_background'].forEach(key => getAudio(key)?.load?.());
     } catch (_) {}
 
@@ -1034,7 +1041,7 @@
         return;
       }
       if (jumping) {
-        const jumpDir = airDirection < 0 ? -1 : 1;
+        const jumpDir = direction < 0 ? -1 : 1;
         if (jumpDir < 0) setSprite(jumpVelocity >= 0 ? SPRITES.jumpLeft : SPRITES.fallLeft);
         else setSprite(jumpVelocity >= 0 ? SPRITES.jumpRight : SPRITES.fallRight);
         hero.classList.remove('walking');
@@ -1057,8 +1064,10 @@
     }
     function playJumpSound() {
       try {
-        jumpAudio.currentTime = 0;
-        jumpAudio.play().catch(() => {});
+        const a = jumpAudios[jumpAudioIndex++ % jumpAudios.length];
+        a.pause();
+        a.currentTime = 0;
+        requestAnimationFrame(() => a.play().catch(() => {}));
       } catch (_) {}
     }
     function jump() {
@@ -1068,7 +1077,6 @@
       jumpVelocity = 760;
       hero.classList.add('jumping');
       playJumpSound();
-      setSprite(airDirection < 0 ? SPRITES.jumpLeft : SPRITES.jumpRight);
     }
     function stopMovement() {
       pressedLeft = false;
