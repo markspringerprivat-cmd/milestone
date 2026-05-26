@@ -2356,8 +2356,10 @@
       const stageRect = stage.getBoundingClientRect();
       const boardRect = board.getBoundingClientRect();
       const zoneRect = ogreZone.getBoundingClientRect();
-      const desiredLeft = Math.max(8, boardRect.left - stageRect.left - zoneRect.width * 0.10);
-      const desiredTop = Math.max(8, boardRect.top - stageRect.top - zoneRect.height * 0.44);
+      const tileW = boardRect.width / 6;
+      const desiredCenterX = (boardRect.left - stageRect.left) + tileW;
+      const desiredLeft = Math.max(8, desiredCenterX - zoneRect.width / 2);
+      const desiredTop = Math.max(8, boardRect.top - stageRect.top - zoneRect.height * 0.30);
       ogreZone.style.left = `${desiredLeft}px`;
       ogreZone.style.top = `${desiredTop}px`;
     }
@@ -2368,12 +2370,13 @@
       const naturalW = sprayOverlay.naturalWidth || 1280;
       const naturalH = sprayOverlay.naturalHeight || 1280;
       const ratio = naturalH / naturalW;
-      const width = Math.min(stageRect.width * 0.78, Math.max(220, ogreRect.width * 3.25));
+      const size = Math.min(stageRect.width * 0.58, Math.max(210, Math.max(ogreRect.width, ogreRect.height) + 84));
+      const width = size;
       const height = width * ratio;
-      const centerX = ogreRect.left - stageRect.left + ogreRect.width * 0.46;
-      const centerY = ogreRect.top - stageRect.top + ogreRect.height * 0.48;
+      const centerX = ogreRect.left - stageRect.left + ogreRect.width * 0.50;
+      const centerY = ogreRect.top - stageRect.top + ogreRect.height * 0.50;
       const left = centerX - width * 0.50;
-      const top = centerY - height * 0.48;
+      const top = centerY - height * 0.50;
       sprayOverlay.style.width = `${width}px`;
       sprayOverlay.style.left = `${left}px`;
       sprayOverlay.style.top = `${top}px`;

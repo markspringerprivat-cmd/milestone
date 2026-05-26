@@ -2943,3 +2943,15 @@ body[data-page="minigame"]{
     height:min(14svh, 88px)!important;
   }
 }
+
+/* === Smell pipe refinement v47 === */
+.pipe3-ogre-zone{
+  width:min(22vw, 96px)!important;
+  height:min(15svh, 104px)!important;
+}
+@media(max-width:560px){
+  .pipe3-ogre-zone{
+    width:min(22vw, 80px)!important;
+    height:min(12.5svh, 74px)!important;
+  }
+}
