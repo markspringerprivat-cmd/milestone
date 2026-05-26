@@ -2363,3 +2363,121 @@ body[data-page="minigame"]{
   z-index:1!important;
   pointer-events:none!important;
 }
+
+
+/* === Smell pipe fixed-layout polish v38 === */
+.pipe3-board-shell{
+  transform:translate(-50%, 16.666%)!important;
+}
+.pipe3-connector.bottom,
+#pipe3BottomConnector{
+  display:none!important;
+}
+.pipe3-valve-cell{
+  position:absolute!important;
+  left:calc((100% / 6) * 3)!important;
+  top:100%!important;
+  width:calc(100% / 6)!important;
+  height:calc(100% / 6)!important;
+  margin:0!important;
+  justify-self:auto!important;
+  align-self:auto!important;
+  z-index:12!important;
+  filter:drop-shadow(0 8px 14px rgba(0,0,0,.34))!important;
+  pointer-events:auto!important;
+}
+.pipe3-valve-pad::before{
+  display:none!important;
+  content:none!important;
+}
+.pipe3-start-label{
+  top:calc(100% + 4px)!important;
+  font-size:.68rem!important;
+  padding:2px 7px!important;
+}
+.pipe3-valve-btn{
+  inset:8%!important;
+}
+.pipe3-valve-btn img{
+  filter:drop-shadow(0 5px 7px rgba(0,0,0,.35))!important;
+}
+.pipe3-bottom-zone{
+  left:10px!important;
+  right:auto!important;
+  bottom:max(5px, env(safe-area-inset-bottom) + 4px)!important;
+  transform:none!important;
+  width:min(38vw, 185px)!important;
+  height:min(20svh, 150px)!important;
+  display:block!important;
+  pointer-events:none!important;
+  z-index:18!important;
+}
+.pipe3-bottom-zone .pipe3-hero{
+  width:100%!important;
+  height:100%!important;
+  justify-self:auto!important;
+  object-fit:contain!important;
+  object-position:left bottom!important;
+}
+.pipe3-tile.rotatable.selected{
+  transform:scale(1.025)!important;
+  filter:drop-shadow(0 0 9px rgba(255,235,70,.85)) drop-shadow(0 5px 8px rgba(0,0,0,.24))!important;
+}
+.pipe3-tile.rotatable.selected::after{
+  inset:0!important;
+  border:2px solid #ffe94c!important;
+  border-radius:2px!important;
+  box-shadow:0 0 9px rgba(255,230,60,.78), inset 0 0 4px rgba(255,255,255,.25)!important;
+}
+.pipe3-tile.locked::before{
+  content:"✓"!important;
+  position:absolute!important;
+  right:4px!important;
+  top:2px!important;
+  z-index:5!important;
+  color:#eaffd6!important;
+  font-weight:900!important;
+  font-size:clamp(.8rem,2.4vw,1.05rem)!important;
+  text-shadow:0 0 6px #1d9d00, 0 2px 4px rgba(0,0,0,.4)!important;
+  pointer-events:none!important;
+}
+.pipe3-tile.locked{
+  cursor:default!important;
+}
+.pipe3-hint-btn{
+  position:absolute!important;
+  right:max(12px, env(safe-area-inset-right) + 10px)!important;
+  bottom:max(12px, env(safe-area-inset-bottom) + 10px)!important;
+  z-index:45!important;
+  border:0!important;
+  border-radius:999px!important;
+  padding:12px 17px!important;
+  min-width:76px!important;
+  font-weight:900!important;
+  font-size:clamp(.92rem,3vw,1.05rem)!important;
+  color:#2c1700!important;
+  background:linear-gradient(180deg,#fff49a,#ffbf36)!important;
+  box-shadow:0 8px 18px rgba(0,0,0,.28), inset 0 2px 0 rgba(255,255,255,.55)!important;
+  border:2px solid rgba(116,70,0,.35)!important;
+  touch-action:manipulation!important;
+}
+.pipe3-hint-btn:active{
+  transform:translateY(1px) scale(.98)!important;
+}
+.pipe3-source{
+  top:calc(max(36px, env(safe-area-inset-top) + 30px))!important;
+}
+@media(max-width:560px){
+  .pipe3-board-shell{
+    transform:translate(-50%, 16.666%)!important;
+  }
+  .pipe3-bottom-zone{
+    width:min(35vw, 140px)!important;
+    height:min(17svh, 122px)!important;
+    left:6px!important;
+  }
+  .pipe3-hint-btn{
+    min-width:68px!important;
+    padding:10px 14px!important;
+  }
+}

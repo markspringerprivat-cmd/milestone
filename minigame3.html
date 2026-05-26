@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>Riechen · Duftrohre</title>
-  <link rel="stylesheet" href="./css/style.css?v=v4_37_smell_green_flow_20260526">
-  <link rel="stylesheet" href="./css/v4.css?v=v4_37_smell_green_flow_20260526">
-  <script src="./js/app-v4.js?v=v4_37_smell_green_flow_20260526" defer></script>
+  <link rel="stylesheet" href="./css/style.css?v=v4_38_smell_fixed_hint_20260526">
+  <link rel="stylesheet" href="./css/v4.css?v=v4_38_smell_fixed_hint_20260526">
+  <script src="./js/app-v4.js?v=v4_38_smell_fixed_hint_20260526" defer></script>
 </head>
 <body data-page="minigame3">
   <main class="pipe3-page" aria-label="Riechsinn-Rohrsystem">
@@ -25,12 +25,7 @@
       <div id="pipe3BoardShell" class="pipe3-board-shell" aria-label="Rohrsystem">
         <img id="pipe3TopConnector" class="pipe3-connector top" src="./assets/images/minigame3/pipe_I_green.png" alt="" aria-hidden="true">
         <div id="pipe3Board" class="pipe3-board" aria-label="Rohrkacheln"></div>
-        <img id="pipe3BottomConnector" class="pipe3-connector bottom" src="./assets/images/minigame3/pipe_I_green.png" alt="" aria-hidden="true">
-      </div>
-
-      <div class="pipe3-bottom-zone" aria-label="Ventilbereich">
-        <img id="pipe3Hero" class="pipe3-hero" src="./assets/images/minigame/mini_walk_right_1.png" alt="Sir Nervus">
-        <div class="pipe3-valve-pad" aria-label="Ventilplattform">
+        <div class="pipe3-valve-pad pipe3-valve-cell" aria-label="Startventil">
           <span class="pipe3-start-label">Start: Ventil</span>
           <img class="pipe3-no-pipe" src="./assets/images/minigame3/no_pipe.png" alt="">
           <button id="pipe3ValveBtn" class="pipe3-valve-btn" type="button" aria-label="Ventil drehen und Duftleitung prüfen">
@@ -39,10 +34,16 @@
         </div>
       </div>
 
+      <button id="pipe3HintBtn" class="pipe3-hint-btn" type="button" aria-label="Tipp anzeigen">Tipp</button>
+
+      <div class="pipe3-bottom-zone" aria-label="Sir Nervus">
+        <img id="pipe3Hero" class="pipe3-hero" src="./assets/images/minigame/mini_walk_right_1.png" alt="Sir Nervus">
+      </div>
+
       <div id="pipe3Menu" class="modal hidden">
         <div class="modal-card">
           <h2>Pause</h2>
-          <p>Ordne die Rohre so, dass der Duft vom Ventil durch alle vier Filter bis zum Endpunkt gelangt.</p>
+          <p>Ordne die Rohre so, dass der Duft vom Ventil durch alle vier Filter bis zum oberen Endpunkt gelangt. Mit Tipp wird eine Weg-Kachel korrekt eingesetzt.</p>
           <div class="modal-actions">
             <button id="pipe3CloseMenuBtn" class="game-btn" type="button">Weiter</button>
             <button id="pipe3MenuBoardBtn" class="game-btn muted" type="button">Zurück zum Spielfeld</button>

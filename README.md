@@ -140,3 +140,15 @@ Die JavaScript-Navigation benutzt `pageUrl(...)`, damit `index.html`, `level.htm
 - Die Rohrverbindung wird während des Drehens dynamisch vom Startpunkt aus geprüft.
 - Alle Rohre und Filter, die eine Verbindung zum Ventil/Startpunkt haben, werden sofort durch grüne Versionen ersetzt.
 - Gewonnen wird nur, wenn der Duft vom unteren Startpunkt durch alle vier Luftreinigungsfilter bis zum oberen Endpunkt läuft.
+
+## Update v38
+
+- Minigame3 nutzt jetzt ein festes, immer gleiches Rohrlayout.
+- Die vier Luftfilter liegen auf B2, E2, B5 und E5.
+- Das Ventilfeld ist direkt unter der ersten unteren Röhre angebracht, in Kachelgröße und ohne zusätzliches grünes Zwischenstück.
+- Der gelbe Auswahlrahmen ist dünner, eckiger und liegt am Rand der Kachel.
+- Das Rohrfeld wurde ungefähr um eine Kachellänge nach unten geschoben.
+- Der Drehsound für Rohrkacheln wird direkt beim Klick gestartet.
+- Das Ventil dreht jetzt 2 Sekunden statt 3 Sekunden.
+- Der Tipp-Button unten rechts setzt eine Lösungskachel korrekt, markiert sie grün und sperrt sie.
+- Das Ventilbild wurde erneut freigestellt, inklusive heller Innenflächen.

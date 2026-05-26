@@ -5,7 +5,7 @@
   const BATTLE_STORE = 'koenigreichSinneV4Battle';
   const RETURN_STORE = 'koenigreichSinneV4BoardReturn';
   const SOUND_STORE = 'koenigreichSinneV4Muted';
-  const STATE_VERSION = 'v4_37smell_pipe_green_flow';
+  const STATE_VERSION = 'v4_38smell_pipe_fixed_hint';
   const APP_ROOT = new URL('./', document.baseURI);
   const pageUrl = target => new URL(target, APP_ROOT).href;
   const assetUrl = target => new URL(target, APP_ROOT).href;
@@ -597,7 +597,7 @@
       $('encounterImage').alt = 'Nase';
       $('encounterKicker').textContent = 'Riechsinn-Rohrsystem';
       $('encounterTitle').textContent = 'Folge dem Duft!';
-      $('encounterSpeech').textContent = done ? 'Du kannst das Rohr-Rätsel erneut spielen.' : 'Drehe die Rohrstücke so, dass der Geruch vom Ventil durch alle vier Luftreinigungsfilter bis zum oberen Endpunkt gelangt. Verbundene Rohre leuchten grün.';
+      $('encounterSpeech').textContent = done ? 'Du kannst das Rohr-Rätsel erneut spielen.' : 'Drehe die Rohrstücke so, dass der Geruch vom Ventil durch alle vier Luftreinigungsfilter bis zum oberen Endpunkt gelangt. Verbundene Rohre leuchten grün. Die vier Filter liegen auf B2, E2, B5 und E5.';
       show(modal);
       return;
     }
@@ -1973,6 +1973,7 @@
 
 
 
+
   function initMiniGame3() {
     addSpeaker();
     stopSound('background');
@@ -1983,6 +1984,7 @@
     const board = $('pipe3Board');
     const valveBtn = $('pipe3ValveBtn');
     const valveImg = $('pipe3ValveImg');
+    const hintBtn = $('pipe3HintBtn');
     const hud = $('pipe3Hud');
     const hero = $('pipe3Hero');
     const resultModal = $('pipe3Result');
@@ -2013,12 +2015,30 @@
       valve: assetUrl('assets/images/minigame3/ventil.png')
     };
 
+    const rotateAudios = Array.from({ length: 4 }, () => {
+      const a = new Audio(AUDIO_FILES.flip || assetUrl('assets/audio/flip.mp3'));
+      a.preload = 'auto';
+      a.volume = audioVolumeForKey('flip');
+      try { a.load(); } catch (_) {}
+      return a;
+    });
+    let rotateAudioIndex = 0;
+    function playRotateSound() {
+      if (muted) return;
+      const a = rotateAudios[rotateAudioIndex++ % rotateAudios.length];
+      try {
+        a.pause();
+        a.currentTime = 0;
+        a.play().catch(() => {});
+      } catch (_) {}
+    }
+
     const ROWS = 6;
     const COLS = 6;
     const FILTER_TOTAL = 4;
     const ENTRY_COL = 3;
-    const START = { r:5, c:ENTRY_COL, dir:'S' }; // Start unten: Ventil + grünes Anschlussstück
-    const EXIT = { r:0, c:ENTRY_COL, dir:'N' };  // Endpunkt oben: grünes Anschlussstück
+    const START = { r:5, c:ENTRY_COL, dir:'S' }; // Start unten: Ventil-Feld direkt unter der ersten Röhre
+    const EXIT = { r:0, c:ENTRY_COL, dir:'N' };  // Endpunkt oben: grüne Anschlusskachel
     const OPP = { N:'S', E:'W', S:'N', W:'E' };
     const STEP = { N:[-1,0], E:[0,1], S:[1,0], W:[0,-1] };
     const ORDER = ['N','E','S','W'];
@@ -2029,25 +2049,38 @@
       F: ['N','E','S','W']
     };
 
-    // Der geplante Lösungsweg startet unten bei Spalte 3, läuft durch alle vier Filter
-    // und endet oben wieder bei Spalte 3. Die restlichen Rohre sind Ablenkungen.
+    // Festes Layout: Filter auf B2, E2, B5 und E5.
+    // Der Lösungsweg ist absichtlich verschlungen, aber eindeutig lösbar.
     const solution = [
-      ['V','T','I','V','I','V'],
-      ['T','I','F','I','V','I'],
-      ['I','T','I','T','I','I'],
-      ['V','V','F','I','F','I'],
-      ['T','I','V','V','V','F'],
-      ['V','T','T','I','V','T']
+      ['T','V','I','V','T','I'],
+      ['V','F','T','V','F','V'],
+      ['I','I','V','I','T','I'],
+      ['T','I','V','I','V','V'],
+      ['I','F','I','V','F','T'],
+      ['V','T','I','V','V','I']
     ];
     const solvedRot = [
-      [1,0,0,0,1,2],
-      [0,1,0,1,2,0],
-      [0,0,0,2,0,0],
-      [1,1,0,1,0,0],
-      [2,1,0,2,0,0],
-      [3,2,1,0,2,1]
+      [0,1,1,3,2,0],
+      [2,0,3,1,0,2],
+      [0,0,1,0,1,0],
+      [2,0,2,0,1,3],
+      [1,0,1,3,0,1],
+      [0,1,0,1,3,1]
     ];
-    const filterCells = new Set(['1,2','3,2','3,4','4,5']);
+    const initialRot = [
+      [1,2,0,0,0,1],
+      [0,0,0,2,0,3],
+      [1,1,1,1,3,1],
+      [1,1,0,1,2,0],
+      [0,0,0,0,0,0],
+      [2,1,1,2,0,0]
+    ];
+    const filterCells = new Set(['1,1','1,4','4,1','4,4']);
+    const hintPath = [
+      [5,3],[5,4],[4,4],[3,4],[3,5],[2,5],[1,5],[1,4],
+      [1,3],[2,3],[3,3],[4,3],[4,2],[4,1],
+      [3,1],[2,1],[1,1],[0,1],[0,2],[0,3]
+    ];
 
     let tiles = [];
     let selected = null;
@@ -2065,13 +2098,6 @@
     }
     Promise.all([...Object.values(IMG), ASSETS.text.gewonnen, ASSETS.text.verloren].map(preloadImage)).catch(() => {});
 
-    function randomRotation(type, wanted) {
-      if (type === 'F') return 0;
-      let r = Math.floor(Math.random() * (type === 'I' ? 2 : 4));
-      if (r === wanted && Math.random() < .88) r = (r + 1) % (type === 'I' ? 2 : 4);
-      return r;
-    }
-
     function initTiles() {
       tiles = [];
       for (let r = 0; r < ROWS; r += 1) {
@@ -2080,9 +2106,10 @@
           const isFilter = type === 'F';
           tiles.push({
             r, c, type,
-            rotation: randomRotation(type, solvedRot[r][c]),
+            rotation: initialRot[r][c],
             filter: isFilter,
-            flow: false
+            flow: false,
+            locked: false
           });
         }
       }
@@ -2102,10 +2129,11 @@
     }
     function key(r,c) { return `${r},${c}`; }
     function imgFor(tile) {
-      if (tile.type === 'F') return tile.flow ? IMG.Fg : IMG.F;
-      if (tile.type === 'I') return tile.flow ? IMG.Ig : IMG.I;
-      if (tile.type === 'T') return tile.flow ? IMG.Tg : IMG.T;
-      return tile.flow ? IMG.Vg : IMG.V;
+      const green = tile.flow || tile.locked;
+      if (tile.type === 'F') return green ? IMG.Fg : IMG.F;
+      if (tile.type === 'I') return green ? IMG.Ig : IMG.I;
+      if (tile.type === 'T') return green ? IMG.Tg : IMG.T;
+      return green ? IMG.Vg : IMG.V;
     }
 
     function renderBoard() {
@@ -2127,6 +2155,7 @@
         const tile = tiles[index];
         node.classList.toggle('selected', selected === index);
         node.classList.toggle('flow', Boolean(tile.flow));
+        node.classList.toggle('locked', Boolean(tile.locked));
         node.classList.toggle('filter-found', tile.filter && tile.flow);
         const img = node.querySelector('img');
         if (img) {
@@ -2140,13 +2169,12 @@
     function onTileClick(index) {
       if (checking || finished) return;
       const tile = tiles[index];
-      if (!tile || tile.filter) return;
+      if (!tile || tile.filter || tile.locked) return;
+      playRotateSound(); // sofort beim Klick, bevor optisch gedreht wird
       if (selected === index) {
         tile.rotation = (tile.rotation + 1) % (tile.type === 'I' ? 2 : 4);
-        playSound('flip');
       } else {
         selected = index;
-        playSound('flip');
       }
       computeFlowFromStart();
       updateTileClasses();
@@ -2205,6 +2233,24 @@
       hud.textContent = `Verbundene Filter ${result.filters.size} / ${FILTER_TOTAL}`;
     }
 
+    function applyHint() {
+      if (checking || finished) return;
+      selected = null;
+      const target = hintPath
+        .map(([r,c]) => tileAt(r,c))
+        .find(tile => tile && !tile.filter && (!tile.locked || tile.rotation !== solvedRot[tile.r][tile.c]));
+      if (!target) {
+        updateHud('Der Lösungsweg ist bereits vollständig als Tipp gesetzt.');
+        return;
+      }
+      target.rotation = solvedRot[target.r][target.c];
+      target.locked = true;
+      computeFlowFromStart();
+      playSound('levelunlocked');
+      updateTileClasses();
+      updateHud('Tipp gesetzt: Eine Weg-Kachel wurde korrekt eingerastet.');
+    }
+
     function showResult(won) {
       finished = true;
       stopSound('minigame_background');
@@ -2252,9 +2298,10 @@
         valveImg?.classList.remove('spinning');
         checking = false;
         showResult(won);
-      }, 3000);
+      }, 2000);
     });
 
+    hintBtn?.addEventListener('click', applyHint);
     settingsBtn?.addEventListener('click', () => show(menu));
     closeMenuBtn?.addEventListener('click', () => hide(menu));
     menuBoardBtn?.addEventListener('click', () => { stopSound('minigame_background'); location.href = pageUrl('index.html'); });
