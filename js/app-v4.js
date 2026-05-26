@@ -1983,6 +1983,7 @@
     const stage = document.querySelector('.pipe3-stage');
     const board = $('pipe3Board');
     const valveBtn = $('pipe3ValveBtn');
+    const valvePad = document.querySelector('.pipe3-valve-pad');
     const valveImg = $('pipe3ValveImg');
     const hintBtn = $('pipe3HintBtn');
     const hud = $('pipe3Hud');
@@ -2121,6 +2122,7 @@
     let lives = MAX_HEARTS;
     let invulnerableUntil = 0;
     let loseReason = '';
+    let valveReady = false;
 
     const heartNodes = Array.from({ length: MAX_HEARTS }, (_, index) => {
       const img = document.createElement('img');
@@ -2214,6 +2216,7 @@
       computeFlowFromStart();
       updateTileClasses();
       updateHud();
+      updateValveReadyState();
     }
     function clearFlow() { tiles.forEach(t => { t.flow = false; }); }
     function computeFlowFromStart() {
@@ -2258,6 +2261,13 @@
       const result = computeFlowFromStart();
       hud.textContent = `Verbundene Filter ${result.filters.size} / ${FILTER_TOTAL}`;
     }
+    function updateValveReadyState() {
+      const result = computeFlowFromStart();
+      valveReady = result.exit && [...filterCells].every(f => result.filters.has(f));
+      valvePad?.classList.toggle('ready', valveReady);
+      valveBtn?.classList.toggle('ready', valveReady);
+      return valveReady;
+    }
     function applyHint() {
       if (checking || finished) return;
       selected = null;
@@ -2269,6 +2279,7 @@
       playSound('levelunlocked');
       updateTileClasses();
       updateHud('Tipp gesetzt: Eine Weg-Kachel wurde korrekt eingerastet.');
+      updateValveReadyState();
     }
 
     const GUARD_ACTIVE_MS = 1000;
@@ -2339,25 +2350,30 @@
       sprayOverlay.classList.remove('fade-out');
       sprayOverlay.style.opacity = '0';
     }
-    function positionSprayOverlay() {
-      if (!sprayOverlay || !topConnector) return;
+    function positionOgreZone() {
+      const ogreZone = $('pipe3OgreZone');
+      if (!ogreZone || !board) return;
       const stageRect = stage.getBoundingClientRect();
-      const connectorRect = topConnector.getBoundingClientRect();
+      const boardRect = board.getBoundingClientRect();
+      const zoneRect = ogreZone.getBoundingClientRect();
+      const desiredLeft = Math.max(8, boardRect.left - stageRect.left - zoneRect.width * 0.10);
+      const desiredTop = Math.max(8, boardRect.top - stageRect.top - zoneRect.height * 0.44);
+      ogreZone.style.left = `${desiredLeft}px`;
+      ogreZone.style.top = `${desiredTop}px`;
+    }
+    function positionSprayOverlay() {
+      if (!sprayOverlay) return;
+      const stageRect = stage.getBoundingClientRect();
       const ogreRect = ogre.getBoundingClientRect();
-      const tipX = connectorRect.left - stageRect.left + connectorRect.width * 0.14;
-      const tipY = connectorRect.top - stageRect.top + connectorRect.height * 0.50;
-      const ogreLeft = ogreRect.left - stageRect.left;
-      const ogreTop = ogreRect.top - stageRect.top;
-      const ogreBottom = ogreTop + ogreRect.height;
       const naturalW = sprayOverlay.naturalWidth || 1280;
       const naturalH = sprayOverlay.naturalHeight || 1280;
       const ratio = naturalH / naturalW;
-      const minWidth = Math.min(stageRect.width * 0.70, 320);
-      const desiredWidth = Math.max(minWidth, tipX - ogreLeft + ogreRect.width * 1.00);
-      const width = Math.min(stageRect.width * 0.92, desiredWidth);
+      const width = Math.min(stageRect.width * 0.78, Math.max(220, ogreRect.width * 3.25));
       const height = width * ratio;
-      const left = tipX - width + 2;
-      const top = Math.max(6, Math.min(stageRect.height - height - 6, tipY - height * 0.50));
+      const centerX = ogreRect.left - stageRect.left + ogreRect.width * 0.46;
+      const centerY = ogreRect.top - stageRect.top + ogreRect.height * 0.48;
+      const left = centerX - width * 0.50;
+      const top = centerY - height * 0.48;
       sprayOverlay.style.width = `${width}px`;
       sprayOverlay.style.left = `${left}px`;
       sprayOverlay.style.top = `${top}px`;
@@ -2573,6 +2589,15 @@
 
     valveBtn.addEventListener('click', () => {
       if (checking || finished) return;
+      if (!updateValveReadyState()) {
+        valveBtn.classList.remove('not-ready');
+        void valveBtn.offsetWidth;
+        valveBtn.classList.add('not-ready');
+        playSound('flip');
+        updateHud('Verbinde erst alle vier Filter bis zum Flakon, dann kannst du das Ventil auslösen.');
+        window.setTimeout(() => valveBtn.classList.remove('not-ready'), 420);
+        return;
+      }
       checking = true;
       pauseEncounter();
       encounterStopped = true;
@@ -2580,38 +2605,28 @@
       resetSprayOverlay();
       setOgreIdle();
       selected = null;
-      const won = validatePipeSystem();
       updateTileClasses();
-      updateHud(won ? 'Der Duft wird versprüht …' : 'Das Ventil leitet den Duft durch die grünen Rohre …');
+      updateHud('Der Duft wird versprüht …');
       valveImg?.classList.add('spinning');
       playSound('levelstart');
-      if (won) playSound('spray');
-      if (won) {
-        showSprayOverlay();
+      playSound('spray');
+      showSprayOverlay();
+      window.setTimeout(() => {
+        ogre.src = IMG.ogreClean;
+        ogre.classList.remove('throwing','shocked');
+      }, 700);
+      window.setTimeout(() => {
+        valveImg?.classList.remove('spinning');
+        fadeSprayOverlay();
+        updateHud('Der Oger ist jetzt sauber.');
         window.setTimeout(() => {
-          ogre.src = IMG.ogreClean;
-          ogre.classList.remove('throwing','shocked');
-        }, 700);
-        window.setTimeout(() => {
-          valveImg?.classList.remove('spinning');
-          fadeSprayOverlay();
-          updateHud('Der Oger ist jetzt sauber.');
+          resetSprayOverlay();
           window.setTimeout(() => {
-            resetSprayOverlay();
-            window.setTimeout(() => {
-              checking = false;
-              showResult(true);
-            }, 3000);
-          }, 220);
-        }, 2000);
-      } else {
-        window.setTimeout(() => {
-          valveImg?.classList.remove('spinning');
-          checking = false;
-          loseReason = '';
-          showResult(false);
-        }, 2000);
-      }
+            checking = false;
+            showResult(true);
+          }, 3000);
+        }, 220);
+      }, 2000);
     });
 
     introStartBtn?.addEventListener('click', startEncounter);
@@ -2627,6 +2642,7 @@
     });
 
     window.addEventListener('resize', () => {
+      positionOgreZone();
       if (!sprayOverlay || sprayOverlay.classList.contains('hidden')) return;
       positionSprayOverlay();
     });
@@ -2634,12 +2650,14 @@
     initTiles();
     renderBoard();
     updateHud();
+    updateValveReadyState();
     updateHearts();
     updateGuardUi();
     setGuardBarFill(1);
     clearBanana();
     resetSprayOverlay();
     setOgreIdle();
+    positionOgreZone();
     show(introModal);
   }
 

@@ -2906,3 +2906,40 @@ body[data-page="minigame"]{
     height:min(15svh, 92px)!important;
   }
 }
+
+/* === Smell pipe refinement v46 === */
+.pipe3-ogre-zone{
+  z-index:12!important;
+  width:min(27vw, 116px)!important;
+  height:min(18svh, 126px)!important;
+}
+.pipe3-ogre{
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+}
+.pipe3-spray-overlay{
+  z-index:44!important;
+  pointer-events:none!important;
+}
+.pipe3-valve-pad.ready{
+  box-shadow:0 0 0 3px rgba(255,210,61,.92), 0 0 18px rgba(255,213,85,.78)!important;
+  border-radius:18px!important;
+}
+.pipe3-valve-btn.ready{
+  filter:drop-shadow(0 0 10px rgba(255,212,64,.82))!important;
+}
+.pipe3-valve-btn.not-ready{
+  animation:pipe3ValveNudge .38s ease!important;
+}
+@keyframes pipe3ValveNudge{
+  0%{transform:rotate(0deg)}
+  35%{transform:rotate(16deg)}
+  100%{transform:rotate(0deg)}
+}
+@media(max-width:560px){
+  .pipe3-ogre-zone{
+    width:min(25vw, 95px)!important;
+    height:min(14svh, 88px)!important;
+  }
+}
