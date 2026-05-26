@@ -2344,21 +2344,20 @@
       const stageRect = stage.getBoundingClientRect();
       const connectorRect = topConnector.getBoundingClientRect();
       const ogreRect = ogre.getBoundingClientRect();
-      const tipX = connectorRect.left - stageRect.left + connectorRect.width * 0.18;
-      const tipY = connectorRect.top - stageRect.top + connectorRect.height * 0.52;
+      const tipX = connectorRect.left - stageRect.left + connectorRect.width * 0.14;
+      const tipY = connectorRect.top - stageRect.top + connectorRect.height * 0.50;
       const ogreLeft = ogreRect.left - stageRect.left;
       const ogreTop = ogreRect.top - stageRect.top;
       const ogreBottom = ogreTop + ogreRect.height;
       const naturalW = sprayOverlay.naturalWidth || 1280;
       const naturalH = sprayOverlay.naturalHeight || 1280;
       const ratio = naturalH / naturalW;
-      const minWidth = Math.min(stageRect.width * 0.72, 340);
-      const desiredWidth = Math.max(minWidth, tipX - ogreLeft + ogreRect.width * 1.12);
-      const width = Math.min(stageRect.width * 0.95, desiredWidth);
+      const minWidth = Math.min(stageRect.width * 0.70, 320);
+      const desiredWidth = Math.max(minWidth, tipX - ogreLeft + ogreRect.width * 1.00);
+      const width = Math.min(stageRect.width * 0.92, desiredWidth);
       const height = width * ratio;
-      const left = tipX - width + 4;
-      const sprayCenterY = (ogreTop + ogreBottom) / 2;
-      const top = Math.max(8, Math.min(stageRect.height - height - 8, sprayCenterY - height * 0.52));
+      const left = tipX - width + 2;
+      const top = Math.max(6, Math.min(stageRect.height - height - 6, tipY - height * 0.50));
       sprayOverlay.style.width = `${width}px`;
       sprayOverlay.style.left = `${left}px`;
       sprayOverlay.style.top = `${top}px`;
@@ -2402,9 +2401,9 @@
       activeBanana = {
         startTime: now,
         duration: 3600,
-        startX: ogreRect.left - stageRect.left + ogreRect.width * 0.72 - 6,
+        startX: ogreRect.left - stageRect.left + ogreRect.width * 0.72 - 14,
         startY: ogreRect.top - stageRect.top + ogreRect.height * 0.54,
-        endX: heroCenterX - 18,
+        endX: heroCenterX - 34,
         endY: heroCenterY,
         resolved: false
       };
@@ -2590,16 +2589,20 @@
       if (won) {
         showSprayOverlay();
         window.setTimeout(() => {
-          valveImg?.classList.remove('spinning');
-          fadeSprayOverlay();
           ogre.src = IMG.ogreClean;
           ogre.classList.remove('throwing','shocked');
+        }, 700);
+        window.setTimeout(() => {
+          valveImg?.classList.remove('spinning');
+          fadeSprayOverlay();
           updateHud('Der Oger ist jetzt sauber.');
           window.setTimeout(() => {
             resetSprayOverlay();
-            checking = false;
-            showResult(true);
-          }, 1800);
+            window.setTimeout(() => {
+              checking = false;
+              showResult(true);
+            }, 3000);
+          }, 220);
         }, 2000);
       } else {
         window.setTimeout(() => {
