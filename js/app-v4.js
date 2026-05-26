@@ -5,7 +5,7 @@
   const BATTLE_STORE = 'koenigreichSinneV4Battle';
   const RETURN_STORE = 'koenigreichSinneV4BoardReturn';
   const SOUND_STORE = 'koenigreichSinneV4Muted';
-  const STATE_VERSION = 'v4_35memory2_polish';
+  const STATE_VERSION = 'v4_36smell_pipe_minigame3';
   const APP_ROOT = new URL('./', document.baseURI);
   const pageUrl = target => new URL(target, APP_ROOT).href;
   const assetUrl = target => new URL(target, APP_ROOT).href;
@@ -476,7 +476,7 @@
     const latest = getState(); const assigned = latest.slots[index];
 
     if (isPlaceholderSlot(index)) {
-      if (completed && index !== 1 && index !== 3) return;
+      if (completed && index !== 1 && index !== 3 && index !== 5) return;
       showPlaceholder(index);
       return;
     }
@@ -588,6 +588,20 @@
       return;
     }
 
+    if (index === 5) {
+      const done = Boolean(getState().completed[index]);
+      window.pendingLaunch = { placeholder:true, minigame3:true, slot:index, meta };
+      $('launchLevelBtn').textContent = done ? 'Duftrohre erneut starten' : 'Spiel starten';
+      $('encounterBackBtn').textContent = done ? 'Zurück' : 'Überspringen';
+      $('encounterImage').src = assetUrl('assets/images/minigame2/nase.png');
+      $('encounterImage').alt = 'Nase';
+      $('encounterKicker').textContent = 'Riechsinn-Rohrsystem';
+      $('encounterTitle').textContent = 'Folge dem Duft!';
+      $('encounterSpeech').textContent = done ? 'Du kannst das Rohr-Rätsel erneut spielen.' : 'Drehe die Rohrstücke so, dass der Geruch durch alle vier Filter bis zum Ventil gelangt. So wird aus Gestank ein guter Duft.';
+      show(modal);
+      return;
+    }
+
     window.pendingLaunch = { placeholder:true, slot:index, meta };
     $('launchLevelBtn').textContent = index === LEVEL_COUNT - 1 ? 'Zum Finale' : 'Weiter';
     $('encounterBackBtn').textContent = 'Wegrennen';
@@ -600,7 +614,7 @@
   }
 
   function handleEncounterBack() {
-    if (window.pendingLaunch?.minigame || window.pendingLaunch?.minigame2) {
+    if (window.pendingLaunch?.minigame || window.pendingLaunch?.minigame2 || window.pendingLaunch?.minigame3) {
       const slot = window.pendingLaunch.slot;
       if (getState().completed[slot]) { hide($('encounterModal')); return; }
       completePlaceholder(slot);
@@ -619,6 +633,11 @@
     if (window.pendingLaunch.minigame2) {
       hide($('encounterModal'));
       location.href = pageUrl(`minigame2.html?slot=${window.pendingLaunch.slot}`);
+      return;
+    }
+    if (window.pendingLaunch.minigame3) {
+      hide($('encounterModal'));
+      location.href = pageUrl(`minigame3.html?slot=${window.pendingLaunch.slot}`);
       return;
     }
     if (window.pendingLaunch.placeholder) { completePlaceholder(window.pendingLaunch.slot); return; }
@@ -1952,6 +1971,283 @@
     requestTick();
   }
 
+
+  function initMiniGame3() {
+    addSpeaker();
+    stopSound('background');
+    stopSound('battle_background');
+    playSound('minigame_background', { loop:true, restart:true });
+
+    const stage = document.querySelector('.pipe3-stage');
+    const board = $('pipe3Board');
+    const valveBtn = $('pipe3ValveBtn');
+    const valveImg = $('pipe3ValveImg');
+    const hud = $('pipe3Hud');
+    const hero = $('pipe3Hero');
+    const resultModal = $('pipe3Result');
+    const resultImage = $('pipe3ResultImage');
+    const resultTitle = $('pipe3ResultTitle');
+    const resultText = $('pipe3ResultText');
+    const retryBtn = $('pipe3RetryBtn');
+    const boardBtn = $('pipe3BoardBtn');
+    const settingsBtn = $('pipe3SettingsBtn');
+    const menu = $('pipe3Menu');
+    const menuBoardBtn = $('pipe3MenuBoardBtn');
+    const closeMenuBtn = $('pipe3CloseMenuBtn');
+    if (!stage || !board || !valveBtn) return;
+
+    const slot = Number(qs('slot')) || 5;
+    stage.style.setProperty('--pipe3-bg', `url("${popupBgForMeta({ slot, isBoss:false })}")`);
+
+    const IMG = {
+      V: assetUrl('assets/images/minigame3/pipe_V.png'),
+      I: assetUrl('assets/images/minigame3/pipe_I.png'),
+      T: assetUrl('assets/images/minigame3/pipe_T.png'),
+      F: assetUrl('assets/images/minigame3/filter.png'),
+      no: assetUrl('assets/images/minigame3/no_pipe.png'),
+      valve: assetUrl('assets/images/minigame3/ventil.png')
+    };
+
+    const ROWS = 6;
+    const COLS = 6;
+    const FILTER_TOTAL = 4;
+    const EXIT = { r:5, c:5, dir:'S' };
+    const START = { r:0, c:0, dir:'N' };
+    const OPP = { N:'S', E:'W', S:'N', W:'E' };
+    const STEP = { N:[-1,0], E:[0,1], S:[1,0], W:[0,-1] };
+    const ORDER = ['N','E','S','W'];
+    const BASE = {
+      I: ['N','S'],
+      V: ['N','E'],
+      T: ['N','E','W'],
+      F: ['N','E','S','W']
+    };
+    const solution = [
+      ['I','V','I','T','V','I'],
+      ['V','I','F','V','V','V'],
+      ['T','T','I','V','I','I'],
+      ['V','T','F','I','F','I'],
+      ['I','V','T','V','T','F'],
+      ['T','V','I','T','V','I']
+    ];
+    const solvedRot = [
+      [0,1,1,0,2,0],
+      [0,1,0,1,1,2],
+      [2,0,0,3,0,0],
+      [1,1,0,1,0,0],
+      [0,3,2,0,2,0],
+      [3,0,1,1,2,0]
+    ];
+    const filterCells = new Set(['1,2','3,2','3,4','4,5']);
+
+    let tiles = [];
+    let selected = null;
+    let checking = false;
+    let finished = false;
+
+    function preloadImage(src) {
+      return new Promise(resolve => {
+        const img = new Image();
+        img.decoding = 'async';
+        img.onload = img.onerror = () => resolve(img);
+        img.src = src;
+        if (img.decode) img.decode().then(() => resolve(img)).catch(() => {});
+      });
+    }
+    Promise.all([...Object.values(IMG), ASSETS.text.gewonnen, ASSETS.text.verloren].map(preloadImage)).catch(() => {});
+
+    function randomRotation(type, wanted) {
+      if (type === 'F') return 0;
+      let r = Math.floor(Math.random() * 4);
+      if (type === 'I') r = Math.floor(Math.random() * 2); // 0 = vertikal, 1 = horizontal
+      if (r === wanted && Math.random() < .82) r = (r + 1) % (type === 'I' ? 2 : 4);
+      return r;
+    }
+
+    function initTiles() {
+      tiles = [];
+      for (let r = 0; r < ROWS; r += 1) {
+        for (let c = 0; c < COLS; c += 1) {
+          const type = solution[r][c];
+          const isFilter = type === 'F';
+          tiles.push({
+            r, c, type,
+            rotation: randomRotation(type, solvedRot[r][c]),
+            filter: isFilter,
+            flow: false
+          });
+        }
+      }
+    }
+
+    function tileAt(r, c) {
+      return tiles.find(t => t.r === r && t.c === c);
+    }
+
+    function rotateDir(dir, rot) {
+      const i = ORDER.indexOf(dir);
+      return ORDER[(i + rot) % 4];
+    }
+    function openings(tile) {
+      return (BASE[tile.type] || []).map(d => rotateDir(d, tile.rotation));
+    }
+    function key(r,c) { return `${r},${c}`; }
+
+    function renderBoard() {
+      board.innerHTML = tiles.map((tile, index) => {
+        const img = tile.type === 'F' ? IMG.F : IMG[tile.type];
+        const rot = (tile.rotation % 4) * 90;
+        const label = tile.type === 'F' ? 'Duftfilter' : `Rohrstück ${tile.type}`;
+        return `<button class="pipe3-tile ${tile.filter ? 'filter' : 'rotatable'}" type="button" data-index="${index}" aria-label="${label}">
+          <img src="${img}" alt="" style="transform:rotate(${rot}deg)">
+        </button>`;
+      }).join('');
+      updateTileClasses();
+      board.querySelectorAll('.pipe3-tile').forEach(btn => {
+        btn.addEventListener('click', () => onTileClick(Number(btn.dataset.index)));
+      });
+    }
+
+    function updateTileClasses() {
+      board.querySelectorAll('.pipe3-tile').forEach((node, index) => {
+        const tile = tiles[index];
+        node.classList.toggle('selected', selected === index);
+        node.classList.toggle('flow', Boolean(tile.flow));
+        node.classList.toggle('filter-found', tile.filter && tile.flow);
+        const img = node.querySelector('img');
+        if (img) img.style.transform = `rotate(${(tile.rotation % 4) * 90}deg)`;
+      });
+    }
+
+    function onTileClick(index) {
+      if (checking || finished) return;
+      const tile = tiles[index];
+      if (!tile || tile.filter) return;
+      if (selected === index) {
+        tile.rotation = (tile.rotation + 1) % (tile.type === 'I' ? 2 : 4);
+        tile.flow = false;
+        playSound('flip');
+      } else {
+        selected = index;
+        playSound('flip');
+      }
+      clearFlow();
+      updateTileClasses();
+      updateHud('Drehe die Rohre. Das Ventil prüft den Duftweg.');
+    }
+
+    function clearFlow() {
+      tiles.forEach(t => { t.flow = false; });
+    }
+
+    function connectedFromSource() {
+      clearFlow();
+      const start = tileAt(START.r, START.c);
+      if (!start || !openings(start).includes(START.dir)) return { exit:false, filters:new Set(), visited:new Set() };
+      const visited = new Set();
+      const filters = new Set();
+      const q = [start];
+      visited.add(key(start.r, start.c));
+      while (q.length) {
+        const tile = q.shift();
+        tile.flow = true;
+        if (tile.filter) filters.add(key(tile.r, tile.c));
+        const open = openings(tile);
+        for (const dir of open) {
+          if (tile.r === EXIT.r && tile.c === EXIT.c && dir === EXIT.dir) {
+            continue;
+          }
+          const [dr,dc] = STEP[dir];
+          const nr = tile.r + dr, nc = tile.c + dc;
+          if (nr < 0 || nc < 0 || nr >= ROWS || nc >= COLS) continue;
+          const next = tileAt(nr,nc);
+          if (!next) continue;
+          if (!openings(next).includes(OPP[dir])) continue;
+          const k = key(nr,nc);
+          if (visited.has(k)) continue;
+          visited.add(k);
+          q.push(next);
+        }
+      }
+      const end = tileAt(EXIT.r, EXIT.c);
+      const exit = Boolean(end && visited.has(key(EXIT.r, EXIT.c)) && openings(end).includes(EXIT.dir));
+      return { exit, filters, visited };
+    }
+
+    function validatePipeSystem() {
+      const result = connectedFromSource();
+      const allFilters = [...filterCells].every(f => result.filters.has(f));
+      tiles.forEach(t => { t.flow = result.visited.has(key(t.r,t.c)); });
+      updateTileClasses();
+      if (hud) hud.textContent = `Filter ${result.filters.size} / ${FILTER_TOTAL}`;
+      return result.exit && allFilters;
+    }
+
+    function updateHud(text) {
+      if (!hud) return;
+      hud.textContent = text || 'Verbinde den Duft durch alle 4 Filter';
+    }
+
+    function showResult(won) {
+      finished = true;
+      stopSound('minigame_background');
+      if (resultImage) {
+        resultImage.src = won ? ASSETS.text.gewonnen : ASSETS.text.verloren;
+        resultImage.alt = won ? 'Gewonnen' : 'Verloren';
+        show(resultImage);
+      }
+      if (won) {
+        playSound('win');
+        resultTitle.textContent = 'Gewonnen';
+        resultText.textContent = 'Der Duft läuft durch alle vier Filter und kommt gereinigt beim Ventil an. Sir Nervus riecht jetzt einen guten Geruch.';
+        retryBtn.textContent = 'Zurück zum Spielfeld';
+        hide(boardBtn);
+        retryBtn.onclick = () => {
+          const state = getState();
+          state.completed[slot] = true;
+          state.heroIndex = slot;
+          setState(state);
+          localStorage.setItem(RETURN_STORE, JSON.stringify({ type:'unlocked', meta:{ slot, placeholder:true } }));
+          location.href = pageUrl('index.html');
+        };
+      } else {
+        playSound('lose');
+        resultTitle.textContent = 'Verloren';
+        resultText.textContent = 'Der Duftweg ist noch nicht richtig verbunden oder läuft nicht durch alle vier Filter.';
+        retryBtn.textContent = 'Neuer Versuch';
+        retryBtn.onclick = () => location.reload();
+        show(boardBtn);
+      }
+      show(resultModal);
+    }
+
+    valveBtn.addEventListener('click', () => {
+      if (checking || finished) return;
+      checking = true;
+      selected = null;
+      updateTileClasses();
+      updateHud('Das Ventil prüft den Duftweg …');
+      valveImg?.classList.add('spinning');
+      playSound('levelstart');
+      window.setTimeout(() => {
+        const won = validatePipeSystem();
+        valveImg?.classList.remove('spinning');
+        checking = false;
+        showResult(won);
+      }, 3000);
+    });
+
+    settingsBtn?.addEventListener('click', () => show(menu));
+    closeMenuBtn?.addEventListener('click', () => hide(menu));
+    menuBoardBtn?.addEventListener('click', () => { stopSound('minigame_background'); location.href = pageUrl('index.html'); });
+    boardBtn?.addEventListener('click', () => { stopSound('minigame_background'); location.href = pageUrl('index.html'); });
+
+    initTiles();
+    renderBoard();
+    updateHud();
+    if (hero) hero.style.visibility = 'visible';
+  }
+
   function initCodes() {
     addSpeaker(); $('printCodesBtn')?.addEventListener('click', () => print());
     const grid=$('qrGrid'); if (!grid) return;
@@ -1965,6 +2261,7 @@
     else if (page === 'battle') initBattle();
     else if (page === 'minigame') initMiniGame();
     else if (page === 'minigame2') initMiniGame2();
+    else if (page === 'minigame3') initMiniGame3();
     else if (page === 'codes') initCodes();
   });
 })();

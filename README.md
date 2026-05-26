@@ -122,3 +122,12 @@ Die JavaScript-Navigation benutzt `pageUrl(...)`, damit `index.html`, `level.htm
 - Minigame2: Blendkugel-Bahn wird beim Start jeder Kugel neu auf die Ritterebene über der Navigationsleiste gesetzt.
 - Minigame2: Herzen sind oben mittig positioniert.
 - Minigame2: Warnpfeile sind größer und neon-rot hervorgehoben.
+
+## Update v36
+
+- Neues Riechsinn-Minispiel `minigame3.html`.
+- Level 6 / Slot 5 startet das Duftrohr-Rätsel und kann nach Abschluss erneut gespielt werden.
+- Rohrkacheln: viele `pipe_V`/`pipe_I`, einige `pipe_T` und vier feste Filter.
+- `pipe_V`, `pipe_I` und `pipe_T` können ausgewählt und per erneutem Klick um 90 Grad gedreht werden.
+- Der Duftweg muss vom oberen Spielrand durch alle vier Filter bis zum Ventil führen.
+- Das Ventil liegt auf einer `no_pipe`-Plattform rechts neben Sir Nervus und prüft nach einer 3-Sekunden-Drehanimation, ob gewonnen oder verloren wurde.

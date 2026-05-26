@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Riechen · Duftrohre</title>
+  <link rel="stylesheet" href="./css/style.css?v=v4_36_smell_pipe_20260526">
+  <link rel="stylesheet" href="./css/v4.css?v=v4_36_smell_pipe_20260526">
+  <script src="./js/app-v4.js?v=v4_36_smell_pipe_20260526" defer></script>
+</head>
+<body data-page="minigame3">
+  <main class="pipe3-page" aria-label="Riechsinn-Rohrsystem">
+    <section class="pipe3-stage" aria-label="Duftrohr-Spielfeld">
+      <button id="pipe3SettingsBtn" class="mini-settings-btn" type="button" aria-label="Optionen">⚙</button>
+
+      <div class="pipe3-topbar">
+        <div id="pipe3Hud" class="memory2-hud">Verbinde den Duft durch alle 4 Filter</div>
+      </div>
+
+      <div class="pipe3-source" aria-hidden="true">
+        <span>Gestanksquelle</span>
+        <strong>↓</strong>
+      </div>
+
+      <div id="pipe3Board" class="pipe3-board" aria-label="Rohrkacheln"></div>
+
+      <div class="pipe3-bottom-zone" aria-label="Ventilbereich">
+        <img id="pipe3Hero" class="pipe3-hero" src="./assets/images/minigame/mini_walk_right_1.png" alt="Sir Nervus">
+        <div class="pipe3-valve-pad" aria-label="Ventilplattform">
+          <img class="pipe3-no-pipe" src="./assets/images/minigame3/no_pipe.png" alt="">
+          <button id="pipe3ValveBtn" class="pipe3-valve-btn" type="button" aria-label="Ventil drehen und Duftleitung prüfen">
+            <img id="pipe3ValveImg" src="./assets/images/minigame3/ventil.png" alt="">
+          </button>
+        </div>
+      </div>
+
+      <div id="pipe3Menu" class="modal hidden">
+        <div class="modal-card">
+          <h2>Pause</h2>
+          <p>Ordne die Rohre so, dass der Duft durch alle vier Filter bis zum Ventil gelangt.</p>
+          <div class="modal-actions">
+            <button id="pipe3CloseMenuBtn" class="game-btn" type="button">Weiter</button>
+            <button id="pipe3MenuBoardBtn" class="game-btn muted" type="button">Zurück zum Spielfeld</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="pipe3Result" class="modal hidden">
+        <div class="modal-card mini-result-card">
+          <img id="pipe3ResultImage" class="mini-result-img hidden" alt="">
+          <h2 id="pipe3ResultTitle">Ergebnis</h2>
+          <p id="pipe3ResultText"></p>
+          <div class="modal-actions">
+            <button id="pipe3RetryBtn" class="game-btn" type="button">Nochmal versuchen</button>
+            <button id="pipe3BoardBtn" class="game-btn muted" type="button">Zurück zum Spielfeld</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
