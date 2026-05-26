@@ -142,7 +142,7 @@
     background: 'assets/audio/background.mp3', battle_background: 'assets/audio/battle_background.mp3', minigame_background: 'assets/audio/minigame_background.mp3',
     levelstart: 'assets/audio/levelstart.mp3', levelunlocked: 'assets/audio/levelunlocked.mp3', fight: 'assets/audio/fight.mp3', win: 'assets/audio/win.mp3', lose: 'assets/audio/lose.mp3',
     final: 'assets/audio/final.mp3', hurt: 'assets/audio/hurt.mp3', glass_break: 'assets/audio/glass_break.mp3', collect: 'assets/audio/collect.mp3',
-    flip: 'assets/audio/flip.mp3', pair: 'assets/audio/pair.mp3',
+    flip: 'assets/audio/flip.mp3', pair: 'assets/audio/pair.mp3', richtig: 'assets/audio/richtig.mp3',
     richtig_1: 'assets/audio/richtig_1.mp3', richtig_2: 'assets/audio/richtig_2.mp3', richtig_3: 'assets/audio/richtig_3.mp3',
     falsch_1: 'assets/audio/falsch_1.mp3', falsch_2: 'assets/audio/falsch_2.mp3', falsch_3: 'assets/audio/falsch_3.mp3'
   };
@@ -257,7 +257,7 @@
       muted = !muted; localStorage.setItem(SOUND_STORE, muted ? '1' : '0'); b.textContent = muted ? '🔇' : '🔊';
       if (muted) Array.from(audio.keys()).forEach(stopSound);
       else if (document.body.dataset.page === 'board' && !$('boardScreen')?.classList.contains('hidden')) playSound('background', { loop:true });
-      else if (document.body.dataset.page === 'minigame' || document.body.dataset.page === 'minigame2') playSound('minigame_background', { loop:true, restart:false });
+      else if (document.body.dataset.page === 'minigame' || document.body.dataset.page === 'minigame2' || document.body.dataset.page === 'minigame3') playSound('minigame_background', { loop:true, restart:false });
     });
     document.body.appendChild(b);
   }
@@ -1978,6 +1978,7 @@
     addSpeaker();
     stopSound('background');
     stopSound('battle_background');
+    stopSound('minigame_background');
 
     const stage = document.querySelector('.pipe3-stage');
     const board = $('pipe3Board');
@@ -2005,7 +2006,7 @@
     const menu = $('pipe3Menu');
     const menuBoardBtn = $('pipe3MenuBoardBtn');
     const closeMenuBtn = $('pipe3CloseMenuBtn');
-    if (!stage || !board || !valveBtn || !hero) return;
+    if (!stage || !board || !valveBtn || !hero || !ogre || !banana) return;
 
     const slot = Number(qs('slot')) || 5;
     stage.style.setProperty('--pipe3-bg', `url("${popupBgForMeta({ slot, isBoss:false })}")`);
@@ -2037,10 +2038,10 @@
     hero.dataset.idleSrc = heroIdleSrc;
     hero.src = heroIdleSrc;
     hero.style.visibility = 'visible';
-    if (ogre) ogre.src = IMG.ogreIdle;
-    if (banana) banana.src = IMG.banana;
+    ogre.src = IMG.ogreIdle;
+    banana.src = IMG.banana;
 
-    const rotateAudios = Array.from({ length: 4 }, () => {
+    const rotateAudios = Array.from({ length: 3 }, () => {
       const a = new Audio(AUDIO_FILES.flip || assetUrl('assets/audio/flip.mp3'));
       a.preload = 'auto';
       a.volume = audioVolumeForKey('flip');
@@ -2051,11 +2052,7 @@
     function playRotateSound() {
       if (muted) return;
       const a = rotateAudios[rotateAudioIndex++ % rotateAudios.length];
-      try {
-        a.pause();
-        a.currentTime = 0;
-        a.play().catch(() => {});
-      } catch (_) {}
+      try { a.pause(); a.currentTime = 0; a.play().catch(() => {}); } catch (_) {}
     }
 
     const ROWS = 6;
@@ -2111,6 +2108,7 @@
     let checking = false;
     let finished = false;
     let started = false;
+    let pausedAt = 0;
     let encounterStopped = true;
     let encounterRaf = 0;
     let lives = MAX_HEARTS;
@@ -2125,7 +2123,6 @@
       livesWrap?.appendChild(img);
       return img;
     });
-
     function updateHearts() {
       heartNodes.forEach((node, index) => {
         node.src = index < lives ? HEART.full : HEART.broken;
@@ -2142,18 +2139,21 @@
         if (img.decode) img.decode().then(() => resolve(img)).catch(() => {});
       });
     }
-    Promise.all([...Object.values(IMG), HEART.full, HEART.broken, ASSETS.text.gewonnen, ASSETS.text.verloren].map(preloadImage)).catch(() => {});
+    Promise.all([
+      IMG.flakon, IMG.heroGuard, IMG.ogreIdle, IMG.ogreThrow, IMG.banana,
+      HEART.full, HEART.broken, ASSETS.text.gewonnen, ASSETS.text.verloren
+    ].map(preloadImage)).catch(() => {});
+    ['glass_break','hurt','richtig_1','richtig','minigame_background'].forEach(key => getAudio(key)?.load?.());
 
     function initTiles() {
       tiles = [];
       for (let r = 0; r < ROWS; r += 1) {
         for (let c = 0; c < COLS; c += 1) {
           const type = solution[r][c];
-          const isFilter = type === 'F';
           tiles.push({
             r, c, type,
             rotation: initialRot[r][c],
-            filter: isFilter,
+            filter: type === 'F',
             flow: false,
             locked: false
           });
@@ -2161,19 +2161,10 @@
       }
       computeFlowFromStart();
     }
-
-    function tileAt(r, c) {
-      return tiles.find(t => t.r === r && t.c === c);
-    }
-
-    function rotateDir(dir, rot) {
-      const i = ORDER.indexOf(dir);
-      return ORDER[(i + rot) % 4];
-    }
-    function openings(tile) {
-      return (BASE[tile.type] || []).map(d => rotateDir(d, tile.rotation));
-    }
-    function key(r,c) { return `${r},${c}`; }
+    const tileAt = (r, c) => tiles.find(t => t.r === r && t.c === c);
+    const rotateDir = (dir, rot) => ORDER[(ORDER.indexOf(dir) + rot) % 4];
+    const openings = tile => (BASE[tile.type] || []).map(d => rotateDir(d, tile.rotation));
+    const key = (r, c) => `${r},${c}`;
     function imgFor(tile) {
       const green = tile.flow || tile.locked;
       if (tile.type === 'F') return green ? IMG.Fg : IMG.F;
@@ -2186,16 +2177,11 @@
       board.innerHTML = tiles.map((tile, index) => {
         const rot = (tile.rotation % 4) * 90;
         const label = tile.type === 'F' ? 'Luftreinigungsfilter' : `Rohrstück ${tile.type}`;
-        return `<button class="pipe3-tile ${tile.filter ? 'filter' : 'rotatable'}" type="button" data-index="${index}" aria-label="${label}">
-          <img src="${imgFor(tile)}" alt="" style="transform:rotate(${rot}deg)">
-        </button>`;
+        return `<button class="pipe3-tile ${tile.filter ? 'filter' : 'rotatable'}" type="button" data-index="${index}" aria-label="${label}"><img src="${imgFor(tile)}" alt="" style="transform:rotate(${rot}deg)"></button>`;
       }).join('');
       updateTileClasses();
-      board.querySelectorAll('.pipe3-tile').forEach(btn => {
-        btn.addEventListener('click', () => onTileClick(Number(btn.dataset.index)));
-      });
+      board.querySelectorAll('.pipe3-tile').forEach(btn => btn.addEventListener('click', () => onTileClick(Number(btn.dataset.index))));
     }
-
     function updateTileClasses() {
       board.querySelectorAll('.pipe3-tile').forEach((node, index) => {
         const tile = tiles[index];
@@ -2211,26 +2197,18 @@
         }
       });
     }
-
     function onTileClick(index) {
       if (checking || finished) return;
       const tile = tiles[index];
       if (!tile || tile.filter || tile.locked) return;
       playRotateSound();
-      if (selected === index) {
-        tile.rotation = (tile.rotation + 1) % (tile.type === 'I' ? 2 : 4);
-      } else {
-        selected = index;
-      }
+      if (selected === index) tile.rotation = (tile.rotation + 1) % (tile.type === 'I' ? 2 : 4);
+      else selected = index;
       computeFlowFromStart();
       updateTileClasses();
       updateHud();
     }
-
-    function clearFlow() {
-      tiles.forEach(t => { t.flow = false; });
-    }
-
+    function clearFlow() { tiles.forEach(t => { t.flow = false; }); }
     function computeFlowFromStart() {
       clearFlow();
       const start = tileAt(START.r, START.c);
@@ -2243,16 +2221,14 @@
         const tile = q.shift();
         tile.flow = true;
         if (tile.filter) filters.add(key(tile.r, tile.c));
-        const open = openings(tile);
-        for (const dir of open) {
+        for (const dir of openings(tile)) {
           if (tile.r === EXIT.r && tile.c === EXIT.c && dir === EXIT.dir) continue;
-          const [dr,dc] = STEP[dir];
+          const [dr, dc] = STEP[dir];
           const nr = tile.r + dr, nc = tile.c + dc;
           if (nr < 0 || nc < 0 || nr >= ROWS || nc >= COLS) continue;
-          const next = tileAt(nr,nc);
-          if (!next) continue;
-          if (!openings(next).includes(OPP[dir])) continue;
-          const k = key(nr,nc);
+          const next = tileAt(nr, nc);
+          if (!next || !openings(next).includes(OPP[dir])) continue;
+          const k = key(nr, nc);
           if (visited.has(k)) continue;
           visited.add(k);
           q.push(next);
@@ -2262,7 +2238,6 @@
       const exit = Boolean(end && visited.has(key(EXIT.r, EXIT.c)) && openings(end).includes(EXIT.dir));
       return { exit, filters, visited };
     }
-
     function validatePipeSystem() {
       const result = computeFlowFromStart();
       const allFilters = [...filterCells].every(f => result.filters.has(f));
@@ -2270,24 +2245,17 @@
       updateHud();
       return result.exit && allFilters;
     }
-
     function updateHud(text) {
       if (!hud) return;
       if (text) { hud.textContent = text; return; }
       const result = computeFlowFromStart();
       hud.textContent = `Verbundene Filter ${result.filters.size} / ${FILTER_TOTAL}`;
     }
-
     function applyHint() {
       if (checking || finished) return;
       selected = null;
-      const target = hintPath
-        .map(([r,c]) => tileAt(r,c))
-        .find(tile => tile && !tile.filter && (!tile.locked || tile.rotation !== solvedRot[tile.r][tile.c]));
-      if (!target) {
-        updateHud('Der Lösungsweg ist bereits vollständig als Tipp gesetzt.');
-        return;
-      }
+      const target = hintPath.map(([r, c]) => tileAt(r, c)).find(tile => tile && !tile.filter && (!tile.locked || tile.rotation !== solvedRot[tile.r][tile.c]));
+      if (!target) { updateHud('Der Lösungsweg ist bereits vollständig als Tipp gesetzt.'); return; }
       target.rotation = solvedRot[target.r][target.c];
       target.locked = true;
       computeFlowFromStart();
@@ -2301,15 +2269,13 @@
     let guardState = 'ready';
     let guardActiveUntil = 0;
     let guardCooldownUntil = 0;
-
     function setGuardBarFill(progress) {
       if (!guardBarFill) return;
-      const p = Math.max(0, Math.min(1, progress));
-      guardBarFill.style.transform = `scaleX(${p})`;
+      guardBarFill.style.transform = `scaleX(${clamp(progress, 0, 1)})`;
     }
     function updateGuardUi() {
       if (!guardBtn) return;
-      const disabled = guardState !== 'ready' || !started || finished;
+      const disabled = guardState !== 'ready' || !started || finished || Boolean(pausedAt);
       guardBtn.disabled = disabled;
       guardBtn.classList.toggle('cooldown', disabled);
     }
@@ -2318,13 +2284,14 @@
       heroWrap?.classList.toggle('guarding', active);
     }
     function activateGuard() {
-      if (guardState !== 'ready' || finished || !started) return;
+      if (guardState !== 'ready' || finished || !started || pausedAt) return;
       const now = performance.now();
       guardState = 'active';
       guardActiveUntil = now + GUARD_ACTIVE_MS;
       setHeroGuarding(true);
       updateGuardUi();
       setGuardBarFill(1);
+      playSound('richtig');
     }
     function tickGuard(now) {
       if (guardState === 'active') {
@@ -2353,118 +2320,97 @@
     let activeBanana = null;
     let nextAttackAt = 0;
     let ogreThrowUntil = 0;
-
-    function scheduleNextAttack(now) {
-      nextAttackAt = now + 3000 + Math.random() * 3000;
-    }
+    function scheduleNextAttack(now) { nextAttackAt = now + 3000 + Math.random() * 3000; }
     function clearBanana() {
       activeBanana = null;
-      if (banana) {
-        banana.classList.add('hidden');
-        banana.style.opacity = '0';
-      }
+      banana.classList.add('hidden');
+      banana.style.opacity = '0';
     }
     function heroShake() {
       if (!heroWrap) return;
       heroWrap.classList.remove('hit');
       void heroWrap.offsetWidth;
       heroWrap.classList.add('hit');
-      window.setTimeout(() => heroWrap.classList.remove('hit'), 650);
+      window.setTimeout(() => heroWrap.classList.remove('hit'), 620);
     }
     function damageHero(now) {
       if (finished || now < invulnerableUntil) return;
-      invulnerableUntil = now + 900;
+      invulnerableUntil = now + 950;
       lives = Math.max(0, lives - 1);
       updateHearts();
-      playSound('hurt');
       playSound('glass_break');
+      playSound('hurt');
       heroShake();
       if (lives <= 0) {
         loseReason = 'lives';
-        window.setTimeout(() => showResult(false), 260);
+        window.setTimeout(() => showResult(false), 240);
       }
     }
     function startBananaDrop(now) {
-      if (!banana || !stage || !ogre || !hero) return;
       const stageRect = stage.getBoundingClientRect();
       const ogreRect = ogre.getBoundingClientRect();
       const heroRect = hero.getBoundingClientRect();
-      const startX = ogreRect.left - stageRect.left + ogreRect.width * 0.64;
-      const startY = ogreRect.top - stageRect.top + ogreRect.height * 0.48;
-      const endX = heroRect.left - stageRect.left + heroRect.width * 0.5;
-      const endY = heroRect.top - stageRect.top + heroRect.height * 0.84;
+      const heroCenterX = heroRect.left - stageRect.left + heroRect.width * 0.50;
+      const heroCenterY = heroRect.top - stageRect.top + heroRect.height * 0.45;
       activeBanana = {
         startTime: now,
-        duration: 3400,
-        startX,
-        startY,
-        endX,
-        endY,
+        duration: 3600,
+        startX: ogreRect.left - stageRect.left + ogreRect.width * 0.72,
+        startY: ogreRect.top - stageRect.top + ogreRect.height * 0.54,
+        endX: heroCenterX,
+        endY: heroCenterY,
         resolved: false
       };
       banana.classList.remove('hidden');
       banana.style.opacity = '1';
-      banana.style.left = `${startX}px`;
-      banana.style.top = `${startY}px`;
+      banana.style.left = `${activeBanana.startX}px`;
+      banana.style.top = `${activeBanana.startY}px`;
       banana.style.transform = 'translate(-50%, -50%) rotate(0deg)';
     }
     function startOgreAttack(now) {
-      if (finished || activeBanana || !started) return;
-      if (ogre) {
-        ogre.src = IMG.ogreThrow;
-        ogre.classList.add('throwing');
-      }
-      ogreThrowUntil = now + 780;
+      if (finished || activeBanana || !started || pausedAt) return;
+      ogre.src = IMG.ogreThrow;
+      ogre.classList.add('throwing');
+      ogreThrowUntil = now + 820;
       startBananaDrop(now);
     }
     function setOgreIdle() {
-      if (!ogre) return;
       ogre.src = IMG.ogreIdle;
       ogre.classList.remove('throwing');
     }
-    function intersects(a, b) {
-      return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
-    }
+    const intersects = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
     function resolveBanana(blocked, now) {
       if (!activeBanana) return;
-      if (banana) banana.style.opacity = blocked ? '0' : '.16';
-      if (blocked) playSound('collect');
+      banana.style.opacity = blocked ? '0' : '.18';
+      if (blocked) playSound('richtig_1');
       else damageHero(now);
-      window.setTimeout(clearBanana, blocked ? 120 : 160);
+      window.setTimeout(clearBanana, blocked ? 100 : 150);
       scheduleNextAttack(now);
     }
     function tickOgreAttack(now) {
-      if (finished || !started) return;
+      if (finished || !started || pausedAt) return;
       if (ogreThrowUntil && now >= ogreThrowUntil) {
         ogreThrowUntil = 0;
         setOgreIdle();
       }
       if (!activeBanana && now >= nextAttackAt) startOgreAttack(now);
-      if (!activeBanana || !banana || !hero || !stage) return;
-
-      const progress = Math.max(0, Math.min(1, (now - activeBanana.startTime) / activeBanana.duration));
-      const wobbleX = Math.sin(progress * Math.PI * 6) * 12;
-      const wobbleRot = Math.sin(progress * Math.PI * 8) * 13;
+      if (!activeBanana) return;
+      const progress = clamp((now - activeBanana.startTime) / activeBanana.duration, 0, 1);
+      const wobbleX = Math.sin(progress * Math.PI * 6) * 10;
+      const wobbleRot = Math.sin(progress * Math.PI * 8) * 12;
       const x = activeBanana.startX + (activeBanana.endX - activeBanana.startX) * progress + wobbleX;
-      const eased = 1 - Math.pow(1 - progress, 2.2);
-      const y = activeBanana.startY + (activeBanana.endY - activeBanana.startY) * eased;
+      const y = activeBanana.startY + (activeBanana.endY - activeBanana.startY) * (1 - Math.pow(1 - progress, 2.15));
       banana.style.left = `${x}px`;
       banana.style.top = `${y}px`;
       banana.style.transform = `translate(-50%, -50%) rotate(${wobbleRot}deg)`;
-
-      const bananaRect = {
-        left: x - 24,
-        right: x + 24,
-        top: y - 20,
-        bottom: y + 20
-      };
+      const bananaRect = { left:x - 26, right:x + 26, top:y - 24, bottom:y + 24 };
       const heroRect = hero.getBoundingClientRect();
       const stageRect = stage.getBoundingClientRect();
       const targetRect = {
-        left: heroRect.left - stageRect.left + heroRect.width * 0.16,
-        right: heroRect.left - stageRect.left + heroRect.width * 0.78,
-        top: heroRect.top - stageRect.top + heroRect.height * 0.2,
-        bottom: heroRect.top - stageRect.top + heroRect.height * 0.9
+        left: heroRect.left - stageRect.left + heroRect.width * 0.26,
+        right: heroRect.left - stageRect.left + heroRect.width * 0.74,
+        top: heroRect.top - stageRect.top + heroRect.height * 0.18,
+        bottom: heroRect.top - stageRect.top + heroRect.height * 0.72
       };
       if (!activeBanana.resolved && intersects(bananaRect, targetRect)) {
         activeBanana.resolved = true;
@@ -2478,16 +2424,37 @@
     }
 
     function encounterLoop(now) {
-      if (encounterStopped) return;
+      if (encounterStopped || pausedAt) return;
       const t = now || performance.now();
       tickGuard(t);
       tickOgreAttack(t);
+      encounterRaf = window.requestAnimationFrame(encounterLoop);
+    }
+    function pauseEncounter() {
+      if (!started || finished || pausedAt) return;
+      pausedAt = performance.now();
+      if (encounterRaf) window.cancelAnimationFrame(encounterRaf);
+      encounterRaf = 0;
+      updateGuardUi();
+    }
+    function resumeEncounter() {
+      if (!started || finished || !pausedAt) return;
+      const now = performance.now();
+      const shift = now - pausedAt;
+      if (guardState === 'active') guardActiveUntil += shift;
+      if (guardState === 'cooldown') guardCooldownUntil += shift;
+      if (activeBanana) activeBanana.startTime += shift;
+      if (nextAttackAt) nextAttackAt += shift;
+      if (ogreThrowUntil) ogreThrowUntil += shift;
+      pausedAt = 0;
+      updateGuardUi();
       encounterRaf = window.requestAnimationFrame(encounterLoop);
     }
     function startEncounter() {
       if (started) return;
       started = true;
       encounterStopped = false;
+      pausedAt = 0;
       updateGuardUi();
       hide(introModal);
       playSound('minigame_background', { loop:true, restart:true });
@@ -2499,6 +2466,7 @@
       if (finished) return;
       finished = true;
       encounterStopped = true;
+      pausedAt = 0;
       if (encounterRaf) window.cancelAnimationFrame(encounterRaf);
       stopSound('minigame_background');
       if (resultImage) {
@@ -2524,7 +2492,7 @@
         playSound('lose');
         resultTitle.textContent = 'Verloren';
         resultText.textContent = loseReason === 'lives'
-          ? 'Sir Nervus wurde zu oft von stinkenden Bananenschalen getroffen. Versuche es noch einmal!'
+          ? 'Sir Nervus wurde zu oft von stinkenden Bananenschalen getroffen. Nutze den Schild im richtigen Moment und versuche es noch einmal!'
           : 'Der Duftweg ist noch nicht richtig verbunden. Er muss vom unteren Ventil durch alle vier Filter bis zum Flakon am oberen Anschluss führen.';
         retryBtn.textContent = 'Neuer Versuch';
         retryBtn.onclick = () => location.reload();
@@ -2548,16 +2516,20 @@
         checking = false;
         if (!won) loseReason = '';
         showResult(won);
-      }, 2000);
+      }, 1500);
     });
 
     introStartBtn?.addEventListener('click', startEncounter);
     guardBtn?.addEventListener('click', activateGuard);
     hintBtn?.addEventListener('click', applyHint);
-    settingsBtn?.addEventListener('click', () => show(menu));
-    closeMenuBtn?.addEventListener('click', () => hide(menu));
+    settingsBtn?.addEventListener('click', () => { pauseEncounter(); show(menu); });
+    closeMenuBtn?.addEventListener('click', () => { hide(menu); resumeEncounter(); });
     menuBoardBtn?.addEventListener('click', () => { stopSound('minigame_background'); location.href = pageUrl('index.html'); });
     boardBtn?.addEventListener('click', () => { stopSound('minigame_background'); location.href = pageUrl('index.html'); });
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) pauseEncounter();
+      else if (!menu || menu.classList.contains('hidden')) resumeEncounter();
+    });
 
     initTiles();
     renderBoard();

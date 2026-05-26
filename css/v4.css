@@ -2697,3 +2697,50 @@ body[data-page="minigame"]{
     width:min(12vw, 48px)!important;
   }
 }
+
+/* === Smell pipe refinement v41 === */
+.pipe3-board-shell{
+  transform:translate(-50%, 20%)!important;
+}
+.pipe3-ogre-zone{
+  left:10px!important;
+  top:calc(max(16px, env(safe-area-inset-top) + 12px))!important;
+  width:min(30vw, 155px)!important;
+  height:min(22svh, 165px)!important;
+}
+.pipe3-ogre{
+  animation:pipe3OgrePulse 1.9s ease-in-out infinite!important;
+}
+.pipe3-ogre.throwing{
+  filter:drop-shadow(0 10px 12px rgba(0,0,0,.28)) brightness(1.03)!important;
+}
+@keyframes pipe3OgrePulse{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.04)}
+}
+.pipe3-banana{
+  width:min(16vw, 88px)!important;
+}
+.pipe3-bottom-zone{
+  width:min(44vw, 220px)!important;
+  height:min(28svh, 210px)!important;
+}
+.pipe3-topbar-lite{
+  top:max(8px, env(safe-area-inset-top) + 6px)!important;
+}
+.pipe3-intro-card p{
+  text-wrap:pretty!important;
+}
+@media(max-width:560px){
+  .pipe3-board-shell{
+    transform:translate(-50%, 18%)!important;
+  }
+  .pipe3-ogre-zone{
+    width:min(28vw, 118px)!important;
+    height:min(18svh, 110px)!important;
+    left:6px!important;
+  }
+  .pipe3-banana{
+    width:min(14vw, 62px)!important;
+  }
+}
