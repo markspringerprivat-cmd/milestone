@@ -2744,3 +2744,86 @@ body[data-page="minigame"]{
     width:min(14vw, 62px)!important;
   }
 }
+
+/* === Smell pipe refinement v42 === */
+.pipe3-ogre-zone{
+  left:28px!important;
+  width:min(30vw, 155px)!important;
+  height:min(22svh, 165px)!important;
+}
+.pipe3-ogre.shocked{
+  animation:pipe3OgreShocked 0.9s ease-in-out infinite!important;
+}
+@keyframes pipe3OgreShocked{
+  0%,100%{transform:scale(1) rotate(0deg)}
+  25%{transform:scale(1.03) rotate(-1.5deg)}
+  75%{transform:scale(1.03) rotate(1.5deg)}
+}
+.pipe3-bottom-zone{
+  width:min(48vw, 245px)!important;
+  height:min(31svh, 245px)!important;
+}
+.pipe3-bottom-zone .pipe3-hero{
+  height:min(23svh, 178px)!important;
+}
+.pipe3-hero-wrap.guarding .pipe3-hero{
+  transform:translateY(-3px) scale(1.1)!important;
+}
+.pipe3-guard-ui{
+  width:min(38vw, 185px)!important;
+  margin-left:10px!important;
+}
+.pipe3-guard-btn-bar{
+  position:relative!important;
+  overflow:hidden!important;
+  min-height:46px!important;
+  padding:0!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  background:rgba(104,84,35,.18)!important;
+  border:2px solid rgba(173,129,19,.62)!important;
+}
+.pipe3-guard-btn-bar .pipe3-guard-bar-fill{
+  position:absolute!important;
+  inset:0 auto 0 0!important;
+  width:100%!important;
+  height:100%!important;
+  background:linear-gradient(90deg,#ffe15c,#ffbe16)!important;
+  transform-origin:left center!important;
+  z-index:0!important;
+}
+.pipe3-guard-btn-label{
+  position:relative!important;
+  z-index:1!important;
+  font-weight:900!important;
+  color:#573600!important;
+  text-shadow:0 1px 0 rgba(255,255,255,.38)!important;
+}
+.pipe3-guard-btn:disabled .pipe3-guard-btn-label,
+.pipe3-guard-btn.cooldown .pipe3-guard-btn-label{
+  color:#686868!important;
+}
+.pipe3-guard-btn:disabled .pipe3-guard-bar-fill,
+.pipe3-guard-btn.cooldown .pipe3-guard-bar-fill{
+  background:linear-gradient(90deg,#d7d7d7,#aaaaaa)!important;
+}
+@media(max-width:560px){
+  .pipe3-ogre-zone{
+    left:20px!important;
+  }
+  .pipe3-bottom-zone{
+    width:min(50vw, 180px)!important;
+    height:min(29svh, 198px)!important;
+  }
+  .pipe3-bottom-zone .pipe3-hero{
+    height:min(18svh, 126px)!important;
+  }
+  .pipe3-guard-ui{
+    width:min(41vw, 138px)!important;
+    margin-left:2px!important;
+  }
+  .pipe3-guard-btn-bar{
+    min-height:40px!important;
+  }
+}

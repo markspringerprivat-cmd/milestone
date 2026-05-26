@@ -2026,6 +2026,7 @@
       heroGuard: assetUrl('assets/images/minigame3/hero_guard.png'),
       ogreIdle: assetUrl('assets/images/minigame3/ogre_idle.png'),
       ogreThrow: assetUrl('assets/images/minigame3/ogre_throw.png'),
+      ogreShocked: assetUrl('assets/images/minigame3/ogre_shocked.png'),
       banana: assetUrl('assets/images/minigame3/banana_peel.png')
     };
     const HEART = {
@@ -2140,10 +2141,10 @@
       });
     }
     Promise.all([
-      IMG.flakon, IMG.heroGuard, IMG.ogreIdle, IMG.ogreThrow, IMG.banana,
+      IMG.flakon, IMG.heroGuard, IMG.ogreIdle, IMG.ogreThrow, IMG.ogreShocked, IMG.banana,
       HEART.full, HEART.broken, ASSETS.text.gewonnen, ASSETS.text.verloren
     ].map(preloadImage)).catch(() => {});
-    ['glass_break','hurt','richtig_1','richtig','minigame_background'].forEach(key => getAudio(key)?.load?.());
+    ['glass_break','hurt','richtig_1','richtig_3','minigame_background'].forEach(key => getAudio(key)?.load?.());
 
     function initTiles() {
       tiles = [];
@@ -2291,7 +2292,7 @@
       setHeroGuarding(true);
       updateGuardUi();
       setGuardBarFill(1);
-      playSound('richtig');
+      playSound('richtig_3');
     }
     function tickGuard(now) {
       if (guardState === 'active') {
@@ -2355,9 +2356,9 @@
       activeBanana = {
         startTime: now,
         duration: 3600,
-        startX: ogreRect.left - stageRect.left + ogreRect.width * 0.72,
+        startX: ogreRect.left - stageRect.left + ogreRect.width * 0.72 - 2,
         startY: ogreRect.top - stageRect.top + ogreRect.height * 0.54,
-        endX: heroCenterX,
+        endX: heroCenterX - 2,
         endY: heroCenterY,
         resolved: false
       };
@@ -2376,7 +2377,12 @@
     }
     function setOgreIdle() {
       ogre.src = IMG.ogreIdle;
+      ogre.classList.remove('throwing','shocked');
+    }
+    function setOgreShocked() {
+      ogre.src = IMG.ogreShocked;
       ogre.classList.remove('throwing');
+      ogre.classList.add('shocked');
     }
     const intersects = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
     function resolveBanana(blocked, now) {
@@ -2384,7 +2390,7 @@
       banana.style.opacity = blocked ? '0' : '.18';
       if (blocked) playSound('richtig_1');
       else damageHero(now);
-      window.setTimeout(clearBanana, blocked ? 100 : 150);
+      window.setTimeout(clearBanana, blocked ? 90 : 140);
       scheduleNextAttack(now);
     }
     function tickOgreAttack(now) {
@@ -2504,6 +2510,10 @@
     valveBtn.addEventListener('click', () => {
       if (checking || finished) return;
       checking = true;
+      pauseEncounter();
+      encounterStopped = true;
+      clearBanana();
+      setOgreIdle();
       selected = null;
       computeFlowFromStart();
       updateTileClasses();
@@ -2513,10 +2523,14 @@
       window.setTimeout(() => {
         const won = validatePipeSystem();
         valveImg?.classList.remove('spinning');
-        checking = false;
-        if (!won) loseReason = '';
-        showResult(won);
-      }, 1500);
+        setOgreShocked();
+        updateHud(won ? 'Der Oger ist geschockt – der Duftweg sieht gut aus.' : 'Der Oger ist geschockt – prüfe deinen Duftweg noch einmal.');
+        window.setTimeout(() => {
+          checking = false;
+          if (!won) loseReason = '';
+          showResult(won);
+        }, 2000);
+      }, 2000);
     });
 
     introStartBtn?.addEventListener('click', startEncounter);
