@@ -1987,6 +1987,12 @@
     const hintBtn = $('pipe3HintBtn');
     const hud = $('pipe3Hud');
     const hero = $('pipe3Hero');
+    const heroWrap = hero?.closest('.pipe3-hero-wrap');
+    const guardBtn = $('pipe3GuardBtn');
+    const guardBarFill = $('pipe3GuardBarFill');
+    const ogre = $('pipe3Ogre');
+    const banana = $('pipe3Banana');
+    const topConnector = $('pipe3TopConnector');
     const resultModal = $('pipe3Result');
     const resultImage = $('pipe3ResultImage');
     const resultTitle = $('pipe3ResultTitle');
@@ -2012,8 +2018,23 @@
       Tg: assetUrl('assets/images/minigame3/pipe_T_green.png'),
       Fg: assetUrl('assets/images/minigame3/pipe_X_green.png'),
       no: assetUrl('assets/images/minigame3/no_pipe.png'),
-      valve: assetUrl('assets/images/minigame3/ventil.png')
+      valve: assetUrl('assets/images/minigame3/ventil.png'),
+      flakon: assetUrl('assets/images/minigame3/flakon_tile.png'),
+      heroGuard: assetUrl('assets/images/minigame3/hero_guard.png'),
+      ogreIdle: assetUrl('assets/images/minigame3/ogre_idle.png'),
+      ogreThrow: assetUrl('assets/images/minigame3/ogre_throw.png'),
+      banana: assetUrl('assets/images/minigame3/banana_peel.png')
     };
+
+    if (topConnector) topConnector.src = IMG.flakon;
+    const heroIdleSrc = hero?.getAttribute('src') || assetUrl('assets/images/minigame/mini_walk_right_1.png');
+    if (hero) {
+      hero.dataset.idleSrc = heroIdleSrc;
+      hero.src = heroIdleSrc;
+      hero.style.visibility = 'visible';
+    }
+    if (ogre) ogre.src = IMG.ogreIdle;
+    if (banana) banana.src = IMG.banana;
 
     const rotateAudios = Array.from({ length: 4 }, () => {
       const a = new Audio(AUDIO_FILES.flip || assetUrl('assets/audio/flip.mp3'));
@@ -2037,8 +2058,8 @@
     const COLS = 6;
     const FILTER_TOTAL = 4;
     const ENTRY_COL = 3;
-    const START = { r:5, c:ENTRY_COL, dir:'S' }; // Start unten: Ventil-Feld direkt unter der ersten Röhre
-    const EXIT = { r:0, c:ENTRY_COL, dir:'N' };  // Endpunkt oben: grüne Anschlusskachel
+    const START = { r:5, c:ENTRY_COL, dir:'S' };
+    const EXIT = { r:0, c:ENTRY_COL, dir:'N' };
     const OPP = { N:'S', E:'W', S:'N', W:'E' };
     const STEP = { N:[-1,0], E:[0,1], S:[1,0], W:[0,-1] };
     const ORDER = ['N','E','S','W'];
@@ -2049,8 +2070,6 @@
       F: ['N','E','S','W']
     };
 
-    // Festes Layout: Filter auf B2, E2, B5 und E5.
-    // Der Lösungsweg ist absichtlich verschlungen, aber eindeutig lösbar.
     const solution = [
       ['T','V','I','V','T','I'],
       ['V','F','T','V','F','V'],
@@ -2086,6 +2105,8 @@
     let selected = null;
     let checking = false;
     let finished = false;
+    let encounterStopped = false;
+    let encounterRaf = 0;
 
     function preloadImage(src) {
       return new Promise(resolve => {
@@ -2170,7 +2191,7 @@
       if (checking || finished) return;
       const tile = tiles[index];
       if (!tile || tile.filter || tile.locked) return;
-      playRotateSound(); // sofort beim Klick, bevor optisch gedreht wird
+      playRotateSound();
       if (selected === index) {
         tile.rotation = (tile.rotation + 1) % (tile.type === 'I' ? 2 : 4);
       } else {
@@ -2251,8 +2272,189 @@
       updateHud('Tipp gesetzt: Eine Weg-Kachel wurde korrekt eingerastet.');
     }
 
+    const GUARD_ACTIVE_MS = 1000;
+    const GUARD_COOLDOWN_MS = 1000;
+    let guardState = 'ready';
+    let guardActiveUntil = 0;
+    let guardCooldownUntil = 0;
+
+    function setGuardBarFill(progress) {
+      if (!guardBarFill) return;
+      const p = Math.max(0, Math.min(1, progress));
+      guardBarFill.style.transform = `scaleX(${p})`;
+    }
+    function updateGuardUi() {
+      if (!guardBtn) return;
+      const disabled = guardState !== 'ready';
+      guardBtn.disabled = disabled;
+      guardBtn.classList.toggle('cooldown', disabled);
+    }
+    function setHeroGuarding(active) {
+      if (!hero) return;
+      hero.src = active ? IMG.heroGuard : heroIdleSrc;
+      heroWrap?.classList.toggle('guarding', active);
+    }
+    function activateGuard() {
+      if (guardState !== 'ready' || finished) return;
+      const now = performance.now();
+      guardState = 'active';
+      guardActiveUntil = now + GUARD_ACTIVE_MS;
+      setHeroGuarding(true);
+      updateGuardUi();
+      setGuardBarFill(1);
+    }
+    function tickGuard(now) {
+      if (guardState === 'active') {
+        const remaining = Math.max(0, guardActiveUntil - now);
+        setGuardBarFill(remaining / GUARD_ACTIVE_MS);
+        if (remaining <= 0) {
+          guardState = 'cooldown';
+          guardCooldownUntil = now + GUARD_COOLDOWN_MS;
+          setHeroGuarding(false);
+          updateGuardUi();
+          setGuardBarFill(0);
+        }
+      } else if (guardState === 'cooldown') {
+        const elapsed = GUARD_COOLDOWN_MS - Math.max(0, guardCooldownUntil - now);
+        setGuardBarFill(elapsed / GUARD_COOLDOWN_MS);
+        if (now >= guardCooldownUntil) {
+          guardState = 'ready';
+          updateGuardUi();
+          setGuardBarFill(1);
+        }
+      } else {
+        setGuardBarFill(1);
+      }
+    }
+
+    let activeBanana = null;
+    let nextAttackAt = performance.now() + 2300;
+    let ogreThrowUntil = 0;
+
+    function scheduleNextAttack(now) {
+      nextAttackAt = now + 2000 + Math.random() * 2000;
+    }
+    function clearBanana() {
+      activeBanana = null;
+      if (banana) {
+        banana.classList.add('hidden');
+        banana.style.opacity = '0';
+      }
+    }
+    function heroShake() {
+      if (!heroWrap) return;
+      heroWrap.classList.remove('hit');
+      void heroWrap.offsetWidth;
+      heroWrap.classList.add('hit');
+      window.setTimeout(() => heroWrap.classList.remove('hit'), 650);
+    }
+    function startBananaDrop(now) {
+      if (!banana || !stage || !ogre || !hero) return;
+      const stageRect = stage.getBoundingClientRect();
+      const ogreRect = ogre.getBoundingClientRect();
+      const heroRect = hero.getBoundingClientRect();
+      const startX = ogreRect.left - stageRect.left + ogreRect.width * 0.68;
+      const startY = ogreRect.top - stageRect.top + ogreRect.height * 0.46;
+      const endX = heroRect.left - stageRect.left + heroRect.width * 0.5;
+      const endY = heroRect.top - stageRect.top + heroRect.height * 0.84;
+      activeBanana = {
+        startTime: now,
+        duration: 2300,
+        startX,
+        startY,
+        endX,
+        endY,
+        resolved: false
+      };
+      banana.classList.remove('hidden');
+      banana.style.opacity = '1';
+      banana.style.left = `${startX}px`;
+      banana.style.top = `${startY}px`;
+      banana.style.transform = 'translate(-50%, -50%) rotate(0deg)';
+    }
+    function startOgreAttack(now) {
+      if (finished || activeBanana) return;
+      if (ogre) {
+        ogre.src = IMG.ogreThrow;
+        ogre.classList.add('throwing');
+      }
+      ogreThrowUntil = now + 700;
+      startBananaDrop(now);
+    }
+    function setOgreIdle() {
+      if (!ogre) return;
+      ogre.src = IMG.ogreIdle;
+      ogre.classList.remove('throwing');
+    }
+    function intersects(a, b) {
+      return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+    }
+    function resolveBanana(blocked) {
+      if (!activeBanana) return;
+      if (banana) {
+        banana.style.opacity = blocked ? '0' : '.12';
+      }
+      if (!blocked) heroShake();
+      window.setTimeout(clearBanana, blocked ? 100 : 140);
+    }
+    function tickOgreAttack(now) {
+      if (finished) return;
+      if (ogreThrowUntil && now >= ogreThrowUntil) {
+        ogreThrowUntil = 0;
+        setOgreIdle();
+      }
+      if (!activeBanana && now >= nextAttackAt) {
+        startOgreAttack(now);
+      }
+      if (!activeBanana || !banana || !hero || !stage) return;
+
+      const progress = Math.max(0, Math.min(1, (now - activeBanana.startTime) / activeBanana.duration));
+      const wobbleX = Math.sin(progress * Math.PI * 6) * 12;
+      const wobbleRot = Math.sin(progress * Math.PI * 8) * 12;
+      const x = activeBanana.startX + (activeBanana.endX - activeBanana.startX) * progress + wobbleX;
+      const eased = 1 - Math.pow(1 - progress, 2);
+      const y = activeBanana.startY + (activeBanana.endY - activeBanana.startY) * eased;
+      banana.style.left = `${x}px`;
+      banana.style.top = `${y}px`;
+      banana.style.transform = `translate(-50%, -50%) rotate(${wobbleRot}deg)`;
+
+      const bananaRect = {
+        left: x - 20,
+        right: x + 20,
+        top: y - 18,
+        bottom: y + 18
+      };
+      const heroRect = hero.getBoundingClientRect();
+      const stageRect = stage.getBoundingClientRect();
+      const targetRect = {
+        left: heroRect.left - stageRect.left + heroRect.width * 0.16,
+        right: heroRect.left - stageRect.left + heroRect.width * 0.78,
+        top: heroRect.top - stageRect.top + heroRect.height * 0.2,
+        bottom: heroRect.top - stageRect.top + heroRect.height * 0.9
+      };
+      if (!activeBanana.resolved && intersects(bananaRect, targetRect)) {
+        activeBanana.resolved = true;
+        resolveBanana(guardState === 'active');
+        scheduleNextAttack(now);
+        return;
+      }
+      if (progress >= 1 && !activeBanana.resolved) {
+        activeBanana.resolved = true;
+        resolveBanana(guardState === 'active');
+        scheduleNextAttack(now);
+      }
+    }
+    function encounterLoop(now) {
+      if (encounterStopped) return;
+      tickGuard(now || performance.now());
+      tickOgreAttack(now || performance.now());
+      encounterRaf = window.requestAnimationFrame(encounterLoop);
+    }
+
     function showResult(won) {
       finished = true;
+      encounterStopped = true;
+      if (encounterRaf) window.cancelAnimationFrame(encounterRaf);
       stopSound('minigame_background');
       if (resultImage) {
         resultImage.src = won ? ASSETS.text.gewonnen : ASSETS.text.verloren;
@@ -2262,7 +2464,7 @@
       if (won) {
         playSound('win');
         resultTitle.textContent = 'Gewonnen';
-        resultText.textContent = 'Der Duft startet am Ventil, läuft durch alle vier Luftreinigungsfilter und erreicht den oberen Endpunkt. Aus dem Gestank wird ein gereinigter Duft.';
+        resultText.textContent = 'Der Duft startet am Ventil, läuft durch alle vier Luftreinigungsfilter und erreicht den Flakon am oberen Anschluss.';
         retryBtn.textContent = 'Zurück zum Spielfeld';
         hide(boardBtn);
         retryBtn.onclick = () => {
@@ -2276,7 +2478,7 @@
       } else {
         playSound('lose');
         resultTitle.textContent = 'Verloren';
-        resultText.textContent = 'Der Duftweg ist noch nicht richtig verbunden. Er muss vom unteren Ventil durch alle vier Filter bis zum oberen Endpunkt führen.';
+        resultText.textContent = 'Der Duftweg ist noch nicht richtig verbunden. Er muss vom unteren Ventil durch alle vier Filter bis zum Flakon am oberen Anschluss führen.';
         retryBtn.textContent = 'Neuer Versuch';
         retryBtn.onclick = () => location.reload();
         show(boardBtn);
@@ -2301,6 +2503,7 @@
       }, 2000);
     });
 
+    guardBtn?.addEventListener('click', activateGuard);
     hintBtn?.addEventListener('click', applyHint);
     settingsBtn?.addEventListener('click', () => show(menu));
     closeMenuBtn?.addEventListener('click', () => hide(menu));
@@ -2310,7 +2513,12 @@
     initTiles();
     renderBoard();
     updateHud();
-    if (hero) hero.style.visibility = 'visible';
+    updateGuardUi();
+    setGuardBarFill(1);
+    clearBanana();
+    setOgreIdle();
+    scheduleNextAttack(performance.now());
+    encounterRaf = window.requestAnimationFrame(encounterLoop);
   }
 
   function initCodes() {

@@ -4,29 +4,30 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>Riechen · Duftrohre</title>
-  <link rel="stylesheet" href="./css/style.css?v=v4_38_smell_fixed_hint_20260526">
-  <link rel="stylesheet" href="./css/v4.css?v=v4_38_smell_fixed_hint_20260526">
-  <script src="./js/app-v4.js?v=v4_38_smell_fixed_hint_20260526" defer></script>
+  <link rel="stylesheet" href="./css/style.css?v=v4_39_smell_guard_ogre_20260526">
+  <link rel="stylesheet" href="./css/v4.css?v=v4_39_smell_guard_ogre_20260526">
+  <script src="./js/app-v4.js?v=v4_39_smell_guard_ogre_20260526" defer></script>
 </head>
 <body data-page="minigame3">
   <main class="pipe3-page" aria-label="Riechsinn-Rohrsystem">
     <section class="pipe3-stage" aria-label="Duftrohr-Spielfeld">
       <button id="pipe3SettingsBtn" class="mini-settings-btn" type="button" aria-label="Optionen">⚙</button>
 
-      <div class="pipe3-topbar">
-        <div id="pipe3Hud" class="memory2-hud">Verbinde den Duft durch alle 4 Filter</div>
+      <div class="pipe3-topbar pipe3-topbar-hidden" aria-hidden="true">
+        <div id="pipe3Hud" class="memory2-hud"></div>
       </div>
 
-      <div class="pipe3-source" aria-hidden="true">
-        <span>Endpunkt: gereinigter Duft</span>
-        <strong>↑</strong>
+      <div class="pipe3-source pipe3-source-hidden" aria-hidden="true"></div>
+
+      <div id="pipe3OgreZone" class="pipe3-ogre-zone" aria-label="Oger-Angriff">
+        <img id="pipe3Ogre" class="pipe3-ogre" src="./assets/images/minigame3/ogre_idle.png" alt="Oger">
+        <img id="pipe3Banana" class="pipe3-banana hidden" src="./assets/images/minigame3/banana_peel.png" alt="" aria-hidden="true">
       </div>
 
       <div id="pipe3BoardShell" class="pipe3-board-shell" aria-label="Rohrsystem">
-        <img id="pipe3TopConnector" class="pipe3-connector top" src="./assets/images/minigame3/pipe_I_green.png" alt="" aria-hidden="true">
+        <img id="pipe3TopConnector" class="pipe3-connector top pipe3-flakon-top" src="./assets/images/minigame3/flakon_tile.png" alt="Flakon-Endstück" aria-hidden="true">
         <div id="pipe3Board" class="pipe3-board" aria-label="Rohrkacheln"></div>
-        <div class="pipe3-valve-pad pipe3-valve-cell" aria-label="Startventil">
-          <span class="pipe3-start-label">Start: Ventil</span>
+        <div class="pipe3-valve-pad pipe3-valve-cell" aria-label="Ventilfeld">
           <img class="pipe3-no-pipe" src="./assets/images/minigame3/no_pipe.png" alt="">
           <button id="pipe3ValveBtn" class="pipe3-valve-btn" type="button" aria-label="Ventil drehen und Duftleitung prüfen">
             <img id="pipe3ValveImg" src="./assets/images/minigame3/ventil.png" alt="">
@@ -37,13 +38,21 @@
       <button id="pipe3HintBtn" class="pipe3-hint-btn" type="button" aria-label="Tipp anzeigen">Tipp</button>
 
       <div class="pipe3-bottom-zone" aria-label="Sir Nervus">
-        <img id="pipe3Hero" class="pipe3-hero" src="./assets/images/minigame/mini_walk_right_1.png" alt="Sir Nervus">
+        <div class="pipe3-hero-wrap">
+          <img id="pipe3Hero" class="pipe3-hero" src="./assets/images/minigame/mini_walk_right_1.png" alt="Sir Nervus">
+          <div class="pipe3-guard-ui" aria-label="Schutzsteuerung">
+            <div class="pipe3-guard-bar" aria-hidden="true">
+              <span id="pipe3GuardBarFill" class="pipe3-guard-bar-fill"></span>
+            </div>
+            <button id="pipe3GuardBtn" class="pipe3-guard-btn" type="button" aria-label="Schutz aktivieren">Schutz</button>
+          </div>
+        </div>
       </div>
 
       <div id="pipe3Menu" class="modal hidden">
         <div class="modal-card">
           <h2>Pause</h2>
-          <p>Ordne die Rohre so, dass der Duft vom Ventil durch alle vier Filter bis zum oberen Endpunkt gelangt. Mit Tipp wird eine Weg-Kachel korrekt eingesetzt.</p>
+          <p>Ordne die Rohre so, dass der Duft vom Ventil durch alle vier Luftreinigungsfilter bis zum oberen Endpunkt gelangt. Mit Tipp wird eine Weg-Kachel korrekt eingesetzt.</p>
           <div class="modal-actions">
             <button id="pipe3CloseMenuBtn" class="game-btn" type="button">Weiter</button>
             <button id="pipe3MenuBoardBtn" class="game-btn muted" type="button">Zurück zum Spielfeld</button>
