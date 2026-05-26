@@ -2827,3 +2827,63 @@ body[data-page="minigame"]{
     min-height:40px!important;
   }
 }
+
+/* === Smell pipe refinement v43 === */
+.pipe3-spray-overlay{
+  position:absolute!important;
+  left:clamp(10px, 3vw, 36px)!important;
+  top:clamp(36px, 8vh, 84px)!important;
+  width:min(62vw, 500px)!important;
+  height:auto!important;
+  z-index:22!important;
+  pointer-events:none!important;
+  opacity:0!important;
+  transition:opacity .85s ease!important;
+  filter:drop-shadow(0 10px 16px rgba(167,115,223,.22))!important;
+}
+.pipe3-spray-overlay.fade-out{
+  opacity:0!important;
+}
+.pipe3-spray-overlay:not(.hidden){
+  opacity:1!important;
+}
+.pipe3-ogre-zone{
+  width:min(28vw, 142px)!important;
+  height:min(21svh, 150px)!important;
+}
+.pipe3-bottom-zone{
+  width:min(52vw, 265px)!important;
+  height:min(33svh, 258px)!important;
+}
+.pipe3-bottom-zone .pipe3-hero{
+  height:min(24svh, 190px)!important;
+}
+.pipe3-guard-ui{
+  width:min(40vw, 195px)!important;
+}
+.pipe3-result-extra{
+  max-width:min(68vw, 360px)!important;
+  margin:6px auto 10px!important;
+  display:block!important;
+}
+@media(max-width:560px){
+  .pipe3-spray-overlay{
+    width:min(72vw, 320px)!important;
+    left:8px!important;
+    top:44px!important;
+  }
+  .pipe3-ogre-zone{
+    width:min(26vw, 108px)!important;
+    height:min(16svh, 96px)!important;
+  }
+  .pipe3-bottom-zone{
+    width:min(52vw, 194px)!important;
+    height:min(31svh, 210px)!important;
+  }
+  .pipe3-bottom-zone .pipe3-hero{
+    height:min(20svh, 138px)!important;
+  }
+  .pipe3-guard-ui{
+    width:min(44vw, 150px)!important;
+  }
+}

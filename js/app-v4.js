@@ -143,7 +143,7 @@
     levelstart: 'assets/audio/levelstart.mp3', levelunlocked: 'assets/audio/levelunlocked.mp3', fight: 'assets/audio/fight.mp3', win: 'assets/audio/win.mp3', lose: 'assets/audio/lose.mp3',
     final: 'assets/audio/final.mp3', hurt: 'assets/audio/hurt.mp3', glass_break: 'assets/audio/glass_break.mp3', collect: 'assets/audio/collect.mp3',
     flip: 'assets/audio/flip.mp3', pair: 'assets/audio/pair.mp3', richtig: 'assets/audio/richtig.mp3',
-    richtig_1: 'assets/audio/richtig_1.mp3', richtig_2: 'assets/audio/richtig_2.mp3', richtig_3: 'assets/audio/richtig_3.mp3',
+    richtig_1: 'assets/audio/richtig_1.mp3', richtig_2: 'assets/audio/richtig_2.mp3', richtig_3: 'assets/audio/richtig_3.mp3', spray: 'assets/audio/spray.mp3',
     falsch_1: 'assets/audio/falsch_1.mp3', falsch_2: 'assets/audio/falsch_2.mp3', falsch_3: 'assets/audio/falsch_3.mp3'
   };
 
@@ -1993,11 +1993,13 @@
     const guardBarFill = $('pipe3GuardBarFill');
     const ogre = $('pipe3Ogre');
     const banana = $('pipe3Banana');
+    const sprayOverlay = $('pipe3SprayOverlay');
     const topConnector = $('pipe3TopConnector');
     const introModal = $('pipe3Intro');
     const introStartBtn = $('pipe3IntroStartBtn');
     const resultModal = $('pipe3Result');
     const resultImage = $('pipe3ResultImage');
+    const resultExtraImage = $('pipe3ResultExtraImage');
     const resultTitle = $('pipe3ResultTitle');
     const resultText = $('pipe3ResultText');
     const retryBtn = $('pipe3RetryBtn');
@@ -2027,7 +2029,10 @@
       ogreIdle: assetUrl('assets/images/minigame3/ogre_idle.png'),
       ogreThrow: assetUrl('assets/images/minigame3/ogre_throw.png'),
       ogreShocked: assetUrl('assets/images/minigame3/ogre_shocked.png'),
-      banana: assetUrl('assets/images/minigame3/banana_peel.png')
+      ogreClean: assetUrl('assets/images/minigame3/ogre_clean.png'),
+      banana: assetUrl('assets/images/minigame3/banana_peel.png'),
+      sprayOverlay: assetUrl('assets/images/minigame3/spray_overlay.png'),
+      feedBanana: assetUrl('assets/images/minigame3/feed_banana.png')
     };
     const HEART = {
       full: assetUrl('assets/images/minigame/mini_heart_full.png'),
@@ -2041,6 +2046,7 @@
     hero.style.visibility = 'visible';
     ogre.src = IMG.ogreIdle;
     banana.src = IMG.banana;
+    if (sprayOverlay) sprayOverlay.src = IMG.sprayOverlay;
 
     const rotateAudios = Array.from({ length: 3 }, () => {
       const a = new Audio(AUDIO_FILES.flip || assetUrl('assets/audio/flip.mp3'));
@@ -2141,10 +2147,10 @@
       });
     }
     Promise.all([
-      IMG.flakon, IMG.heroGuard, IMG.ogreIdle, IMG.ogreThrow, IMG.ogreShocked, IMG.banana,
+      IMG.flakon, IMG.heroGuard, IMG.ogreIdle, IMG.ogreThrow, IMG.ogreShocked, IMG.ogreClean, IMG.banana, IMG.sprayOverlay, IMG.feedBanana,
       HEART.full, HEART.broken, ASSETS.text.gewonnen, ASSETS.text.verloren
     ].map(preloadImage)).catch(() => {});
-    ['glass_break','hurt','richtig_1','richtig_3','minigame_background'].forEach(key => getAudio(key)?.load?.());
+    ['glass_break','hurt','richtig_1','richtig_3','spray','minigame_background'].forEach(key => getAudio(key)?.load?.());
 
     function initTiles() {
       tiles = [];
@@ -2327,6 +2333,21 @@
       banana.classList.add('hidden');
       banana.style.opacity = '0';
     }
+    function resetSprayOverlay() {
+      if (!sprayOverlay) return;
+      sprayOverlay.classList.add('hidden');
+      sprayOverlay.classList.remove('fade-out');
+      sprayOverlay.style.opacity = '0';
+    }
+    function showSprayOverlay() {
+      if (!sprayOverlay) return;
+      sprayOverlay.classList.remove('hidden','fade-out');
+      sprayOverlay.style.opacity = '1';
+    }
+    function fadeSprayOverlay() {
+      if (!sprayOverlay) return;
+      sprayOverlay.classList.add('fade-out');
+    }
     function heroShake() {
       if (!heroWrap) return;
       heroWrap.classList.remove('hit');
@@ -2464,6 +2485,7 @@
       updateGuardUi();
       hide(introModal);
       playSound('minigame_background', { loop:true, restart:true });
+      resetSprayOverlay();
       scheduleNextAttack(performance.now());
       encounterRaf = window.requestAnimationFrame(encounterLoop);
     }
@@ -2475,6 +2497,9 @@
       pausedAt = 0;
       if (encounterRaf) window.cancelAnimationFrame(encounterRaf);
       stopSound('minigame_background');
+      if (resultExtraImage) hide(resultExtraImage);
+      if (resultText) show(resultText);
+      if (resultTitle) show(resultTitle);
       if (resultImage) {
         resultImage.src = won ? ASSETS.text.gewonnen : ASSETS.text.verloren;
         resultImage.alt = won ? 'Gewonnen' : 'Verloren';
@@ -2496,13 +2521,28 @@
         };
       } else {
         playSound('lose');
-        resultTitle.textContent = 'Verloren';
-        resultText.textContent = loseReason === 'lives'
-          ? 'Sir Nervus wurde zu oft von stinkenden Bananenschalen getroffen. Nutze den Schild im richtigen Moment und versuche es noch einmal!'
-          : 'Der Duftweg ist noch nicht richtig verbunden. Er muss vom unteren Ventil durch alle vier Filter bis zum Flakon am oberen Anschluss führen.';
         retryBtn.textContent = 'Neuer Versuch';
         retryBtn.onclick = () => location.reload();
         show(boardBtn);
+        if (loseReason === 'lives') {
+          if (resultImage) {
+            resultImage.src = ASSETS.text.verloren;
+            resultImage.alt = 'Verloren';
+            show(resultImage);
+          }
+          resultTitle.textContent = '';
+          resultText.textContent = '';
+          if (resultTitle) hide(resultTitle);
+          if (resultText) hide(resultText);
+          if (resultExtraImage) {
+            resultExtraImage.src = IMG.feedBanana;
+            resultExtraImage.alt = 'Sir Nervus unter einem Berg Bananen';
+            show(resultExtraImage);
+          }
+        } else {
+          resultTitle.textContent = 'Verloren';
+          resultText.textContent = 'Der Duftweg ist noch nicht richtig verbunden. Er muss vom unteren Ventil durch alle vier Filter bis zum Flakon am oberen Anschluss führen.';
+        }
       }
       show(resultModal);
     }
@@ -2513,24 +2553,37 @@
       pauseEncounter();
       encounterStopped = true;
       clearBanana();
+      resetSprayOverlay();
       setOgreIdle();
       selected = null;
-      computeFlowFromStart();
+      const won = validatePipeSystem();
       updateTileClasses();
-      updateHud('Das Ventil leitet den Duft durch die grünen Rohre …');
+      updateHud(won ? 'Der Duft wird versprüht …' : 'Das Ventil leitet den Duft durch die grünen Rohre …');
       valveImg?.classList.add('spinning');
       playSound('levelstart');
-      window.setTimeout(() => {
-        const won = validatePipeSystem();
-        valveImg?.classList.remove('spinning');
-        setOgreShocked();
-        updateHud(won ? 'Der Oger ist geschockt – der Duftweg sieht gut aus.' : 'Der Oger ist geschockt – prüfe deinen Duftweg noch einmal.');
+      if (won) playSound('spray');
+      if (won) {
+        showSprayOverlay();
         window.setTimeout(() => {
-          checking = false;
-          if (!won) loseReason = '';
-          showResult(won);
+          valveImg?.classList.remove('spinning');
+          fadeSprayOverlay();
+          ogre.src = IMG.ogreClean;
+          ogre.classList.remove('throwing','shocked');
+          updateHud('Der Oger ist jetzt sauber.');
+          window.setTimeout(() => {
+            resetSprayOverlay();
+            checking = false;
+            showResult(true);
+          }, 1800);
         }, 2000);
-      }, 2000);
+      } else {
+        window.setTimeout(() => {
+          valveImg?.classList.remove('spinning');
+          checking = false;
+          loseReason = '';
+          showResult(false);
+        }, 2000);
+      }
     });
 
     introStartBtn?.addEventListener('click', startEncounter);
@@ -2552,6 +2605,7 @@
     updateGuardUi();
     setGuardBarFill(1);
     clearBanana();
+    resetSprayOverlay();
     setOgreIdle();
     show(introModal);
   }
