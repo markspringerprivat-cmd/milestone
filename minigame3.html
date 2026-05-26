@@ -4,17 +4,18 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>Riechen · Duftrohre</title>
-  <link rel="stylesheet" href="./css/style.css?v=v4_39_smell_guard_ogre_20260526">
-  <link rel="stylesheet" href="./css/v4.css?v=v4_39_smell_guard_ogre_20260526">
-  <script src="./js/app-v4.js?v=v4_39_smell_guard_ogre_20260526" defer></script>
+  <link rel="stylesheet" href="./css/style.css?v=v4_40_smell_guard_ogre_hearts_20260526">
+  <link rel="stylesheet" href="./css/v4.css?v=v4_40_smell_guard_ogre_hearts_20260526">
+  <script src="./js/app-v4.js?v=v4_40_smell_guard_ogre_hearts_20260526" defer></script>
 </head>
 <body data-page="minigame3">
   <main class="pipe3-page" aria-label="Riechsinn-Rohrsystem">
     <section class="pipe3-stage" aria-label="Duftrohr-Spielfeld">
       <button id="pipe3SettingsBtn" class="mini-settings-btn" type="button" aria-label="Optionen">⚙</button>
 
-      <div class="pipe3-topbar pipe3-topbar-hidden" aria-hidden="true">
-        <div id="pipe3Hud" class="memory2-hud"></div>
+      <div class="pipe3-topbar pipe3-topbar-lite">
+        <div id="pipe3Hud" class="memory2-hud pipe3-hidden-utility" aria-live="polite"></div>
+        <div id="pipe3Lives" class="memory2-lives" aria-label="Lebensanzeige"></div>
       </div>
 
       <div class="pipe3-source pipe3-source-hidden" aria-hidden="true"></div>
@@ -49,10 +50,21 @@
         </div>
       </div>
 
+      <div id="pipe3Intro" class="modal">
+        <div class="modal-card pipe3-intro-card">
+          <h2>Duftrohre & Duftschutz</h2>
+          <p>Geruch entsteht, wenn Duftmoleküle durch die Luft wandern und in deine Nase gelangen. Manche Düfte sind angenehm, andere warnen uns vor Verdorbenem oder Gefahren.</p>
+          <p>Im Spiel leitest du die Duftmoleküle durch alle vier Filter bis zum Flakon. Gleichzeitig wirft der Oger stinkende Bananenschalen. Schütze Sir Nervus im richtigen Moment mit dem Schild!</p>
+          <div class="modal-actions">
+            <button id="pipe3IntroStartBtn" class="game-btn" type="button">Spiel starten</button>
+          </div>
+        </div>
+      </div>
+
       <div id="pipe3Menu" class="modal hidden">
         <div class="modal-card">
           <h2>Pause</h2>
-          <p>Ordne die Rohre so, dass der Duft vom Ventil durch alle vier Luftreinigungsfilter bis zum oberen Endpunkt gelangt. Mit Tipp wird eine Weg-Kachel korrekt eingesetzt.</p>
+          <p>Ordne die Rohre so, dass der Duft vom Ventil durch alle vier Luftreinigungsfilter bis zum Flakon gelangt. Nutze den Schutz-Button, um Sir Nervus vor Bananenschalen zu schützen.</p>
           <div class="modal-actions">
             <button id="pipe3CloseMenuBtn" class="game-btn" type="button">Weiter</button>
             <button id="pipe3MenuBoardBtn" class="game-btn muted" type="button">Zurück zum Spielfeld</button>

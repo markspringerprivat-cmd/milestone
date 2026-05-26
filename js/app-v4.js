@@ -1978,7 +1978,6 @@
     addSpeaker();
     stopSound('background');
     stopSound('battle_background');
-    playSound('minigame_background', { loop:true, restart:true });
 
     const stage = document.querySelector('.pipe3-stage');
     const board = $('pipe3Board');
@@ -1986,6 +1985,7 @@
     const valveImg = $('pipe3ValveImg');
     const hintBtn = $('pipe3HintBtn');
     const hud = $('pipe3Hud');
+    const livesWrap = $('pipe3Lives');
     const hero = $('pipe3Hero');
     const heroWrap = hero?.closest('.pipe3-hero-wrap');
     const guardBtn = $('pipe3GuardBtn');
@@ -1993,6 +1993,8 @@
     const ogre = $('pipe3Ogre');
     const banana = $('pipe3Banana');
     const topConnector = $('pipe3TopConnector');
+    const introModal = $('pipe3Intro');
+    const introStartBtn = $('pipe3IntroStartBtn');
     const resultModal = $('pipe3Result');
     const resultImage = $('pipe3ResultImage');
     const resultTitle = $('pipe3ResultTitle');
@@ -2003,7 +2005,7 @@
     const menu = $('pipe3Menu');
     const menuBoardBtn = $('pipe3MenuBoardBtn');
     const closeMenuBtn = $('pipe3CloseMenuBtn');
-    if (!stage || !board || !valveBtn) return;
+    if (!stage || !board || !valveBtn || !hero) return;
 
     const slot = Number(qs('slot')) || 5;
     stage.style.setProperty('--pipe3-bg', `url("${popupBgForMeta({ slot, isBoss:false })}")`);
@@ -2025,14 +2027,16 @@
       ogreThrow: assetUrl('assets/images/minigame3/ogre_throw.png'),
       banana: assetUrl('assets/images/minigame3/banana_peel.png')
     };
+    const HEART = {
+      full: assetUrl('assets/images/minigame/mini_heart_full.png'),
+      broken: assetUrl('assets/images/minigame/mini_heart_broken.png')
+    };
 
+    const heroIdleSrc = hero.getAttribute('src') || assetUrl('assets/images/minigame/mini_walk_right_1.png');
     if (topConnector) topConnector.src = IMG.flakon;
-    const heroIdleSrc = hero?.getAttribute('src') || assetUrl('assets/images/minigame/mini_walk_right_1.png');
-    if (hero) {
-      hero.dataset.idleSrc = heroIdleSrc;
-      hero.src = heroIdleSrc;
-      hero.style.visibility = 'visible';
-    }
+    hero.dataset.idleSrc = heroIdleSrc;
+    hero.src = heroIdleSrc;
+    hero.style.visibility = 'visible';
     if (ogre) ogre.src = IMG.ogreIdle;
     if (banana) banana.src = IMG.banana;
 
@@ -2057,6 +2061,7 @@
     const ROWS = 6;
     const COLS = 6;
     const FILTER_TOTAL = 4;
+    const MAX_HEARTS = 3;
     const ENTRY_COL = 3;
     const START = { r:5, c:ENTRY_COL, dir:'S' };
     const EXIT = { r:0, c:ENTRY_COL, dir:'N' };
@@ -2105,8 +2110,28 @@
     let selected = null;
     let checking = false;
     let finished = false;
-    let encounterStopped = false;
+    let started = false;
+    let encounterStopped = true;
     let encounterRaf = 0;
+    let lives = MAX_HEARTS;
+    let invulnerableUntil = 0;
+    let loseReason = '';
+
+    const heartNodes = Array.from({ length: MAX_HEARTS }, (_, index) => {
+      const img = document.createElement('img');
+      img.className = 'memory2-heart';
+      img.alt = index === 0 ? 'Leben' : '';
+      if (index > 0) img.setAttribute('aria-hidden', 'true');
+      livesWrap?.appendChild(img);
+      return img;
+    });
+
+    function updateHearts() {
+      heartNodes.forEach((node, index) => {
+        node.src = index < lives ? HEART.full : HEART.broken;
+        node.classList.toggle('broken', index >= lives);
+      });
+    }
 
     function preloadImage(src) {
       return new Promise(resolve => {
@@ -2117,7 +2142,7 @@
         if (img.decode) img.decode().then(() => resolve(img)).catch(() => {});
       });
     }
-    Promise.all([...Object.values(IMG), ASSETS.text.gewonnen, ASSETS.text.verloren].map(preloadImage)).catch(() => {});
+    Promise.all([...Object.values(IMG), HEART.full, HEART.broken, ASSETS.text.gewonnen, ASSETS.text.verloren].map(preloadImage)).catch(() => {});
 
     function initTiles() {
       tiles = [];
@@ -2250,7 +2275,6 @@
       if (!hud) return;
       if (text) { hud.textContent = text; return; }
       const result = computeFlowFromStart();
-      updateTileClasses();
       hud.textContent = `Verbundene Filter ${result.filters.size} / ${FILTER_TOTAL}`;
     }
 
@@ -2285,17 +2309,16 @@
     }
     function updateGuardUi() {
       if (!guardBtn) return;
-      const disabled = guardState !== 'ready';
+      const disabled = guardState !== 'ready' || !started || finished;
       guardBtn.disabled = disabled;
       guardBtn.classList.toggle('cooldown', disabled);
     }
     function setHeroGuarding(active) {
-      if (!hero) return;
       hero.src = active ? IMG.heroGuard : heroIdleSrc;
       heroWrap?.classList.toggle('guarding', active);
     }
     function activateGuard() {
-      if (guardState !== 'ready' || finished) return;
+      if (guardState !== 'ready' || finished || !started) return;
       const now = performance.now();
       guardState = 'active';
       guardActiveUntil = now + GUARD_ACTIVE_MS;
@@ -2328,11 +2351,11 @@
     }
 
     let activeBanana = null;
-    let nextAttackAt = performance.now() + 2300;
+    let nextAttackAt = 0;
     let ogreThrowUntil = 0;
 
     function scheduleNextAttack(now) {
-      nextAttackAt = now + 2000 + Math.random() * 2000;
+      nextAttackAt = now + 3000 + Math.random() * 3000;
     }
     function clearBanana() {
       activeBanana = null;
@@ -2348,18 +2371,31 @@
       heroWrap.classList.add('hit');
       window.setTimeout(() => heroWrap.classList.remove('hit'), 650);
     }
+    function damageHero(now) {
+      if (finished || now < invulnerableUntil) return;
+      invulnerableUntil = now + 900;
+      lives = Math.max(0, lives - 1);
+      updateHearts();
+      playSound('hurt');
+      playSound('glass_break');
+      heroShake();
+      if (lives <= 0) {
+        loseReason = 'lives';
+        window.setTimeout(() => showResult(false), 260);
+      }
+    }
     function startBananaDrop(now) {
       if (!banana || !stage || !ogre || !hero) return;
       const stageRect = stage.getBoundingClientRect();
       const ogreRect = ogre.getBoundingClientRect();
       const heroRect = hero.getBoundingClientRect();
-      const startX = ogreRect.left - stageRect.left + ogreRect.width * 0.68;
-      const startY = ogreRect.top - stageRect.top + ogreRect.height * 0.46;
+      const startX = ogreRect.left - stageRect.left + ogreRect.width * 0.64;
+      const startY = ogreRect.top - stageRect.top + ogreRect.height * 0.48;
       const endX = heroRect.left - stageRect.left + heroRect.width * 0.5;
       const endY = heroRect.top - stageRect.top + heroRect.height * 0.84;
       activeBanana = {
         startTime: now,
-        duration: 2300,
+        duration: 3400,
         startX,
         startY,
         endX,
@@ -2373,12 +2409,12 @@
       banana.style.transform = 'translate(-50%, -50%) rotate(0deg)';
     }
     function startOgreAttack(now) {
-      if (finished || activeBanana) return;
+      if (finished || activeBanana || !started) return;
       if (ogre) {
         ogre.src = IMG.ogreThrow;
         ogre.classList.add('throwing');
       }
-      ogreThrowUntil = now + 700;
+      ogreThrowUntil = now + 780;
       startBananaDrop(now);
     }
     function setOgreIdle() {
@@ -2389,40 +2425,38 @@
     function intersects(a, b) {
       return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
     }
-    function resolveBanana(blocked) {
+    function resolveBanana(blocked, now) {
       if (!activeBanana) return;
-      if (banana) {
-        banana.style.opacity = blocked ? '0' : '.12';
-      }
-      if (!blocked) heroShake();
-      window.setTimeout(clearBanana, blocked ? 100 : 140);
+      if (banana) banana.style.opacity = blocked ? '0' : '.16';
+      if (blocked) playSound('collect');
+      else damageHero(now);
+      window.setTimeout(clearBanana, blocked ? 120 : 160);
+      scheduleNextAttack(now);
     }
     function tickOgreAttack(now) {
-      if (finished) return;
+      if (finished || !started) return;
       if (ogreThrowUntil && now >= ogreThrowUntil) {
         ogreThrowUntil = 0;
         setOgreIdle();
       }
-      if (!activeBanana && now >= nextAttackAt) {
-        startOgreAttack(now);
-      }
+      if (!activeBanana && now >= nextAttackAt) startOgreAttack(now);
       if (!activeBanana || !banana || !hero || !stage) return;
 
       const progress = Math.max(0, Math.min(1, (now - activeBanana.startTime) / activeBanana.duration));
       const wobbleX = Math.sin(progress * Math.PI * 6) * 12;
-      const wobbleRot = Math.sin(progress * Math.PI * 8) * 12;
+      const wobbleRot = Math.sin(progress * Math.PI * 8) * 13;
       const x = activeBanana.startX + (activeBanana.endX - activeBanana.startX) * progress + wobbleX;
-      const eased = 1 - Math.pow(1 - progress, 2);
+      const eased = 1 - Math.pow(1 - progress, 2.2);
       const y = activeBanana.startY + (activeBanana.endY - activeBanana.startY) * eased;
       banana.style.left = `${x}px`;
       banana.style.top = `${y}px`;
       banana.style.transform = `translate(-50%, -50%) rotate(${wobbleRot}deg)`;
 
       const bananaRect = {
-        left: x - 20,
-        right: x + 20,
-        top: y - 18,
-        bottom: y + 18
+        left: x - 24,
+        right: x + 24,
+        top: y - 20,
+        bottom: y + 20
       };
       const heroRect = hero.getBoundingClientRect();
       const stageRect = stage.getBoundingClientRect();
@@ -2434,24 +2468,35 @@
       };
       if (!activeBanana.resolved && intersects(bananaRect, targetRect)) {
         activeBanana.resolved = true;
-        resolveBanana(guardState === 'active');
-        scheduleNextAttack(now);
+        resolveBanana(guardState === 'active', now);
         return;
       }
       if (progress >= 1 && !activeBanana.resolved) {
         activeBanana.resolved = true;
-        resolveBanana(guardState === 'active');
-        scheduleNextAttack(now);
+        resolveBanana(guardState === 'active', now);
       }
     }
+
     function encounterLoop(now) {
       if (encounterStopped) return;
-      tickGuard(now || performance.now());
-      tickOgreAttack(now || performance.now());
+      const t = now || performance.now();
+      tickGuard(t);
+      tickOgreAttack(t);
+      encounterRaf = window.requestAnimationFrame(encounterLoop);
+    }
+    function startEncounter() {
+      if (started) return;
+      started = true;
+      encounterStopped = false;
+      updateGuardUi();
+      hide(introModal);
+      playSound('minigame_background', { loop:true, restart:true });
+      scheduleNextAttack(performance.now());
       encounterRaf = window.requestAnimationFrame(encounterLoop);
     }
 
     function showResult(won) {
+      if (finished) return;
       finished = true;
       encounterStopped = true;
       if (encounterRaf) window.cancelAnimationFrame(encounterRaf);
@@ -2478,7 +2523,9 @@
       } else {
         playSound('lose');
         resultTitle.textContent = 'Verloren';
-        resultText.textContent = 'Der Duftweg ist noch nicht richtig verbunden. Er muss vom unteren Ventil durch alle vier Filter bis zum Flakon am oberen Anschluss führen.';
+        resultText.textContent = loseReason === 'lives'
+          ? 'Sir Nervus wurde zu oft von stinkenden Bananenschalen getroffen. Versuche es noch einmal!'
+          : 'Der Duftweg ist noch nicht richtig verbunden. Er muss vom unteren Ventil durch alle vier Filter bis zum Flakon am oberen Anschluss führen.';
         retryBtn.textContent = 'Neuer Versuch';
         retryBtn.onclick = () => location.reload();
         show(boardBtn);
@@ -2499,10 +2546,12 @@
         const won = validatePipeSystem();
         valveImg?.classList.remove('spinning');
         checking = false;
+        if (!won) loseReason = '';
         showResult(won);
       }, 2000);
     });
 
+    introStartBtn?.addEventListener('click', startEncounter);
     guardBtn?.addEventListener('click', activateGuard);
     hintBtn?.addEventListener('click', applyHint);
     settingsBtn?.addEventListener('click', () => show(menu));
@@ -2513,12 +2562,12 @@
     initTiles();
     renderBoard();
     updateHud();
+    updateHearts();
     updateGuardUi();
     setGuardBarFill(1);
     clearBanana();
     setOgreIdle();
-    scheduleNextAttack(performance.now());
-    encounterRaf = window.requestAnimationFrame(encounterLoop);
+    show(introModal);
   }
 
   function initCodes() {
