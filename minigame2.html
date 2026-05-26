@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Sehsinn-Memory · Königreich der Sinne</title>
+  <link rel="stylesheet" href="./css/style.css?v=v4_38_smell_fixed_hint_20260526">
+  <link rel="stylesheet" href="./css/v4.css?v=v4_38_smell_fixed_hint_20260526">
+  <script src="./js/app-v4.js?v=v4_38_smell_fixed_hint_20260526" defer></script>
+</head>
+<body data-page="minigame2">
+  <main class="memory2-page" aria-label="Sehsinn-Memory">
+    <section class="memory2-stage" aria-label="Spielfeld">
+      <button id="memory2SettingsBtn" class="mini-settings-btn" type="button" aria-label="Optionen">⚙</button>
+      <div class="memory2-topbar">
+        <div id="memory2Hud" class="mini-hud memory2-hud" aria-live="polite">Paare 0 / 12</div>
+        <div id="memory2Lives" class="memory2-lives" aria-label="Lebensanzeige"></div>
+      </div>
+      <section id="memory2Grid" class="memory2-grid" aria-label="Memory-Karten"></section>
+      <div id="memory2WarnLeft" class="memory2-warning left" aria-hidden="true">▶</div>
+      <div id="memory2WarnRight" class="memory2-warning right" aria-hidden="true">◀</div>
+      <div id="memory2Projectile" class="memory2-projectile" aria-hidden="true"></div>
+      <img id="memory2Hero" class="memory2-hero" src="./assets/images/minigame/mini_walk_right_1.png" alt="Sir Nervus">
+    </section>
+    <nav class="memory2-controls" aria-label="Steuerung">
+      <button id="memory2JumpBtn" class="memory2-jump-btn" type="button" aria-label="Springen">↑</button>
+    </nav>
+  </main>
+  <div id="memory2Result" class="mini-menu modal hidden" role="dialog" aria-modal="true" aria-labelledby="memory2ResultTitle">
+    <div class="modal-card mini-menu-card">
+      <img id="memory2ResultImage" class="mini-result-img hidden" alt="">
+      <h2 id="memory2ResultTitle">Verloren</h2>
+      <p id="memory2ResultText">Sir Nervus wurde getroffen.</p>
+      <button id="memory2RetryBtn" class="game-btn primary" type="button">Neuer Versuch</button>
+      <button id="memory2BoardBtn" class="game-btn muted" type="button">Zurück zum Spielbrett</button>
+    </div>
+  </div>
+  <div id="memory2Menu" class="mini-menu modal hidden" role="dialog" aria-modal="true" aria-labelledby="memory2MenuTitle">
+    <div class="modal-card mini-menu-card">
+      <h2 id="memory2MenuTitle">Optionen</h2>
+      <button id="memory2MenuBoardBtn" class="game-btn primary" type="button">Zurück zum Spielbrett</button>
+      <button id="memory2CloseMenuBtn" class="game-btn muted" type="button">Weiterspielen</button>
+    </div>
+  </div>
+</body>
+</html>
