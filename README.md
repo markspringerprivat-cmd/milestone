@@ -131,3 +131,12 @@ Die JavaScript-Navigation benutzt `pageUrl(...)`, damit `index.html`, `level.htm
 - `pipe_V`, `pipe_I` und `pipe_T` können ausgewählt und per erneutem Klick um 90 Grad gedreht werden.
 - Der Duftweg muss vom oberen Spielrand durch alle vier Filter bis zum Ventil führen.
 - Das Ventil liegt auf einer `no_pipe`-Plattform rechts neben Sir Nervus und prüft nach einer 3-Sekunden-Drehanimation, ob gewonnen oder verloren wurde.
+
+## Update v37
+
+- Minigame3 startet jetzt unten am Ventil und endet oben am Endpunkt.
+- Über und unter dem 6x6-Rohrfeld sitzt jeweils eine zusätzliche grüne Anschlusskachel.
+- Das untere grüne Anschlussstück ist visuell mit dem Ventil verbunden.
+- Die Rohrverbindung wird während des Drehens dynamisch vom Startpunkt aus geprüft.
+- Alle Rohre und Filter, die eine Verbindung zum Ventil/Startpunkt haben, werden sofort durch grüne Versionen ersetzt.
+- Gewonnen wird nur, wenn der Duft vom unteren Startpunkt durch alle vier Luftreinigungsfilter bis zum oberen Endpunkt läuft.

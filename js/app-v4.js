@@ -5,7 +5,7 @@
   const BATTLE_STORE = 'koenigreichSinneV4Battle';
   const RETURN_STORE = 'koenigreichSinneV4BoardReturn';
   const SOUND_STORE = 'koenigreichSinneV4Muted';
-  const STATE_VERSION = 'v4_36smell_pipe_minigame3';
+  const STATE_VERSION = 'v4_37smell_pipe_green_flow';
   const APP_ROOT = new URL('./', document.baseURI);
   const pageUrl = target => new URL(target, APP_ROOT).href;
   const assetUrl = target => new URL(target, APP_ROOT).href;
@@ -597,7 +597,7 @@
       $('encounterImage').alt = 'Nase';
       $('encounterKicker').textContent = 'Riechsinn-Rohrsystem';
       $('encounterTitle').textContent = 'Folge dem Duft!';
-      $('encounterSpeech').textContent = done ? 'Du kannst das Rohr-Rätsel erneut spielen.' : 'Drehe die Rohrstücke so, dass der Geruch durch alle vier Filter bis zum Ventil gelangt. So wird aus Gestank ein guter Duft.';
+      $('encounterSpeech').textContent = done ? 'Du kannst das Rohr-Rätsel erneut spielen.' : 'Drehe die Rohrstücke so, dass der Geruch vom Ventil durch alle vier Luftreinigungsfilter bis zum oberen Endpunkt gelangt. Verbundene Rohre leuchten grün.';
       show(modal);
       return;
     }
@@ -1972,6 +1972,7 @@
   }
 
 
+
   function initMiniGame3() {
     addSpeaker();
     stopSound('background');
@@ -2004,6 +2005,10 @@
       I: assetUrl('assets/images/minigame3/pipe_I.png'),
       T: assetUrl('assets/images/minigame3/pipe_T.png'),
       F: assetUrl('assets/images/minigame3/filter.png'),
+      Vg: assetUrl('assets/images/minigame3/pipe_V_green.png'),
+      Ig: assetUrl('assets/images/minigame3/pipe_I_green.png'),
+      Tg: assetUrl('assets/images/minigame3/pipe_T_green.png'),
+      Fg: assetUrl('assets/images/minigame3/pipe_X_green.png'),
       no: assetUrl('assets/images/minigame3/no_pipe.png'),
       valve: assetUrl('assets/images/minigame3/ventil.png')
     };
@@ -2011,8 +2016,9 @@
     const ROWS = 6;
     const COLS = 6;
     const FILTER_TOTAL = 4;
-    const EXIT = { r:5, c:5, dir:'S' };
-    const START = { r:0, c:0, dir:'N' };
+    const ENTRY_COL = 3;
+    const START = { r:5, c:ENTRY_COL, dir:'S' }; // Start unten: Ventil + grünes Anschlussstück
+    const EXIT = { r:0, c:ENTRY_COL, dir:'N' };  // Endpunkt oben: grünes Anschlussstück
     const OPP = { N:'S', E:'W', S:'N', W:'E' };
     const STEP = { N:[-1,0], E:[0,1], S:[1,0], W:[0,-1] };
     const ORDER = ['N','E','S','W'];
@@ -2022,21 +2028,24 @@
       T: ['N','E','W'],
       F: ['N','E','S','W']
     };
+
+    // Der geplante Lösungsweg startet unten bei Spalte 3, läuft durch alle vier Filter
+    // und endet oben wieder bei Spalte 3. Die restlichen Rohre sind Ablenkungen.
     const solution = [
-      ['I','V','I','T','V','I'],
-      ['V','I','F','V','V','V'],
-      ['T','T','I','V','I','I'],
-      ['V','T','F','I','F','I'],
-      ['I','V','T','V','T','F'],
-      ['T','V','I','T','V','I']
+      ['V','T','I','V','I','V'],
+      ['T','I','F','I','V','I'],
+      ['I','T','I','T','I','I'],
+      ['V','V','F','I','F','I'],
+      ['T','I','V','V','V','F'],
+      ['V','T','T','I','V','T']
     ];
     const solvedRot = [
-      [0,1,1,0,2,0],
-      [0,1,0,1,1,2],
-      [2,0,0,3,0,0],
+      [1,0,0,0,1,2],
+      [0,1,0,1,2,0],
+      [0,0,0,2,0,0],
       [1,1,0,1,0,0],
-      [0,3,2,0,2,0],
-      [3,0,1,1,2,0]
+      [2,1,0,2,0,0],
+      [3,2,1,0,2,1]
     ];
     const filterCells = new Set(['1,2','3,2','3,4','4,5']);
 
@@ -2058,9 +2067,8 @@
 
     function randomRotation(type, wanted) {
       if (type === 'F') return 0;
-      let r = Math.floor(Math.random() * 4);
-      if (type === 'I') r = Math.floor(Math.random() * 2); // 0 = vertikal, 1 = horizontal
-      if (r === wanted && Math.random() < .82) r = (r + 1) % (type === 'I' ? 2 : 4);
+      let r = Math.floor(Math.random() * (type === 'I' ? 2 : 4));
+      if (r === wanted && Math.random() < .88) r = (r + 1) % (type === 'I' ? 2 : 4);
       return r;
     }
 
@@ -2078,6 +2086,7 @@
           });
         }
       }
+      computeFlowFromStart();
     }
 
     function tileAt(r, c) {
@@ -2092,14 +2101,19 @@
       return (BASE[tile.type] || []).map(d => rotateDir(d, tile.rotation));
     }
     function key(r,c) { return `${r},${c}`; }
+    function imgFor(tile) {
+      if (tile.type === 'F') return tile.flow ? IMG.Fg : IMG.F;
+      if (tile.type === 'I') return tile.flow ? IMG.Ig : IMG.I;
+      if (tile.type === 'T') return tile.flow ? IMG.Tg : IMG.T;
+      return tile.flow ? IMG.Vg : IMG.V;
+    }
 
     function renderBoard() {
       board.innerHTML = tiles.map((tile, index) => {
-        const img = tile.type === 'F' ? IMG.F : IMG[tile.type];
         const rot = (tile.rotation % 4) * 90;
-        const label = tile.type === 'F' ? 'Duftfilter' : `Rohrstück ${tile.type}`;
+        const label = tile.type === 'F' ? 'Luftreinigungsfilter' : `Rohrstück ${tile.type}`;
         return `<button class="pipe3-tile ${tile.filter ? 'filter' : 'rotatable'}" type="button" data-index="${index}" aria-label="${label}">
-          <img src="${img}" alt="" style="transform:rotate(${rot}deg)">
+          <img src="${imgFor(tile)}" alt="" style="transform:rotate(${rot}deg)">
         </button>`;
       }).join('');
       updateTileClasses();
@@ -2115,7 +2129,11 @@
         node.classList.toggle('flow', Boolean(tile.flow));
         node.classList.toggle('filter-found', tile.filter && tile.flow);
         const img = node.querySelector('img');
-        if (img) img.style.transform = `rotate(${(tile.rotation % 4) * 90}deg)`;
+        if (img) {
+          const nextSrc = imgFor(tile);
+          if (img.getAttribute('src') !== nextSrc) img.setAttribute('src', nextSrc);
+          img.style.transform = `rotate(${(tile.rotation % 4) * 90}deg)`;
+        }
       });
     }
 
@@ -2125,27 +2143,26 @@
       if (!tile || tile.filter) return;
       if (selected === index) {
         tile.rotation = (tile.rotation + 1) % (tile.type === 'I' ? 2 : 4);
-        tile.flow = false;
         playSound('flip');
       } else {
         selected = index;
         playSound('flip');
       }
-      clearFlow();
+      computeFlowFromStart();
       updateTileClasses();
-      updateHud('Drehe die Rohre. Das Ventil prüft den Duftweg.');
+      updateHud();
     }
 
     function clearFlow() {
       tiles.forEach(t => { t.flow = false; });
     }
 
-    function connectedFromSource() {
+    function computeFlowFromStart() {
       clearFlow();
       const start = tileAt(START.r, START.c);
-      if (!start || !openings(start).includes(START.dir)) return { exit:false, filters:new Set(), visited:new Set() };
       const visited = new Set();
       const filters = new Set();
+      if (!start || !openings(start).includes(START.dir)) return { exit:false, filters, visited };
       const q = [start];
       visited.add(key(start.r, start.c));
       while (q.length) {
@@ -2154,9 +2171,7 @@
         if (tile.filter) filters.add(key(tile.r, tile.c));
         const open = openings(tile);
         for (const dir of open) {
-          if (tile.r === EXIT.r && tile.c === EXIT.c && dir === EXIT.dir) {
-            continue;
-          }
+          if (tile.r === EXIT.r && tile.c === EXIT.c && dir === EXIT.dir) continue;
           const [dr,dc] = STEP[dir];
           const nr = tile.r + dr, nc = tile.c + dc;
           if (nr < 0 || nc < 0 || nr >= ROWS || nc >= COLS) continue;
@@ -2175,17 +2190,19 @@
     }
 
     function validatePipeSystem() {
-      const result = connectedFromSource();
+      const result = computeFlowFromStart();
       const allFilters = [...filterCells].every(f => result.filters.has(f));
-      tiles.forEach(t => { t.flow = result.visited.has(key(t.r,t.c)); });
       updateTileClasses();
-      if (hud) hud.textContent = `Filter ${result.filters.size} / ${FILTER_TOTAL}`;
+      updateHud();
       return result.exit && allFilters;
     }
 
     function updateHud(text) {
       if (!hud) return;
-      hud.textContent = text || 'Verbinde den Duft durch alle 4 Filter';
+      if (text) { hud.textContent = text; return; }
+      const result = computeFlowFromStart();
+      updateTileClasses();
+      hud.textContent = `Verbundene Filter ${result.filters.size} / ${FILTER_TOTAL}`;
     }
 
     function showResult(won) {
@@ -2199,7 +2216,7 @@
       if (won) {
         playSound('win');
         resultTitle.textContent = 'Gewonnen';
-        resultText.textContent = 'Der Duft läuft durch alle vier Filter und kommt gereinigt beim Ventil an. Sir Nervus riecht jetzt einen guten Geruch.';
+        resultText.textContent = 'Der Duft startet am Ventil, läuft durch alle vier Luftreinigungsfilter und erreicht den oberen Endpunkt. Aus dem Gestank wird ein gereinigter Duft.';
         retryBtn.textContent = 'Zurück zum Spielfeld';
         hide(boardBtn);
         retryBtn.onclick = () => {
@@ -2213,7 +2230,7 @@
       } else {
         playSound('lose');
         resultTitle.textContent = 'Verloren';
-        resultText.textContent = 'Der Duftweg ist noch nicht richtig verbunden oder läuft nicht durch alle vier Filter.';
+        resultText.textContent = 'Der Duftweg ist noch nicht richtig verbunden. Er muss vom unteren Ventil durch alle vier Filter bis zum oberen Endpunkt führen.';
         retryBtn.textContent = 'Neuer Versuch';
         retryBtn.onclick = () => location.reload();
         show(boardBtn);
@@ -2225,8 +2242,9 @@
       if (checking || finished) return;
       checking = true;
       selected = null;
+      computeFlowFromStart();
       updateTileClasses();
-      updateHud('Das Ventil prüft den Duftweg …');
+      updateHud('Das Ventil leitet den Duft durch die grünen Rohre …');
       valveImg?.classList.add('spinning');
       playSound('levelstart');
       window.setTimeout(() => {
