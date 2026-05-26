@@ -2887,3 +2887,22 @@ body[data-page="minigame"]{
     width:min(44vw, 150px)!important;
   }
 }
+
+/* === Smell pipe refinement v44 === */
+.pipe3-spray-overlay{
+  z-index:40!important;
+  width:auto!important;
+  max-width:none!important;
+  left:0!important;
+  top:0!important;
+}
+.pipe3-ogre-zone{
+  width:min(25.5vw, 134px)!important;
+  height:min(19.5svh, 142px)!important;
+}
+@media(max-width:560px){
+  .pipe3-ogre-zone{
+    width:min(24vw, 102px)!important;
+    height:min(15svh, 92px)!important;
+  }
+}

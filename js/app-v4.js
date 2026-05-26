@@ -2339,8 +2339,33 @@
       sprayOverlay.classList.remove('fade-out');
       sprayOverlay.style.opacity = '0';
     }
+    function positionSprayOverlay() {
+      if (!sprayOverlay || !topConnector) return;
+      const stageRect = stage.getBoundingClientRect();
+      const connectorRect = topConnector.getBoundingClientRect();
+      const ogreRect = ogre.getBoundingClientRect();
+      const tipX = connectorRect.left - stageRect.left + connectorRect.width * 0.18;
+      const tipY = connectorRect.top - stageRect.top + connectorRect.height * 0.52;
+      const ogreLeft = ogreRect.left - stageRect.left;
+      const ogreTop = ogreRect.top - stageRect.top;
+      const ogreBottom = ogreTop + ogreRect.height;
+      const naturalW = sprayOverlay.naturalWidth || 1280;
+      const naturalH = sprayOverlay.naturalHeight || 1280;
+      const ratio = naturalH / naturalW;
+      const minWidth = Math.min(stageRect.width * 0.72, 340);
+      const desiredWidth = Math.max(minWidth, tipX - ogreLeft + ogreRect.width * 1.12);
+      const width = Math.min(stageRect.width * 0.95, desiredWidth);
+      const height = width * ratio;
+      const left = tipX - width + 4;
+      const sprayCenterY = (ogreTop + ogreBottom) / 2;
+      const top = Math.max(8, Math.min(stageRect.height - height - 8, sprayCenterY - height * 0.52));
+      sprayOverlay.style.width = `${width}px`;
+      sprayOverlay.style.left = `${left}px`;
+      sprayOverlay.style.top = `${top}px`;
+    }
     function showSprayOverlay() {
       if (!sprayOverlay) return;
+      positionSprayOverlay();
       sprayOverlay.classList.remove('hidden','fade-out');
       sprayOverlay.style.opacity = '1';
     }
@@ -2377,9 +2402,9 @@
       activeBanana = {
         startTime: now,
         duration: 3600,
-        startX: ogreRect.left - stageRect.left + ogreRect.width * 0.72 - 2,
+        startX: ogreRect.left - stageRect.left + ogreRect.width * 0.72 - 6,
         startY: ogreRect.top - stageRect.top + ogreRect.height * 0.54,
-        endX: heroCenterX - 2,
+        endX: heroCenterX - 18,
         endY: heroCenterY,
         resolved: false
       };
@@ -2596,6 +2621,11 @@
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) pauseEncounter();
       else if (!menu || menu.classList.contains('hidden')) resumeEncounter();
+    });
+
+    window.addEventListener('resize', () => {
+      if (!sprayOverlay || sprayOverlay.classList.contains('hidden')) return;
+      positionSprayOverlay();
     });
 
     initTiles();
