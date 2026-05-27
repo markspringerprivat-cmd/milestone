@@ -184,3 +184,31 @@ Diese Version stabilisiert das Riech-Minispiel:
 
 ### Test
 - `minigame3.html?v=49` aufrufen oder hart neu laden.
+
+
+## Update v50 – gekoppelte Oger-/Duftwolken-Darstellung
+
+Diese Version ersetzt die Minigame-3-Bilder durch die neu hochgeladenen kleineren Assets und koppelt die Positionen stabil aneinander.
+
+### Wichtigste Änderung
+
+- Die Duftwolke ist jetzt ein Kind des Oger-Containers.
+- Dadurch wird sie nicht mehr frei auf der Stage berechnet, sondern bleibt exakt auf dem Oger zentriert.
+- Der Mittelpunkt der Wolke liegt auf dem Mittelpunkt des Ogers.
+- Die Wolke ist ca. 1–2 cm größer als der Oger und verdeckt ihn während des Sprühens.
+- Der Oger steht weiterhin am oberen linken Spielfeldrand, mittig über den beiden oberen linken Kacheln.
+
+### Verhalten
+
+1. Unfertiger Rohrweg: Ventil tippen → kurzer Drehimpuls, kein Verloren-Popup.
+2. Fertiger Rohrweg: Ventil-Kachel erhält Goldrahmen.
+3. Ventil tippen → Spray-Sound, Duftwolke 2 Sekunden über dem Oger.
+4. Während die Wolke sichtbar ist, wird der Oger zu `ogre_clean`.
+5. Wolke verschwindet, sauberer Oger bleibt 3 Sekunden sichtbar.
+6. Danach erscheint das Gewinn-Popup.
+
+### Test
+
+Nach GitHub-Upload testen mit:
+
+`minigame3.html?v=50`

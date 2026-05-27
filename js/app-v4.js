@@ -1992,6 +1992,7 @@
     const heroWrap = hero?.closest('.pipe3-hero-wrap');
     const guardBtn = $('pipe3GuardBtn');
     const guardBarFill = $('pipe3GuardBarFill');
+    const ogreZone = $('pipe3OgreZone');
     const ogre = $('pipe3Ogre');
     const banana = $('pipe3Banana');
     const sprayOverlay = $('pipe3SprayOverlay');
@@ -2009,7 +2010,7 @@
     const menu = $('pipe3Menu');
     const menuBoardBtn = $('pipe3MenuBoardBtn');
     const closeMenuBtn = $('pipe3CloseMenuBtn');
-    if (!stage || !board || !valveBtn || !hero || !ogre || !banana) return;
+    if (!stage || !board || !valveBtn || !hero || !ogreZone || !ogre || !banana) return;
 
     const slot = Number(qs('slot')) || 5;
     stage.style.setProperty('--pipe3-bg', `url("${popupBgForMeta({ slot, isBoss:false })}")`);
@@ -2047,7 +2048,12 @@
     hero.style.visibility = 'visible';
     ogre.src = IMG.ogreIdle;
     banana.src = IMG.banana;
-    if (sprayOverlay) sprayOverlay.src = IMG.sprayOverlay;
+    if (sprayOverlay) {
+      sprayOverlay.src = IMG.sprayOverlay;
+      // Wolke ist absichtlich Kind des Ogers: dadurch bleibt sie exakt auf seinem Mittelpunkt,
+      // unabhängig von Browserhöhe, Handy-Safe-Area oder Spielfeld-Skalierung.
+      ogreZone?.appendChild(sprayOverlay);
+    }
 
     const rotateAudios = Array.from({ length: 3 }, () => {
       const a = new Audio(AUDIO_FILES.flip || assetUrl('assets/audio/flip.mp3'));
@@ -2351,40 +2357,27 @@
       sprayOverlay.style.opacity = '0';
     }
     function positionOgreZone() {
-      const ogreZone = $('pipe3OgreZone');
       if (!ogreZone || !board) return;
       const stageRect = stage.getBoundingClientRect();
       const boardRect = board.getBoundingClientRect();
       const zoneRect = ogreZone.getBoundingClientRect();
       const tileW = boardRect.width / 6;
+      // Mitte der beiden oberen linken Kacheln: zwischen Spalte 0 und Spalte 1.
       const desiredCenterX = (boardRect.left - stageRect.left) + tileW;
       const desiredLeft = Math.max(4, Math.min(stageRect.width - zoneRect.width - 4, desiredCenterX - zoneRect.width / 2));
-      // Der Oger steht auf dem oberen Rand des Rohrfelds, mittig über Kachel 1 und 2.
-      const desiredTop = Math.max(4, boardRect.top - stageRect.top - zoneRect.height * 0.78);
-      ogreZone.style.left = `${desiredLeft}px`;
-      ogreZone.style.top = `${desiredTop}px`;
+      // Füße stehen auf dem oberen Rand des Rohrfeldes; der Körper ragt darüber.
+      const desiredTop = Math.max(4, boardRect.top - stageRect.top - zoneRect.height * 0.80);
+      ogreZone.style.left = `${Math.round(desiredLeft)}px`;
+      ogreZone.style.top = `${Math.round(desiredTop)}px`;
     }
     function positionSprayOverlay() {
+      // Keine separate Bühnenposition mehr: die Wolke hängt direkt am Oger-Container.
+      // CSS zentriert sie mit left/top 50% und transform(-50%, -50%).
       if (!sprayOverlay) return;
-      const ogreZone = $('pipe3OgreZone');
-      if (!ogreZone) return;
-      const stageRect = stage.getBoundingClientRect();
-      const ogreRect = ogreZone.getBoundingClientRect();
-      const naturalW = sprayOverlay.naturalWidth || 360;
-      const naturalH = sprayOverlay.naturalHeight || 317;
-      const ratio = naturalH / naturalW;
-      // Exakt mittig auf dem Oger, nur leicht größer, damit er sauber verdeckt wird.
-      const padding = 56; // ungefähr 1–2 cm auf dem Handy
-      const width = Math.max(118, Math.max(ogreRect.width, ogreRect.height) + padding);
-      const height = width * ratio;
-      const centerX = ogreRect.left - stageRect.left + ogreRect.width * 0.50;
-      const centerY = ogreRect.top - stageRect.top + ogreRect.height * 0.50;
-      const left = centerX - width * 0.50;
-      const top = centerY - height * 0.50;
-      sprayOverlay.style.width = `${width}px`;
-      sprayOverlay.style.height = `${height}px`;
-      sprayOverlay.style.left = `${left}px`;
-      sprayOverlay.style.top = `${top}px`;
+      sprayOverlay.style.removeProperty('left');
+      sprayOverlay.style.removeProperty('top');
+      sprayOverlay.style.removeProperty('width');
+      sprayOverlay.style.removeProperty('height');
     }
     function showSprayOverlay() {
       if (!sprayOverlay) return;

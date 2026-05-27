@@ -3001,3 +3001,53 @@ body[data-page="minigame"]{
     height:min(12svh, 78px)!important;
   }
 }
+
+
+/* === Smell pipe v50: gekoppelte Oger-/Wolken-Darstellung === */
+.pipe3-ogre-zone{
+  position:absolute!important;
+  overflow:visible!important;
+  z-index:28!important;
+  width:min(21vw, 86px)!important;
+  height:min(14.5svh, 94px)!important;
+  left:0!important;
+  top:0!important;
+}
+.pipe3-ogre{
+  position:absolute!important;
+  left:0!important;
+  top:0!important;
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+  z-index:1!important;
+}
+.pipe3-ogre-zone .pipe3-spray-overlay{
+  position:absolute!important;
+  left:50%!important;
+  top:50%!important;
+  width:165%!important;
+  height:165%!important;
+  max-width:none!important;
+  transform:translate(-50%, -50%)!important;
+  object-fit:contain!important;
+  object-position:center center!important;
+  opacity:0!important;
+  z-index:5!important;
+  pointer-events:none!important;
+  transition:opacity .35s ease!important;
+  filter:drop-shadow(0 8px 14px rgba(166,112,220,.18))!important;
+}
+.pipe3-ogre-zone .pipe3-spray-overlay:not(.hidden){
+  opacity:1!important;
+}
+.pipe3-ogre-zone .pipe3-spray-overlay.fade-out{
+  opacity:0!important;
+}
+@media(max-width:560px){
+  .pipe3-ogre-zone{
+    width:min(21vw, 78px)!important;
+    height:min(13.8svh, 84px)!important;
+  }
+}
