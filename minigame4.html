@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Tastsinn · Fühl-Kran</title>
-  <link rel="stylesheet" href="./css/style.css?v=v4_58_touch_crane_grid_motion_20260527">
-  <link rel="stylesheet" href="./css/v4.css?v=v4_58_touch_crane_grid_motion_20260527">
-  <script src="./js/app-v4.js?v=v4_58_touch_crane_grid_motion_20260527" defer></script>
+  <title>Tastsinn · Fühlbrücke</title>
+  <link rel="stylesheet" href="./css/style.css?v=v4_59_touch_grid_bridge_click_20260527">
+  <link rel="stylesheet" href="./css/v4.css?v=v4_59_touch_grid_bridge_click_20260527">
+  <script src="./js/app-v4.js?v=v4_59_touch_grid_bridge_click_20260527" defer></script>
 </head>
 <body data-page="minigame4">
-  <main class="touch4-page" aria-label="Tastsinn-Kran">
-    <section class="touch4-stage touch4-pit-stage touch4-memory-stage" aria-label="Fühl-Kran-Spielfeld">
+  <main class="touch4-page" aria-label="Tastsinn-Fühlbrücke">
+    <section class="touch4-stage touch4-pit-stage touch4-memory-stage" aria-label="Fühlbrücke-Spielfeld">
       <button id="touch4SettingsBtn" class="mini-settings-btn" type="button" aria-label="Optionen">⚙</button>
 
       <div class="touch4-hud touch4-memory-hud">
@@ -19,7 +19,7 @@
 
       <p id="touch4Message" class="touch4-message">Merke dir die weiche Karte.</p>
 
-      <section class="touch4-crane-area" aria-label="Kranspielfeld">
+      <section class="touch4-crane-area" aria-label="Tastkarten-Spielfeld">
         <div id="touch4CraneField" class="touch4-crane-field touch4-memory-field">
           <div id="touch4Grid" class="touch4-grid touch4-memory-grid" aria-label="Verdeckte Tastkarten"></div>
 
@@ -39,16 +39,16 @@
         <div class="touch4-end-pad" aria-hidden="true"></div>
       </section>
 
-      <div class="touch4-bottom-controls" aria-label="Kransteuerung">
+      <div class="touch4-bottom-controls" aria-label="Kransteuerung" aria-hidden="true">
         <button id="touch4UpHoldBtn" class="touch4-hold-btn" type="button" aria-label="Kran nach oben bewegen">↑</button>
         <button id="touch4RightHoldBtn" class="touch4-hold-btn" type="button" aria-label="Kran nach rechts bewegen" disabled>→</button>
       </div>
 
       <div id="touch4Intro" class="modal">
         <div class="modal-card touch4-intro-card">
-          <h2>Tastsinn: Fühl-Kran</h2>
-          <p>Die Haut unterscheidet weiche und spitze Reize. Merke dir die weiche Karte, sammle dreimal und baue daraus einen sicheren Weg über die Grube.</p>
-          <p>Nach dem Mischen wählst du mit dem Kran eine verdeckte Karte. Ist am Ende eine spitze Karte in der Grube, ist der Weg nicht sicher.</p>
+          <h2>Tastsinn: Fühlbrücke</h2>
+          <p>Die Haut unterscheidet weiche und spitze Reize. Merke dir die weiche Karte, denn nur weiche Gegenstände ergeben einen sicheren Boden.</p>
+          <p>Nach dem Mischen wählst du eine verdeckte Karte. Drei gewählte Karten bilden die Brücke über die Grube. Ist eine spitz, ist der Weg gefährlich.</p>
           <div class="modal-actions">
             <button id="touch4StartBtn" class="game-btn" type="button">Spiel starten</button>
           </div>
@@ -58,7 +58,7 @@
       <div id="touch4Menu" class="modal hidden">
         <div class="modal-card">
           <h2>Pause</h2>
-          <p>Merke dir die weiche Karte und lege drei verdeckte Karten in die Grube. Danach werden sie nacheinander aufgedeckt.</p>
+          <p>Merke dir die weiche Karte, wähle nach dem Mischen einen verdeckten Gegenstand und baue daraus eine Brücke. Nach drei Karten wird aufgedeckt.</p>
           <div class="modal-actions">
             <button id="touch4CloseMenuBtn" class="game-btn" type="button">Weiter</button>
             <button id="touch4MenuBoardBtn" class="game-btn muted" type="button">Zurück zum Spielfeld</button>

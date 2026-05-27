@@ -329,3 +329,21 @@ Test: `minigame3.html?v=51`
 
 ### Test
 - `minigame4.html?slot=7&v=58`
+
+
+## Update v59 – Level 8 ohne Kransteuerung
+
+- Level 8 wurde von der Pfeil-/Kransteuerung auf ein direktes Auswahl-Merkspiel umgestellt.
+- Das obere Spielfeld ist ein zentriertes quadratisches 3×3-Raster.
+- Alle neun Felder sind gleich groß und füllen das Quadrat vollständig.
+- In jedem Feld liegt genau ein Gegenstand.
+- Pro Runde gibt es acht spitze Gegenstände und einen weichen Gegenstand.
+- Nach fünf Sekunden werden die Karten verdeckt und fünfmal gemischt.
+- Getauscht werden ausschließlich benachbarte Karten: links/rechts oder oben/unten.
+- Beim Tausch heben sich die beiden Karten sichtbar an und wechseln ihre Position.
+- Nach dem Mischen erscheint „Wähle einen Gegenstand“.
+- Der gewählte verdeckte Gegenstand fliegt in die nächste freie Brückenposition in der Grube.
+- Nach drei gewählten Gegenständen werden die Brückenkarten nacheinander aufgedeckt.
+
+### Test
+- `minigame4.html?slot=7&v=59`
