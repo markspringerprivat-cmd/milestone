@@ -2734,13 +2734,13 @@
     playSound('minigame_background', { loop:true, restart:true });
 
     const slot = Number(qs('slot')) || 7;
-    const stage = document.querySelector('.touch4-stage');
-    const field = $('touch4CraneField');
+    const stage = document.querySelector('.touch4-v60-stage');
     const grid = $('touch4Grid');
     const bridge = $('touch4Bridge');
     const hero = $('touch4Hero');
     const scoreEl = $('touch4Score');
     const messageEl = $('touch4Message');
+    const continueBtn = $('touch4ContinueBtn');
     const intro = $('touch4Intro');
     const result = $('touch4Result');
     const resultImage = $('touch4ResultImage');
@@ -2749,44 +2749,40 @@
     const retryBtn = $('touch4RetryBtn');
     const boardBtn = $('touch4BoardBtn');
     const menu = $('touch4Menu');
-    const hook = $('touch4Hook');
-    if (!stage || !field || !grid || !bridge) return;
+    if (!stage || !grid || !bridge) return;
 
     stage.style.setProperty('--touch4-bg', `url("${popupBgForMeta({ slot, isBoss:false })}")`);
 
-    const GRID = 3;
     const TOTAL_ROUNDS = 3;
-    const REVEAL_MS = 5000;
-    const SWAP_MS = 1000;
-    const SWAPS_PER_ROUND = 5;
-    const MOVE_TO_PIT_MS = 650;
+    const SHOW_MS = 5000;
+    const SWAPS = 5;
+    const SWAP_MS = 920;
+    const FLY_MS = 680;
 
-    const softPool = [
-      { icon:'🧸', label:'Stofftier', type:'soft' },
-      { icon:'🧽', label:'Schwamm', type:'soft' },
-      { icon:'🪶', label:'Feder', type:'soft' },
-      { icon:'☁️', label:'Watte', type:'soft' },
-      { icon:'🛏️', label:'Kissen', type:'soft' }
+    const softRounds = [
+      { type:'soft', label:'weiches Kissen', img:assetUrl('assets/images/minigame4/soft_pillow.png') },
+      { type:'soft', label:'weiche Wolke', img:assetUrl('assets/images/minigame4/soft_cloud.png') },
+      { type:'soft', label:'weicher Teddy', img:assetUrl('assets/images/minigame4/soft_teddy.png') }
     ];
-    const sharpPool = [
-      { icon:'🌵', label:'Kaktus', type:'sharp' },
-      { icon:'📌', label:'Nadel', type:'sharp' },
-      { icon:'🦔', label:'Stacheln', type:'sharp' },
-      { icon:'🔺', label:'Spitze Kante', type:'sharp' },
-      { icon:'🪡', label:'Nadel', type:'sharp' },
-      { icon:'🪨', label:'Spitzer Stein', type:'sharp' },
-      { icon:'🦷', label:'Spitzer Zahn', type:'sharp' },
-      { icon:'🌹', label:'Dornen', type:'sharp' }
+    const sharpCards = [
+      { type:'sharp', label:'spitzer Kaktus', img:assetUrl('assets/images/minigame4/sharp_cactus.png') },
+      { type:'sharp', label:'stacheliger Igel', img:assetUrl('assets/images/minigame4/sharp_hedgehog.png') },
+      { type:'sharp', label:'spitze Reißzwecke', img:assetUrl('assets/images/minigame4/sharp_pin.png') },
+      { type:'sharp', label:'spitzer Nagel', img:assetUrl('assets/images/minigame4/sharp_nail.png') },
+      { type:'sharp', label:'spitzer Bleistift', img:assetUrl('assets/images/minigame4/sharp_pencil.png') },
+      { type:'sharp', label:'Rose mit Dornen', img:assetUrl('assets/images/minigame4/sharp_rose.png') },
+      { type:'sharp', label:'spitze Kristalle', img:assetUrl('assets/images/minigame4/sharp_crystal.png') },
+      { type:'sharp', label:'stachelige Kugel', img:assetUrl('assets/images/minigame4/sharp_spikeball.png') }
     ];
 
     let cards = [];
-    let pitCards = [];
+    let bridgeCards = [];
+    let roundIndex = 0;
     let phase = 'intro';
-    let cardFace = 'front';
-    let finished = false;
+    let face = 'front';
     let timers = [];
-    let swapCount = 0;
-    let selectedThisRound = false;
+    let finished = false;
+    let selected = false;
 
     function schedule(fn, ms) {
       const id = window.setTimeout(fn, ms);
@@ -2797,12 +2793,6 @@
       timers.forEach(id => window.clearTimeout(id));
       timers = [];
     }
-    function sample(arr, n) {
-      const copy = arr.slice();
-      const out = [];
-      while (copy.length && out.length < n) out.push(copy.splice(Math.floor(Math.random() * copy.length), 1)[0]);
-      return out;
-    }
     function shuffleArray(arr) {
       for (let i = arr.length - 1; i > 0; i -= 1) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -2810,80 +2800,73 @@
       }
       return arr;
     }
-    function buildRoundCards() {
-      const soft = { ...softPool[Math.floor(Math.random() * softPool.length)] };
-      const sharp = sample(sharpPool, 8).map(item => ({ ...item }));
-      cards = shuffleArray([soft, ...sharp]).map((card, index) => ({
-        ...card,
-        id: `${Date.now()}-${index}-${Math.random().toString(16).slice(2)}`
-      }));
-      cardFace = 'front';
-      selectedThisRound = false;
-    }
     function setMessage(text, kind='') {
       if (!messageEl) return;
       messageEl.textContent = text;
-      messageEl.className = `touch4-message ${kind}`;
+      messageEl.className = `touch4-v60-message ${kind}`;
     }
     function updateScore() {
-      if (scoreEl) scoreEl.textContent = `Brücke: ${pitCards.length} / ${TOTAL_ROUNDS}`;
+      if (scoreEl) scoreEl.textContent = `Brücke: ${bridgeCards.length} / ${TOTAL_ROUNDS}`;
+    }
+    function buildCardsForRound() {
+      const soft = { ...softRounds[roundIndex], id:`soft-${roundIndex}-${Date.now()}` };
+      const sharp = sharpCards.map((item, i) => ({ ...item, id:`sharp-${roundIndex}-${i}-${Date.now()}` }));
+      cards = shuffleArray([soft, ...sharp]);
+      face = 'front';
+      selected = false;
+    }
+    function cardInner(card, showFront=true) {
+      if (!showFront) return '<span class="touch4-v60-card-back">?</span>';
+      return `<img class="touch4-v60-card-img" src="${card.img}" alt="${card.label}">`;
     }
     function renderGrid() {
+      const selectable = phase === 'choice';
       grid.innerHTML = cards.map((card, index) => {
-        const faceClass = cardFace === 'back' ? 'face-down' : 'face-up';
-        const selectable = phase === 'choice';
-        const content = cardFace === 'back' ? '' : card.icon;
-        const label = cardFace === 'back' ? `Verdeckter Gegenstand ${index + 1}` : card.label;
-        return `<button class="touch4-cell ${faceClass}" type="button" data-index="${index}" ${selectable ? '' : 'tabindex="-1"'} aria-label="${label}">
-          <span class="touch4-item ${card.type}">${content}</span>
+        const isFront = face === 'front';
+        const state = isFront ? 'front' : 'back';
+        return `<button class="touch4-v60-card ${state}" type="button" data-index="${index}" ${selectable ? '' : 'disabled'} aria-label="${isFront ? card.label : 'verdeckte Karte'}">
+          ${cardInner(card, isFront)}
         </button>`;
       }).join('');
-      grid.querySelectorAll('.touch4-cell').forEach(cell => {
-        cell.addEventListener('click', () => chooseCard(Number(cell.dataset.index)));
+      grid.querySelectorAll('.touch4-v60-card').forEach(btn => {
+        btn.addEventListener('click', () => chooseCard(Number(btn.dataset.index)));
       });
     }
-    function renderPitSlots(revealIndex = -1) {
+    function renderBridge(revealIndex = -1) {
       bridge.innerHTML = '';
       for (let i = 0; i < TOTAL_ROUNDS; i += 1) {
-        const card = pitCards[i];
-        const slot = document.createElement('span');
-        slot.className = 'touch4-bridge-segment touch4-pit-card-slot';
+        const card = bridgeCards[i];
+        const slotEl = document.createElement('div');
+        slotEl.className = 'touch4-v60-bridge-slot';
+        slotEl.dataset.slot = String(i);
         if (!card) {
-          slot.classList.add('empty');
-          slot.textContent = '';
+          slotEl.classList.add('empty');
         } else if (i <= revealIndex) {
-          slot.classList.add('revealed', card.type);
-          slot.textContent = card.icon;
-          slot.setAttribute('aria-label', card.label);
+          slotEl.classList.add('revealed', card.type);
+          slotEl.innerHTML = cardInner(card, true);
         } else {
-          slot.classList.add('face-down');
-          slot.textContent = '';
-          slot.setAttribute('aria-label', 'Verdeckter Brücken-Gegenstand');
+          slotEl.classList.add('back');
+          slotEl.innerHTML = cardInner(card, false);
         }
-        bridge.appendChild(slot);
+        bridge.appendChild(slotEl);
       }
     }
-
     function adjacentPair() {
-      const i = Math.floor(Math.random() * cards.length);
-      const row = Math.floor(i / GRID);
-      const col = i % GRID;
+      const i = Math.floor(Math.random() * 9);
+      const row = Math.floor(i / 3);
+      const col = i % 3;
       const neighbors = [];
       if (col > 0) neighbors.push(i - 1);
-      if (col < GRID - 1) neighbors.push(i + 1);
-      if (row > 0) neighbors.push(i - GRID);
-      if (row < GRID - 1) neighbors.push(i + GRID);
-      const j = neighbors[Math.floor(Math.random() * neighbors.length)];
-      return [i, j];
+      if (col < 2) neighbors.push(i + 1);
+      if (row > 0) neighbors.push(i - 3);
+      if (row < 2) neighbors.push(i + 3);
+      return [i, neighbors[Math.floor(Math.random() * neighbors.length)]];
     }
-
-    function animateAdjacentSwap() {
-      if (finished || phase !== 'shuffle') return;
-      const [i, j] = adjacentPair();
-      const cells = grid.querySelectorAll('.touch4-cell');
+    function animateSwap(i, j, done) {
+      const cells = grid.querySelectorAll('.touch4-v60-card');
       const a = cells[i];
       const b = cells[j];
-      if (!a || !b) return;
+      if (!a || !b) { done(); return; }
       const ar = a.getBoundingClientRect();
       const br = b.getBoundingClientRect();
       const dx = br.left - ar.left;
@@ -2892,130 +2875,135 @@
       a.style.setProperty('--swap-y', `${dy}px`);
       b.style.setProperty('--swap-x', `${-dx}px`);
       b.style.setProperty('--swap-y', `${-dy}px`);
-      a.classList.add('swap-moving');
-      b.classList.add('swap-moving');
+      a.classList.add('swap-highlight', 'swap-move');
+      b.classList.add('swap-highlight', 'swap-move');
       playSound('flip');
       schedule(() => {
         [cards[i], cards[j]] = [cards[j], cards[i]];
         renderGrid();
-      }, 520);
+        done();
+      }, 620);
     }
-
+    function mixCards(step = 0) {
+      if (finished || phase !== 'mix') return;
+      if (step >= SWAPS) {
+        phase = 'choice';
+        face = 'back';
+        renderGrid();
+        setMessage('Wähle eine Karte.', 'good');
+        return;
+      }
+      setMessage(`Die Karten werden gemischt … ${step + 1} / ${SWAPS}`);
+      const [i, j] = adjacentPair();
+      animateSwap(i, j, () => schedule(() => mixCards(step + 1), Math.max(180, SWAP_MS - 620)));
+    }
     function beginRound() {
-      if (finished) return;
-      phase = 'reveal';
-      buildRoundCards();
+      if (finished || roundIndex >= TOTAL_ROUNDS) return;
+      phase = 'show';
+      buildCardsForRound();
+      renderGrid();
+      renderBridge();
       updateScore();
-      renderPitSlots();
-      renderGrid();
-      setMessage('Merke dir die eine weiche Karte.', 'neutral');
-      schedule(beginShuffle, REVEAL_MS);
+      const softName = ['Kissen', 'Wolke', 'Teddy'][roundIndex];
+      setMessage(`Runde ${roundIndex + 1}: Merke dir den weichen Gegenstand (${softName}).`);
+      schedule(() => {
+        if (finished) return;
+        phase = 'mix';
+        face = 'back';
+        renderGrid();
+        schedule(() => mixCards(0), 250);
+      }, SHOW_MS);
     }
-
-    function beginShuffle() {
-      if (finished) return;
-      phase = 'shuffle';
-      cardFace = 'back';
-      swapCount = 0;
-      renderGrid();
-      setMessage('Die Karten werden gemischt. Merke dir die Position.', 'neutral');
-      const doSwap = () => {
-        if (finished || phase !== 'shuffle') return;
-        if (swapCount >= SWAPS_PER_ROUND) {
-          beginChoice();
-          return;
-        }
-        swapCount += 1;
-        animateAdjacentSwap();
-        schedule(doSwap, SWAP_MS);
-      };
-      schedule(doSwap, 450);
-    }
-
-    function beginChoice() {
-      if (finished) return;
-      phase = 'choice';
-      cardFace = 'back';
-      renderGrid();
-      setMessage('Wähle einen Gegenstand.', 'good');
-    }
-
-    function animateCardToPit(cell, card, done) {
-      const slots = bridge.querySelectorAll('.touch4-pit-card-slot');
-      const target = slots[pitCards.length];
-      if (!target || !cell) { done(); return; }
+    function animateToBridge(cell, card, done) {
+      const slots = bridge.querySelectorAll('.touch4-v60-bridge-slot');
+      const target = slots[bridgeCards.length];
+      if (!cell || !target) { done(); return; }
       const start = cell.getBoundingClientRect();
       const end = target.getBoundingClientRect();
       const clone = cell.cloneNode(true);
-      clone.classList.add('touch4-flying-card');
+      clone.classList.add('touch4-v60-flying');
       clone.style.left = `${start.left}px`;
       clone.style.top = `${start.top}px`;
       clone.style.width = `${start.width}px`;
       clone.style.height = `${start.height}px`;
       document.body.appendChild(clone);
       cell.classList.add('picked');
-      target.classList.add('incoming');
       requestAnimationFrame(() => {
         clone.style.transform = `translate(${end.left - start.left}px, ${end.top - start.top}px) scale(${end.width / start.width})`;
       });
       schedule(() => {
         clone.remove();
-        target.classList.remove('incoming');
         done();
-      }, MOVE_TO_PIT_MS);
+      }, FLY_MS);
     }
-
     function chooseCard(index) {
-      if (finished || phase !== 'choice' || selectedThisRound) return;
+      if (finished || phase !== 'choice' || selected) return;
       const card = cards[index];
       if (!card) return;
-      selectedThisRound = true;
-      phase = 'moveToPit';
-      setMessage('Der gewählte Gegenstand fällt verdeckt in die Grube.', 'neutral');
+      selected = true;
+      phase = 'selected';
+      setMessage('Die Karte wird verdeckt in die Brücke gelegt.');
       playSound('collect');
-      const cell = grid.querySelector(`.touch4-cell[data-index="${index}"]`);
-      animateCardToPit(cell, card, () => {
-        pitCards.push({ ...card });
-        renderPitSlots();
+      const cell = grid.querySelector(`.touch4-v60-card[data-index="${index}"]`);
+      animateToBridge(cell, card, () => {
+        bridgeCards.push({ ...card });
         updateScore();
-        if (pitCards.length >= TOTAL_ROUNDS) {
-          schedule(revealPitCards, 650);
+        renderBridge();
+        roundIndex += 1;
+        if (bridgeCards.length >= TOTAL_ROUNDS) {
+          setMessage('Die Brücke ist voll. Drücke „Weg fortsetzen“ und Sir Nervus prüft die Karten.');
+          show(continueBtn);
         } else {
-          setMessage('Der Gegenstand liegt verdeckt in der Brücke. Nächste Runde.', 'neutral');
+          setMessage('Nächste Runde. Es wird wieder neu gemischt.');
           schedule(beginRound, 900);
         }
       });
     }
-
-    function revealPitCards() {
-      if (finished) return;
-      phase = 'revealPit';
-      setMessage('Die Brücke wird aufgedeckt.', 'neutral');
-      let revealIndex = -1;
-      const tick = () => {
-        revealIndex += 1;
-        renderPitSlots(revealIndex);
-        playSound('flip');
-        if (revealIndex < pitCards.length - 1) schedule(tick, 850);
-        else schedule(evaluateBridge, 850);
-      };
-      schedule(tick, 450);
+    function heroMoveTo(targetX, done) {
+      if (!hero) { done(); return; }
+      hero.classList.add('walking');
+      hero.style.left = `${targetX}px`;
+      schedule(() => {
+        hero.classList.remove('walking');
+        done();
+      }, 740);
     }
-
-    function evaluateBridge() {
-      const hasSharp = pitCards.some(card => card.type === 'sharp');
-      if (hasSharp) {
-        setMessage('Eine spitze Karte liegt in der Brücke. Sir Nervus kann nicht sicher laufen.', 'bad');
-        playSound('hurt');
-        schedule(() => showResult(false), 900);
-      } else {
-        setMessage('Alle drei Gegenstände sind weich. Sir Nervus läuft über die Brücke.', 'good');
-        hero?.classList.add('crossing');
-        playSound('levelunlocked');
-        schedule(() => showResult(true), 1300);
+    function continuePath() {
+      if (finished || phase === 'walking') return;
+      phase = 'walking';
+      hide(continueBtn);
+      setMessage('Sir Nervus läuft über die Brücke und prüft jede Karte.');
+      const pitScene = document.querySelector('.touch4-v60-pit-scene');
+      const slots = Array.from(bridge.querySelectorAll('.touch4-v60-bridge-slot'));
+      if (!pitScene || !slots.length) return;
+      const sceneRect = pitScene.getBoundingClientRect();
+      let i = 0;
+      function step() {
+        if (i >= bridgeCards.length) {
+          const right = document.querySelector('.touch4-v60-right-ground')?.getBoundingClientRect();
+          const x = right ? (right.left - sceneRect.left + 8) : sceneRect.width - 70;
+          heroMoveTo(x, () => showResult(true));
+          return;
+        }
+        const slotRect = slots[i].getBoundingClientRect();
+        const x = slotRect.left - sceneRect.left + slotRect.width * 0.5 - 30;
+        heroMoveTo(x, () => {
+          renderBridge(i);
+          playSound('flip');
+          const card = bridgeCards[i];
+          if (card.type === 'sharp') {
+            setMessage('Autsch! Dieser Gegenstand ist spitz. Der Weg ist nicht sicher.', 'bad');
+            playSound('hurt');
+            schedule(() => showResult(false), 850);
+          } else {
+            setMessage('Weich. Sir Nervus kann weitergehen.', 'good');
+            i += 1;
+            schedule(step, 620);
+          }
+        });
       }
+      step();
     }
-
     function showResult(won) {
       if (finished) return;
       finished = true;
@@ -3028,8 +3016,8 @@
       }
       resultTitle.textContent = won ? 'Gewonnen' : 'Verloren';
       resultText.textContent = won
-        ? 'Du hast drei weiche Gegenstände gewählt. Sir Nervus konnte sicher über die Grube laufen.'
-        : 'Mindestens ein Gegenstand war spitz. Der Tastsinn warnt vor gefährlichen Reizen.';
+        ? 'Alle drei Brückenkarten waren weich. Sir Nervus konnte sicher über die Grube laufen.'
+        : 'Mindestens eine Brückenkarte war spitz. Die Haut meldet: Das ist gefährlich.';
       playSound(won ? 'win' : 'lose');
       retryBtn.textContent = won ? 'Zurück zum Spielfeld' : 'Neuer Versuch';
       retryBtn.onclick = () => {
@@ -3051,10 +3039,10 @@
     $('touch4CloseMenuBtn')?.addEventListener('click', () => hide(menu));
     $('touch4MenuBoardBtn')?.addEventListener('click', () => { stopSound('minigame_background'); location.href = pageUrl('index.html'); });
     boardBtn?.addEventListener('click', () => { stopSound('minigame_background'); location.href = pageUrl('index.html'); });
+    continueBtn?.addEventListener('click', continuePath);
 
-    hook?.classList.add('hidden');
     updateScore();
-    renderPitSlots();
+    renderBridge();
     show(intro);
   }
 

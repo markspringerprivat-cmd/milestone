@@ -347,3 +347,22 @@ Test: `minigame3.html?v=51`
 
 ### Test
 - `minigame4.html?slot=7&v=59`
+
+
+## Update v60 – Level 8 Fühlbrücke neu aufgebaut
+
+- `minigame4.html` wurde als eigenständiges 3×3-Brücken-Merkspiel neu aufgebaut.
+- Die alte Kran-/Pfeilsteuerung wurde entfernt.
+- Oben gibt es ein zentriertes quadratisches 3×3-Raster mit gleich großen Feldern.
+- In jeder Runde werden 8 spitze Gegenstände und genau 1 weicher Gegenstand geladen.
+- Weiche Gegenstände sind fest nach Runde: 1. Kissen, 2. Wolke, 3. Teddy.
+- Die Karten werden erst offen gezeigt, dann verdeckt und fünfmal sichtbar gemischt.
+- Es werden ausschließlich direkt benachbarte Karten getauscht.
+- Nach dem Mischen wählt der Spieler eine Karte, die verdeckt in die nächste Brückenposition gelegt wird.
+- Nach drei gewählten Karten erscheint „Weg fortsetzen“.
+- Sir Nervus läuft über die drei Karten; jede Karte wird beim Betreten aufgedeckt.
+- Eine spitze Karte führt sofort zum Verlust, drei weiche Karten führen zum Gewinn.
+
+### Test
+
+`minigame4.html?slot=7&v=60`

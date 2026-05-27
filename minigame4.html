@@ -4,51 +4,39 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Tastsinn · Fühlbrücke</title>
-  <link rel="stylesheet" href="./css/style.css?v=v4_59_touch_grid_bridge_click_20260527">
-  <link rel="stylesheet" href="./css/v4.css?v=v4_59_touch_grid_bridge_click_20260527">
-  <script src="./js/app-v4.js?v=v4_59_touch_grid_bridge_click_20260527" defer></script>
+  <link rel="stylesheet" href="./css/style.css?v=v4_60_touch_bridge_rewrite_20260527">
+  <link rel="stylesheet" href="./css/v4.css?v=v4_60_touch_bridge_rewrite_20260527">
+  <script src="./js/app-v4.js?v=v4_60_touch_bridge_rewrite_20260527" defer></script>
 </head>
 <body data-page="minigame4">
-  <main class="touch4-page" aria-label="Tastsinn-Fühlbrücke">
-    <section class="touch4-stage touch4-pit-stage touch4-memory-stage" aria-label="Fühlbrücke-Spielfeld">
+  <main class="touch4-v60-page" aria-label="Tastsinn-Fühlbrücke">
+    <section class="touch4-v60-stage" aria-label="Tastsinn-Merkspiel">
       <button id="touch4SettingsBtn" class="mini-settings-btn" type="button" aria-label="Optionen">⚙</button>
 
-      <div class="touch4-hud touch4-memory-hud">
-        <div id="touch4Score" class="touch4-score">Auswahl: 0 / 3</div>
-      </div>
+      <header class="touch4-v60-header">
+        <div id="touch4Score" class="touch4-v60-score">Brücke: 0 / 3</div>
+        <div id="touch4Message" class="touch4-v60-message">Merke dir die weiche Karte.</div>
+      </header>
 
-      <p id="touch4Message" class="touch4-message">Merke dir die weiche Karte.</p>
-
-      <section class="touch4-crane-area" aria-label="Tastkarten-Spielfeld">
-        <div id="touch4CraneField" class="touch4-crane-field touch4-memory-field">
-          <div id="touch4Grid" class="touch4-grid touch4-memory-grid" aria-label="Verdeckte Tastkarten"></div>
-
-          <div id="touch4Hook" class="touch4-hook touch4-red-crane" aria-hidden="true">
-            <div class="touch4-hook-cable"></div>
-            <div class="touch4-hook-head"></div>
-          </div>
-        </div>
+      <section class="touch4-v60-board-wrap" aria-label="Kartenfeld">
+        <div id="touch4Grid" class="touch4-v60-grid" aria-label="3 mal 3 Kartenfeld"></div>
       </section>
 
-      <section class="touch4-pit-scene touch4-memory-pit-scene" aria-label="Fallgrube">
-        <div class="touch4-start-pad" aria-hidden="true"></div>
-        <img id="touch4Hero" class="touch4-hero" src="./assets/images/minigame/mini_walk_right_1.png" alt="Sir Nervus">
-        <div class="touch4-pit">
-          <div id="touch4Bridge" class="touch4-bridge touch4-pit-slots" aria-label="Gesammelte Karten"></div>
-        </div>
-        <div class="touch4-end-pad" aria-hidden="true"></div>
+      <section class="touch4-v60-pit-scene" aria-label="Fallgrube">
+        <img id="touch4Hero" class="touch4-v60-hero" src="./assets/images/minigame/mini_walk_right_1.png" alt="Sir Nervus">
+        <div class="touch4-v60-left-ground" aria-hidden="true"></div>
+        <div class="touch4-v60-gap" aria-hidden="true"></div>
+        <div class="touch4-v60-right-ground" aria-hidden="true"></div>
+        <div id="touch4Bridge" class="touch4-v60-bridge" aria-label="Gewählte Brückenkarten"></div>
       </section>
 
-      <div class="touch4-bottom-controls" aria-label="Kransteuerung" aria-hidden="true">
-        <button id="touch4UpHoldBtn" class="touch4-hold-btn" type="button" aria-label="Kran nach oben bewegen">↑</button>
-        <button id="touch4RightHoldBtn" class="touch4-hold-btn" type="button" aria-label="Kran nach rechts bewegen" disabled>→</button>
-      </div>
+      <button id="touch4ContinueBtn" class="game-btn touch4-v60-continue hidden" type="button">Weg fortsetzen</button>
 
       <div id="touch4Intro" class="modal">
         <div class="modal-card touch4-intro-card">
           <h2>Tastsinn: Fühlbrücke</h2>
-          <p>Die Haut unterscheidet weiche und spitze Reize. Merke dir die weiche Karte, denn nur weiche Gegenstände ergeben einen sicheren Boden.</p>
-          <p>Nach dem Mischen wählst du eine verdeckte Karte. Drei gewählte Karten bilden die Brücke über die Grube. Ist eine spitz, ist der Weg gefährlich.</p>
+          <p>Merke dir die weiche Karte. Nach dem Verdecken werden die Karten gemischt. Wähle dann eine Karte aus, um die Brücke über die Grube zu bauen.</p>
+          <p>Runde 1: Kissen, Runde 2: Wolke, Runde 3: Teddy. Liegt am Ende ein spitzer Gegenstand in der Brücke, verliert Sir Nervus.</p>
           <div class="modal-actions">
             <button id="touch4StartBtn" class="game-btn" type="button">Spiel starten</button>
           </div>
@@ -58,7 +46,7 @@
       <div id="touch4Menu" class="modal hidden">
         <div class="modal-card">
           <h2>Pause</h2>
-          <p>Merke dir die weiche Karte, wähle nach dem Mischen einen verdeckten Gegenstand und baue daraus eine Brücke. Nach drei Karten wird aufgedeckt.</p>
+          <p>Wähle nach jedem Mischen eine verdeckte Karte. Drei Karten bilden die Brücke. Nur weiche Gegenstände sind sicher.</p>
           <div class="modal-actions">
             <button id="touch4CloseMenuBtn" class="game-btn" type="button">Weiter</button>
             <button id="touch4MenuBoardBtn" class="game-btn muted" type="button">Zurück zum Spielfeld</button>
