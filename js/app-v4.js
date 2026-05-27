@@ -2360,27 +2360,29 @@
       const desiredCenterX = (boardRect.left - stageRect.left) + tileW;
       const desiredLeft = Math.max(4, Math.min(stageRect.width - zoneRect.width - 4, desiredCenterX - zoneRect.width / 2));
       // Der Oger steht auf dem oberen Rand des Rohrfelds, mittig über Kachel 1 und 2.
-      const desiredTop = Math.max(4, boardRect.top - stageRect.top - zoneRect.height * 0.82);
+      const desiredTop = Math.max(4, boardRect.top - stageRect.top - zoneRect.height * 0.78);
       ogreZone.style.left = `${desiredLeft}px`;
       ogreZone.style.top = `${desiredTop}px`;
     }
     function positionSprayOverlay() {
       if (!sprayOverlay) return;
+      const ogreZone = $('pipe3OgreZone');
+      if (!ogreZone) return;
       const stageRect = stage.getBoundingClientRect();
-      const ogreRect = ogre.getBoundingClientRect();
+      const ogreRect = ogreZone.getBoundingClientRect();
       const naturalW = sprayOverlay.naturalWidth || 360;
       const naturalH = sprayOverlay.naturalHeight || 317;
       const ratio = naturalH / naturalW;
-      // Die Wolke wird nicht mehr aus der Düse berechnet, sondern rein über dem Oger zentriert.
-      // Sie ist bewusst nur etwas größer als der Oger, damit sie ihn verdeckt, aber nicht das halbe Feld.
-      const ogreMax = Math.max(ogreRect.width, ogreRect.height);
-      const width = Math.min(stageRect.width * 0.48, Math.max(130, ogreMax + 70));
+      // Exakt mittig auf dem Oger, nur leicht größer, damit er sauber verdeckt wird.
+      const padding = 56; // ungefähr 1–2 cm auf dem Handy
+      const width = Math.max(118, Math.max(ogreRect.width, ogreRect.height) + padding);
       const height = width * ratio;
       const centerX = ogreRect.left - stageRect.left + ogreRect.width * 0.50;
       const centerY = ogreRect.top - stageRect.top + ogreRect.height * 0.50;
-      const left = Math.max(0, Math.min(stageRect.width - width, centerX - width * 0.50));
-      const top = Math.max(0, Math.min(stageRect.height - height, centerY - height * 0.50));
+      const left = centerX - width * 0.50;
+      const top = centerY - height * 0.50;
       sprayOverlay.style.width = `${width}px`;
+      sprayOverlay.style.height = `${height}px`;
       sprayOverlay.style.left = `${left}px`;
       sprayOverlay.style.top = `${top}px`;
     }

@@ -173,3 +173,14 @@ Diese Version stabilisiert das Riech-Minispiel:
 - Wenn der Weg noch nicht vollständig grün verbunden ist, verliert man nicht mehr sofort. Das Ventil bewegt sich nur kurz und springt zurück.
 - Sobald der Weg vollständig korrekt ist, bekommt die Ventil-Kachel einen goldenen Rahmen.
 - Cache-Buster für `minigame3.html`: `v4_48_stable_ogre_cloud_valve_20260526`.
+
+
+## Update v49 – Oger-/Duftwolken-Fix
+
+- Oger bleibt an der oberen linken Spielfeldkante positioniert, mittig über den beiden linken oberen Kacheln.
+- Duftwolke wird jetzt **exakt über dem Mittelpunkt des Ogers** positioniert.
+- Duftwolke ist nur leicht größer als der Oger, damit sie ihn verdeckt, aber nicht das halbe Spielfeld überlagert.
+- Ventil-, Spray- und Oger-Clean-Logik aus v48 bleibt erhalten.
+
+### Test
+- `minigame3.html?v=49` aufrufen oder hart neu laden.
