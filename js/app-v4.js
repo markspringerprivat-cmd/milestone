@@ -143,7 +143,7 @@
     levelstart: 'assets/audio/levelstart.mp3', levelunlocked: 'assets/audio/levelunlocked.mp3', fight: 'assets/audio/fight.mp3', win: 'assets/audio/win.mp3', lose: 'assets/audio/lose.mp3',
     final: 'assets/audio/final.mp3', hurt: 'assets/audio/hurt.mp3', glass_break: 'assets/audio/glass_break.mp3', collect: 'assets/audio/collect.mp3',
     flip: 'assets/audio/flip.mp3', pair: 'assets/audio/pair.mp3', richtig: 'assets/audio/richtig.mp3',
-    richtig_1: 'assets/audio/richtig_1.mp3', richtig_2: 'assets/audio/richtig_2.mp3', richtig_3: 'assets/audio/richtig_3.mp3', spray: 'assets/audio/spray.mp3',
+    richtig_1: 'assets/audio/richtig_1.mp3', richtig_2: 'assets/audio/richtig_2.mp3', richtig_3: 'assets/audio/richtig_3.mp3', spray: 'assets/audio/spray.mp3', throw: 'assets/audio/throw.mp3',
     falsch_1: 'assets/audio/falsch_1.mp3', falsch_2: 'assets/audio/falsch_2.mp3', falsch_3: 'assets/audio/falsch_3.mp3'
   };
 
@@ -2027,6 +2027,7 @@
       no: assetUrl('assets/images/minigame3/no_pipe.png'),
       valve: assetUrl('assets/images/minigame3/ventil.png'),
       flakon: assetUrl('assets/images/minigame3/flakon_tile.png'),
+      heroIdle: assetUrl('assets/images/minigame3/hero_idle.png'),
       heroGuard: assetUrl('assets/images/minigame3/hero_guard.png'),
       ogreIdle: assetUrl('assets/images/minigame3/ogre_idle.png'),
       ogreThrow: assetUrl('assets/images/minigame3/ogre_throw.png'),
@@ -2041,7 +2042,7 @@
       broken: assetUrl('assets/images/minigame/mini_heart_broken.png')
     };
 
-    const heroIdleSrc = hero.getAttribute('src') || assetUrl('assets/images/minigame/mini_walk_right_1.png');
+    const heroIdleSrc = IMG.heroIdle;
     if (topConnector) topConnector.src = IMG.flakon;
     hero.dataset.idleSrc = heroIdleSrc;
     hero.src = heroIdleSrc;
@@ -2155,10 +2156,10 @@
       });
     }
     Promise.all([
-      IMG.flakon, IMG.heroGuard, IMG.ogreIdle, IMG.ogreThrow, IMG.ogreShocked, IMG.ogreClean, IMG.banana, IMG.sprayOverlay, IMG.feedBanana,
+      IMG.flakon, IMG.heroIdle, IMG.heroGuard, IMG.ogreIdle, IMG.ogreThrow, IMG.ogreShocked, IMG.ogreClean, IMG.banana, IMG.sprayOverlay, IMG.feedBanana,
       HEART.full, HEART.broken, ASSETS.text.gewonnen, ASSETS.text.verloren
     ].map(preloadImage)).catch(() => {});
-    ['glass_break','hurt','richtig_1','richtig_3','spray','minigame_background'].forEach(key => getAudio(key)?.load?.());
+    ['glass_break','hurt','richtig_1','richtig_3','spray','throw','minigame_background'].forEach(key => getAudio(key)?.load?.());
 
     function initTiles() {
       tiles = [];
@@ -2288,8 +2289,8 @@
       updateValveReadyState();
     }
 
-    const GUARD_ACTIVE_MS = 1000;
-    const GUARD_COOLDOWN_MS = 1000;
+    const GUARD_ACTIVE_MS = 700;
+    const GUARD_COOLDOWN_MS = 1300;
     let guardState = 'ready';
     let guardActiveUntil = 0;
     let guardCooldownUntil = 0;
@@ -2344,7 +2345,7 @@
     let activeBanana = null;
     let nextAttackAt = 0;
     let ogreThrowUntil = 0;
-    function scheduleNextAttack(now) { nextAttackAt = now + 3000 + Math.random() * 3000; }
+    function scheduleNextAttack(now) { nextAttackAt = now + 3000 + Math.random() * 2000; }
     function clearBanana() {
       activeBanana = null;
       banana.classList.add('hidden');
@@ -2452,6 +2453,7 @@
       ogre.classList.add('throwing');
       ogreThrowUntil = now + 820;
       startBananaDrop(now);
+      playSound('throw');
     }
     function setOgreIdle() {
       ogre.src = IMG.ogreIdle;

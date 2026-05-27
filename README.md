@@ -237,3 +237,17 @@ Test: `minigame3.html?v=51`
 
 ### Test
 - `minigame3.html?v=52` öffnen oder hart neu laden.
+
+
+## Update v53 – Ritter/Throw/Valve-Feinschliff
+
+- Neues Standard-Ritterbild (`hero_idle.png`) eingebunden.
+- Ritter-Idle bleibt größenmäßig an die Schutzschild-Version angepasst.
+- Neues `throw.mp3` eingebunden und wird exakt beim Start des Oger-Wurfs abgespielt.
+- Angriffstakt des Ogers auf 3–5 Sekunden gesetzt.
+- Schilddauer auf 0,7 Sekunden gesetzt.
+- Schild-Aufladung auf 1,3 Sekunden gesetzt.
+- Ventilbild auf transparenten Hintergrund umgestellt, damit es direkt auf der Steinkachel liegt.
+
+### Test
+- `minigame3.html?v=53`
