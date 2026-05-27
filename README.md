@@ -225,3 +225,15 @@ Nach GitHub-Upload testen mit:
 - Die Duftwolke ist ca. 180% der Oger-Containergröße und verdeckt den Oger zuverlässig.
 
 Test: `minigame3.html?v=51`
+
+
+## Update v52 – Oger und Duftwolke größer
+
+- Oger normal wird doppelt so groß angezeigt.
+- Oger Wurfposition wird doppelt so groß angezeigt.
+- Oger Clean wird über dasselbe Oger-Element ebenfalls doppelt so groß angezeigt.
+- Duftwolke bleibt am Oger gekoppelt und wird durch die größere Oger-Zone ebenfalls deutlich größer dargestellt.
+- Spiel-, Sound- und Ventillogik bleiben unverändert.
+
+### Test
+- `minigame3.html?v=52` öffnen oder hart neu laden.

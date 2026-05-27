@@ -3099,3 +3099,23 @@ body[data-page="minigame"]{
     height:182%!important;
   }
 }
+
+/* === Smell pipe v52: bigger ogre, clean ogre, throw ogre and scent cloud === */
+.pipe3-ogre-zone{
+  width:min(46vw, 184px)!important;
+  height:min(30.4svh, 196px)!important;
+}
+.pipe3-ogre-zone .pipe3-spray-overlay{
+  width:180%!important;
+  height:180%!important;
+}
+@media(max-width:560px){
+  .pipe3-ogre-zone{
+    width:min(46vw, 164px)!important;
+    height:min(28svh, 176px)!important;
+  }
+  .pipe3-ogre-zone .pipe3-spray-overlay{
+    width:182%!important;
+    height:182%!important;
+  }
+}
