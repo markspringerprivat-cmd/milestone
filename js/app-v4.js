@@ -257,7 +257,7 @@
       muted = !muted; localStorage.setItem(SOUND_STORE, muted ? '1' : '0'); b.textContent = muted ? '🔇' : '🔊';
       if (muted) Array.from(audio.keys()).forEach(stopSound);
       else if (document.body.dataset.page === 'board' && !$('boardScreen')?.classList.contains('hidden')) playSound('background', { loop:true });
-      else if (document.body.dataset.page === 'minigame' || document.body.dataset.page === 'minigame2' || document.body.dataset.page === 'minigame3') playSound('minigame_background', { loop:true, restart:false });
+      else if (document.body.dataset.page === 'minigame' || document.body.dataset.page === 'minigame2' || document.body.dataset.page === 'minigame3' || document.body.dataset.page === 'minigame4') playSound('minigame_background', { loop:true, restart:false });
     });
     document.body.appendChild(b);
   }
@@ -322,6 +322,7 @@
     $('introScreen')?.addEventListener('click', (ev) => { if (ev.target.closest('#startGameBtn')) return; startGame(); });
     $('outroContinueBtn')?.addEventListener('click', () => { hide($('outroScreen')); showBoard(false); });
     $('resetGameBtn')?.addEventListener('click', () => { if (confirm('Spielbrett wirklich zurücksetzen?')) { localStorage.removeItem(STORE); localStorage.removeItem(RETURN_STORE); location.href = pageUrl('index.html'); } });
+    $('unlockAllLevelsBtn')?.addEventListener('click', unlockAllLevels);
     $('openBoardMenuBtn')?.addEventListener('click', () => document.body.classList.add('board-menu-open'));
     $('closeBoardMenuBtn')?.addEventListener('click', () => document.body.classList.remove('board-menu-open'));
     $('closeScanBtn')?.addEventListener('click', closeScan);
@@ -476,7 +477,7 @@
     const latest = getState(); const assigned = latest.slots[index];
 
     if (isPlaceholderSlot(index)) {
-      if (completed && index !== 1 && index !== 3 && index !== 5) return;
+      if (completed && index !== 1 && index !== 3 && index !== 5 && index !== 7) return;
       showPlaceholder(index);
       return;
     }
@@ -510,6 +511,31 @@
     localStorage.setItem(RETURN_STORE, JSON.stringify({ type:'unlocked', meta:{ slot:index, skipped:true } }));
     applyReturnModal();
   }
+  function unlockAllLevels() {
+    if (!confirm('Alle Level zum Testen freischalten?')) return;
+    const state = getState();
+    state.started = true;
+    state.slots = Array.from({ length: LEVEL_COUNT }, () => null);
+    state.completed = Array.from({ length: LEVEL_COUNT }, () => true);
+    state.slots[0] = 'sehen';
+    state.slots[2] = 'hoeren';
+    state.slots[4] = 'riechen';
+    state.slots[6] = 'schmecken';
+    state.slots[8] = 'fuehlen';
+    state.slots[10] = 'boss';
+    state.heroIndex = 0;
+    state.introUsed = true;
+    setState(state);
+    localStorage.removeItem(RETURN_STORE);
+    document.body.classList.remove('board-menu-open');
+    hide($('introScreen'));
+    show($('boardScreen'));
+    show($('openBoardMenuBtn'));
+    show($('belowBoard'));
+    renderBoard();
+    playSound('levelunlocked');
+  }
+
   function setScanMessage(text, bad=false) { const msg=$('scanMessage'); if (!msg) return; msg.textContent=text; msg.className = text ? `message ${bad?'bad':'ok'}` : 'message hidden'; }
   async function startScanner() {
     const info = $('cameraInfo'); if (info) info.textContent='Kamera wird vorbereitet …';
@@ -602,6 +628,21 @@
       return;
     }
 
+
+    if (index === 7) {
+      const done = Boolean(getState().completed[index]);
+      window.pendingLaunch = { placeholder:true, minigame4:true, slot:index, meta };
+      $('launchLevelBtn').textContent = done ? 'Fühl-Kran erneut starten' : 'Spiel starten';
+      $('encounterBackBtn').textContent = done ? 'Zurück' : 'Überspringen';
+      $('encounterImage').src = ASSETS.hero;
+      $('encounterImage').alt = 'Sir Nervus';
+      $('encounterKicker').textContent = 'Tastsinn-Kran';
+      $('encounterTitle').textContent = 'Weich oder spitz?';
+      $('encounterSpeech').textContent = done ? 'Du kannst den Tastsinn-Kran erneut spielen.' : 'Steuere den Kran und sammle nur weiche Gegenstände. Spitze Dinge lösen Schmerz aus und kosten ein Herz.';
+      show(modal);
+      return;
+    }
+
     window.pendingLaunch = { placeholder:true, slot:index, meta };
     $('launchLevelBtn').textContent = index === LEVEL_COUNT - 1 ? 'Zum Finale' : 'Weiter';
     $('encounterBackBtn').textContent = 'Wegrennen';
@@ -614,7 +655,7 @@
   }
 
   function handleEncounterBack() {
-    if (window.pendingLaunch?.minigame || window.pendingLaunch?.minigame2 || window.pendingLaunch?.minigame3) {
+    if (window.pendingLaunch?.minigame || window.pendingLaunch?.minigame2 || window.pendingLaunch?.minigame3 || window.pendingLaunch?.minigame4) {
       const slot = window.pendingLaunch.slot;
       if (getState().completed[slot]) { hide($('encounterModal')); return; }
       completePlaceholder(slot);
@@ -638,6 +679,11 @@
     if (window.pendingLaunch.minigame3) {
       hide($('encounterModal'));
       location.href = pageUrl(`minigame3.html?slot=${window.pendingLaunch.slot}`);
+      return;
+    }
+    if (window.pendingLaunch.minigame4) {
+      hide($('encounterModal'));
+      location.href = pageUrl(`minigame4.html?slot=${window.pendingLaunch.slot}`);
       return;
     }
     if (window.pendingLaunch.placeholder) { completePlaceholder(window.pendingLaunch.slot); return; }
@@ -2680,6 +2726,181 @@
     show(introModal);
   }
 
+
+  function initMiniGame4() {
+    addSpeaker();
+    stopSound('background');
+    stopSound('battle_background');
+    playSound('minigame_background', { loop:true, restart:true });
+
+    const slot = Number(qs('slot')) || 7;
+    const stage = document.querySelector('.touch4-stage');
+    const grid = $('touch4Grid');
+    const crane = $('touch4Crane');
+    const cable = $('touch4Cable');
+    const claw = $('touch4Claw');
+    const scoreEl = $('touch4Score');
+    const messageEl = $('touch4Message');
+    const livesWrap = $('touch4Lives');
+    const intro = $('touch4Intro');
+    const result = $('touch4Result');
+    const resultImage = $('touch4ResultImage');
+    const resultTitle = $('touch4ResultTitle');
+    const resultText = $('touch4ResultText');
+    const retryBtn = $('touch4RetryBtn');
+    const boardBtn = $('touch4BoardBtn');
+    const menu = $('touch4Menu');
+    if (!stage || !grid || !crane) return;
+    stage.style.setProperty('--touch4-bg', `url("${popupBgForMeta({ slot, isBoss:false })}")`);
+
+    const HEART = { full: assetUrl('assets/images/minigame/mini_heart_full.png'), broken: assetUrl('assets/images/minigame/mini_heart_broken.png') };
+    const SOFT_TARGET = 5;
+    let lives = 3;
+    let collected = 0;
+    let craneX = 0;
+    let craneY = 0;
+    let busy = false;
+    let finished = false;
+    const items = [
+      { icon:'🧸', label:'Stofftier', type:'soft' },
+      { icon:'🧽', label:'Schwamm', type:'soft' },
+      { icon:'🪶', label:'Feder', type:'soft' },
+      { icon:'☁️', label:'Watte', type:'soft' },
+      { icon:'🛏️', label:'Kissen', type:'soft' },
+      { icon:'🌵', label:'Kaktus', type:'sharp' },
+      { icon:'📌', label:'Nadel', type:'sharp' },
+      { icon:'🦷', label:'Dorn', type:'sharp' },
+      { icon:'🔪', label:'Scharfe Kante', type:'sharp' },
+      { icon:'🪨', label:'Stein', type:'neutral' },
+      { icon:'🪵', label:'Holz', type:'neutral' },
+      { icon:'🧊', label:'Eis', type:'neutral' },
+      { icon:'⚽', label:'Ball', type:'neutral' },
+      { icon:'🪙', label:'Münze', type:'neutral' },
+      { icon:'🐚', label:'Muschel', type:'neutral' },
+      { icon:'📦', label:'Klotz', type:'neutral' }
+    ].sort(() => Math.random() - .5).map((item, index) => ({ ...item, index, removed:false }));
+
+    const heartNodes = Array.from({ length: 3 }, (_, index) => {
+      const img = document.createElement('img');
+      img.className = 'memory2-heart';
+      img.alt = index === 0 ? 'Leben' : '';
+      if (index > 0) img.setAttribute('aria-hidden', 'true');
+      livesWrap?.appendChild(img);
+      return img;
+    });
+    function updateHearts() {
+      heartNodes.forEach((node, index) => { node.src = index < lives ? HEART.full : HEART.broken; node.classList.toggle('broken', index >= lives); });
+    }
+    function updateScore() {
+      if (scoreEl) scoreEl.textContent = `Weich: ${collected} / ${SOFT_TARGET}`;
+    }
+    function setMessage(text, kind='') {
+      if (!messageEl) return;
+      messageEl.textContent = text;
+      messageEl.className = `touch4-message ${kind}`;
+    }
+    function renderGrid() {
+      grid.innerHTML = items.map(item => `<button class="touch4-cell" type="button" data-index="${item.index}" aria-label="${item.label}"><span class="touch4-item ${item.type} ${item.removed ? 'removed' : ''}">${item.removed ? '' : item.icon}</span></button>`).join('');
+    }
+    function cellSize() {
+      const rect = grid.getBoundingClientRect();
+      return { w: rect.width / 4, h: rect.height / 4, left: grid.offsetLeft, top: grid.offsetTop };
+    }
+    function moveCrane() {
+      const c = cellSize();
+      const x = c.left + craneX * c.w + c.w / 2;
+      const y = c.top + craneY * c.h + c.h / 2;
+      crane.style.left = `${x}px`;
+      crane.style.top = `${Math.max(28, y - c.h * .72)}px`;
+    }
+    function move(dx, dy) {
+      if (busy || finished) return;
+      craneX = clamp(craneX + dx, 0, 3);
+      craneY = clamp(craneY + dy, 0, 3);
+      moveCrane();
+      playSound('flip');
+    }
+    function showResult(won) {
+      finished = true;
+      stopSound('minigame_background');
+      if (resultImage) { resultImage.src = won ? ASSETS.text.gewonnen : ASSETS.text.verloren; resultImage.alt = won ? 'Gewonnen' : 'Verloren'; show(resultImage); }
+      resultTitle.textContent = won ? 'Gewonnen' : 'Verloren';
+      resultText.textContent = won ? 'Du hast alle weichen Gegenstände ertastet und spitze Gefahren vermieden.' : 'Sir Nervus hat zu viele spitze Dinge erwischt.';
+      playSound(won ? 'win' : 'lose');
+      retryBtn.textContent = won ? 'Zurück zum Spielfeld' : 'Neuer Versuch';
+      retryBtn.onclick = () => {
+        if (won) {
+          const state = getState();
+          state.completed[slot] = true;
+          state.heroIndex = slot;
+          setState(state);
+          localStorage.setItem(RETURN_STORE, JSON.stringify({ type:'unlocked', meta:{ slot, placeholder:true } }));
+          location.href = pageUrl('index.html');
+        } else location.reload();
+      };
+      show(boardBtn);
+      show(result);
+    }
+    function grab() {
+      if (busy || finished) return;
+      busy = true;
+      cable?.classList.add('down');
+      claw?.classList.add('down');
+      playSound('levelstart');
+      window.setTimeout(() => {
+        const index = craneY * 4 + craneX;
+        const item = items[index];
+        if (!item || item.removed) {
+          setMessage('Hier ist nichts mehr. Fahre weiter.', 'neutral');
+          playSound('flip');
+        } else if (item.type === 'soft') {
+          item.removed = true;
+          collected += 1;
+          setMessage(`${item.label}: weich – richtig gesammelt!`, 'good');
+          playSound('collect');
+        } else if (item.type === 'sharp') {
+          item.removed = true;
+          lives -= 1;
+          setMessage(`${item.label}: spitz – aua!`, 'bad');
+          playSound('glass_break');
+          playSound('hurt');
+          updateHearts();
+        } else {
+          setMessage(`${item.label}: nicht weich. Lass es lieber liegen.`, 'neutral');
+          playSound('falsch_1');
+        }
+        renderGrid();
+        updateScore();
+        window.setTimeout(() => {
+          cable?.classList.remove('down');
+          claw?.classList.remove('down');
+          busy = false;
+          if (collected >= SOFT_TARGET) showResult(true);
+          else if (lives <= 0) showResult(false);
+        }, 420);
+      }, 520);
+    }
+
+    $('touch4StartBtn')?.addEventListener('click', () => hide(intro));
+    $('touch4SettingsBtn')?.addEventListener('click', () => show(menu));
+    $('touch4CloseMenuBtn')?.addEventListener('click', () => hide(menu));
+    $('touch4MenuBoardBtn')?.addEventListener('click', () => { stopSound('minigame_background'); location.href = pageUrl('index.html'); });
+    boardBtn?.addEventListener('click', () => { stopSound('minigame_background'); location.href = pageUrl('index.html'); });
+    $('touch4LeftBtn')?.addEventListener('click', () => move(-1,0));
+    $('touch4RightBtn')?.addEventListener('click', () => move(1,0));
+    $('touch4UpBtn')?.addEventListener('click', () => move(0,-1));
+    $('touch4DownBtn')?.addEventListener('click', () => move(0,1));
+    $('touch4GrabBtn')?.addEventListener('click', grab);
+    window.addEventListener('resize', moveCrane);
+
+    renderGrid();
+    updateHearts();
+    updateScore();
+    setMessage('Sammle alle weichen Dinge. Spitze Gegenstände kosten ein Herz.');
+    requestAnimationFrame(moveCrane);
+    show(intro);
+  }
+
   function initCodes() {
     addSpeaker(); $('printCodesBtn')?.addEventListener('click', () => print());
     const grid=$('qrGrid'); if (!grid) return;
@@ -2694,6 +2915,7 @@
     else if (page === 'minigame') initMiniGame();
     else if (page === 'minigame2') initMiniGame2();
     else if (page === 'minigame3') initMiniGame3();
+    else if (page === 'minigame4') initMiniGame4();
     else if (page === 'codes') initCodes();
   });
 })();

@@ -251,3 +251,28 @@ Test: `minigame3.html?v=51`
 
 ### Test
 - `minigame3.html?v=53`
+
+## Update v54 – Level 8 Tastsinn-Kran + Board-Testbutton
+
+### Level 8 / Minigame 4
+
+- Neues HTML-Minispiel `minigame4.html` eingebaut.
+- Slot/Level: Level 8, intern Platzhalter-Slot `7`.
+- Thema: Tastsinn.
+- Spielprinzip: Kran über ein 4×4-Feld bewegen und weiche Gegenstände einsammeln.
+- Weiche Gegenstände geben Fortschritt.
+- Spitze Gegenstände kosten ein Herz.
+- Neutrale Gegenstände geben Feedback, kosten aber kein Herz.
+- Gewinn: alle 5 weichen Gegenstände gesammelt.
+- Verlust: 3 Herzen verbraucht.
+
+### Spielbrett-Menü
+
+- Im unteren Board-Menü wurde ein Button `Alle Level freischalten` ergänzt.
+- Der Button setzt lokal alle Level auf abgeschlossen/freigeschaltet und weist die QR-Level sinnvoll zu.
+- Level 8 kann danach direkt erneut als Fühl-Kran gestartet werden.
+
+### Test
+
+- Board: `index.html?v=54`
+- Level 8 direkt: `minigame4.html?slot=7&v=54`

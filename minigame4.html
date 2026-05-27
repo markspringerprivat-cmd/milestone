@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Tastsinn · Fühl-Kran</title>
+  <link rel="stylesheet" href="./css/style.css?v=v4_54_touch_crane_level8_20260527">
+  <link rel="stylesheet" href="./css/v4.css?v=v4_54_touch_crane_level8_20260527">
+  <script src="./js/app-v4.js?v=v4_54_touch_crane_level8_20260527" defer></script>
+</head>
+<body data-page="minigame4">
+  <main class="touch4-page" aria-label="Tastsinn-Kran">
+    <section class="touch4-stage" aria-label="Fühl-Kran-Spielfeld">
+      <button id="touch4SettingsBtn" class="mini-settings-btn" type="button" aria-label="Optionen">⚙</button>
+
+      <div class="touch4-hud">
+        <div id="touch4Lives" class="memory2-lives" aria-label="Lebensanzeige"></div>
+        <div id="touch4Score" class="touch4-score">Weich: 0 / 5</div>
+      </div>
+
+      <h1 class="touch4-title">Fühl-Kran</h1>
+      <p id="touch4Message" class="touch4-message">Sammle nur weiche Dinge. Spitze Gegenstände tun weh.</p>
+
+      <div class="touch4-machine" aria-label="Kranfeld">
+        <div class="touch4-rail"></div>
+        <div id="touch4Crane" class="touch4-crane" aria-hidden="true">
+          <div class="touch4-carriage"></div>
+          <div id="touch4Cable" class="touch4-cable"></div>
+          <div id="touch4Claw" class="touch4-claw">⌄</div>
+        </div>
+        <div id="touch4Grid" class="touch4-grid" aria-label="Gegenstände"></div>
+      </div>
+
+      <div class="touch4-console" aria-label="Schaltkonsole">
+        <img class="touch4-hero" src="./assets/images/characters/held.webp" alt="Sir Nervus an der Konsole">
+        <div class="touch4-controls">
+          <button id="touch4UpBtn" class="touch4-control" type="button">↑</button>
+          <div class="touch4-control-row">
+            <button id="touch4LeftBtn" class="touch4-control" type="button">←</button>
+            <button id="touch4GrabBtn" class="touch4-grab" type="button">Greifen</button>
+            <button id="touch4RightBtn" class="touch4-control" type="button">→</button>
+          </div>
+          <button id="touch4DownBtn" class="touch4-control" type="button">↓</button>
+        </div>
+      </div>
+
+      <div id="touch4Intro" class="modal">
+        <div class="modal-card touch4-intro-card">
+          <h2>Tastsinn: weich oder spitz?</h2>
+          <p>Die Haut erkennt Berührung, Druck und Oberflächen. Weiche Dinge fühlen sich ungefährlich an. Spitze Dinge können Schmerzen auslösen und warnen den Körper.</p>
+          <p>Steuere den Kran über das Feld. Sammle alle weichen Gegenstände und vermeide die spitzen.</p>
+          <div class="modal-actions">
+            <button id="touch4StartBtn" class="game-btn" type="button">Spiel starten</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="touch4Menu" class="modal hidden">
+        <div class="modal-card">
+          <h2>Pause</h2>
+          <p>Sammle alle weichen Gegenstände. Spitze Gegenstände kosten ein Herz.</p>
+          <div class="modal-actions">
+            <button id="touch4CloseMenuBtn" class="game-btn" type="button">Weiter</button>
+            <button id="touch4MenuBoardBtn" class="game-btn muted" type="button">Zurück zum Spielfeld</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="touch4Result" class="modal hidden">
+        <div class="modal-card mini-result-card">
+          <img id="touch4ResultImage" class="mini-result-img hidden" alt="">
+          <h2 id="touch4ResultTitle">Ergebnis</h2>
+          <p id="touch4ResultText"></p>
+          <div class="modal-actions">
+            <button id="touch4RetryBtn" class="game-btn" type="button">Nochmal versuchen</button>
+            <button id="touch4BoardBtn" class="game-btn muted" type="button">Zurück zum Spielfeld</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
