@@ -212,3 +212,16 @@ Diese Version ersetzt die Minigame-3-Bilder durch die neu hochgeladenen kleinere
 Nach GitHub-Upload testen mit:
 
 `minigame3.html?v=50`
+
+
+## Update v51 – Prozentuale Oger-Positionierung
+
+- Neue, kleinere Minigame-3-Assets wurden übernommen.
+- Oger-Position nutzt jetzt prozentuale Richtwerte:
+  - 60% Abstand vom linken Stage-Rand bis zum Flakon-Mittelpunkt.
+  - 30% Überlappung in das obere Spielfeld hinein.
+  - Zusätzlich wird die Position in den Bereich der beiden oberen linken Kacheln geklemmt, damit er nicht mehr in die Bildschirmecke springt.
+- Die Duftwolke liegt als echtes Kind im Oger-Container. Dadurch ist sie nicht mehr separat auf der Bühne positioniert, sondern exakt am Oger zentriert.
+- Die Duftwolke ist ca. 180% der Oger-Containergröße und verdeckt den Oger zuverlässig.
+
+Test: `minigame3.html?v=51`

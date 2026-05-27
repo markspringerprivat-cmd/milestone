@@ -2360,19 +2360,35 @@
       if (!ogreZone || !board) return;
       const stageRect = stage.getBoundingClientRect();
       const boardRect = board.getBoundingClientRect();
+      const flakonRect = topConnector?.getBoundingClientRect?.();
       const zoneRect = ogreZone.getBoundingClientRect();
       const tileW = boardRect.width / 6;
-      // Mitte der beiden oberen linken Kacheln: zwischen Spalte 0 und Spalte 1.
-      const desiredCenterX = (boardRect.left - stageRect.left) + tileW;
-      const desiredLeft = Math.max(4, Math.min(stageRect.width - zoneRect.width - 4, desiredCenterX - zoneRect.width / 2));
-      // Füße stehen auf dem oberen Rand des Rohrfeldes; der Körper ragt darüber.
-      const desiredTop = Math.max(4, boardRect.top - stageRect.top - zoneRect.height * 0.80);
+
+      // v51: prozentuale Richtwerte statt harte Pixel.
+      // 60% Abstand vom linken Bildschirm-/Stage-Rand bis zum Flakon-Mittelpunkt.
+      // 30% des Ogers überlappen in das Spielfeld hinein, um transparente Bildränder auszugleichen.
+      const FLACON_DISTANCE_RATIO = 0.60;
+      const BOARD_OVERLAP_RATIO = 0.30;
+
+      const flakonCenterX = flakonRect
+        ? (flakonRect.left - stageRect.left + flakonRect.width * 0.50)
+        : (boardRect.left - stageRect.left + tileW * 3.5);
+      const targetCenterX = flakonCenterX * FLACON_DISTANCE_RATIO;
+
+      // Sicherheitskorridor: bleibt im Bereich der beiden linken oberen Kacheln, aber nie an der Ecke.
+      const minCenterX = boardRect.left - stageRect.left + tileW * 0.55;
+      const maxCenterX = boardRect.left - stageRect.left + tileW * 1.65;
+      const desiredCenterX = clamp(targetCenterX, minCenterX, maxCenterX);
+      const desiredLeft = clamp(desiredCenterX - zoneRect.width / 2, 8, stageRect.width - zoneRect.width - 8);
+
+      const boardTop = boardRect.top - stageRect.top;
+      const desiredTop = clamp(boardTop - zoneRect.height * (1 - BOARD_OVERLAP_RATIO), 8, stageRect.height - zoneRect.height - 8);
+
       ogreZone.style.left = `${Math.round(desiredLeft)}px`;
       ogreZone.style.top = `${Math.round(desiredTop)}px`;
     }
     function positionSprayOverlay() {
-      // Keine separate Bühnenposition mehr: die Wolke hängt direkt am Oger-Container.
-      // CSS zentriert sie mit left/top 50% und transform(-50%, -50%).
+      // v51: Wolke ist Kind vom Oger-Container. CSS zentriert sie exakt mit 50%/50%.
       if (!sprayOverlay) return;
       sprayOverlay.style.removeProperty('left');
       sprayOverlay.style.removeProperty('top');
