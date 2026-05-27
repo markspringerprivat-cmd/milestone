@@ -2742,7 +2742,6 @@
     const hero = $('touch4Hero');
     const scoreEl = $('touch4Score');
     const messageEl = $('touch4Message');
-    const livesWrap = $('touch4Lives');
     const intro = $('touch4Intro');
     const result = $('touch4Result');
     const resultImage = $('touch4ResultImage');
@@ -2753,71 +2752,80 @@
     const menu = $('touch4Menu');
     const upBtn = $('touch4UpHoldBtn');
     const rightBtn = $('touch4RightHoldBtn');
-    if (!stage || !field || !grid || !hook || !upBtn || !rightBtn) return;
+    if (!stage || !field || !grid || !hook || !bridge || !upBtn || !rightBtn) return;
 
     stage.style.setProperty('--touch4-bg', `url("${popupBgForMeta({ slot, isBoss:false })}")`);
 
-    const HEART = {
-      full: assetUrl('assets/images/minigame/mini_heart_full.png'),
-      broken: assetUrl('assets/images/minigame/mini_heart_broken.png')
-    };
-
-    const SOFT_TARGET = 5;
-    const START_X = 0.09;
-    const START_Y = 0.87;
-    const MIN_Y = 0.10;
-    const MAX_X = 0.93;
+    const GRID = 3;
+    const TOTAL_ROUNDS = 3;
+    const REVEAL_MS = 5000;
+    const SHUFFLE_MS = 5000;
+    const SWAP_MS = 1000;
+    const START_X = 0.07;
+    const START_Y = 0.90;
+    const MIN_Y = 0.08;
+    const MAX_X = 0.94;
     const UP_SPEED = 0.00048;
     const RIGHT_SPEED = 0.00056;
 
-    let lives = 3;
-    let collected = 0;
+    const softPool = [
+      { icon:'🧸', label:'Stofftier', type:'soft' },
+      { icon:'🧽', label:'Schwamm', type:'soft' },
+      { icon:'🪶', label:'Feder', type:'soft' },
+      { icon:'☁️', label:'Watte', type:'soft' },
+      { icon:'🛏️', label:'Kissen', type:'soft' }
+    ];
+    const sharpPool = [
+      { icon:'🌵', label:'Kaktus', type:'sharp' },
+      { icon:'📌', label:'Nadel', type:'sharp' },
+      { icon:'🦔', label:'Stacheln', type:'sharp' },
+      { icon:'🔺', label:'Spitze Kante', type:'sharp' },
+      { icon:'🪡', label:'Nadel', type:'sharp' },
+      { icon:'🪨', label:'Spitzer Stein', type:'sharp' },
+      { icon:'🦷', label:'Spitzer Zahn', type:'sharp' },
+      { icon:'🌹', label:'Dornen', type:'sharp' }
+    ];
+
+    let cards = [];
+    let pitCards = [];
     let markerX = START_X;
     let markerY = START_Y;
-    let phase = 'up'; // up -> right -> drop -> reset
+    let phase = 'intro'; // reveal -> shuffle -> up -> right -> drop -> resolve -> revealPit -> done
     let holdingUp = false;
     let holdingRight = false;
     let finished = false;
     let rafId = 0;
     let lastTs = 0;
+    let shuffleTimer = 0;
+    let shuffleStart = 0;
+    let cardFace = 'front';
 
-    const items = [
-      { icon:'🧸', label:'Stofftier', type:'soft' },
-      { icon:'🧽', label:'Schwamm', type:'soft' },
-      { icon:'🪶', label:'Feder', type:'soft' },
-      { icon:'☁️', label:'Watte', type:'soft' },
-      { icon:'🛏️', label:'Kissen', type:'soft' },
-      { icon:'🌵', label:'Kaktus', type:'sharp' },
-      { icon:'📌', label:'Nadel', type:'sharp' },
-      { icon:'🦔', label:'Stacheln', type:'sharp' },
-      { icon:'🔺', label:'Spitze Kante', type:'sharp' },
-      { icon:'🪨', label:'Stein', type:'neutral' },
-      { icon:'🪵', label:'Holz', type:'neutral' },
-      { icon:'🧊', label:'Eis', type:'neutral' },
-      { icon:'⚽', label:'Ball', type:'neutral' },
-      { icon:'🪙', label:'Münze', type:'neutral' },
-      { icon:'🐚', label:'Muschel', type:'neutral' },
-      { icon:'📦', label:'Klotz', type:'neutral' }
-    ].sort(() => Math.random() - .5).map((item, index) => ({ ...item, index, removed:false }));
-
-    const heartNodes = Array.from({ length: 3 }, (_, index) => {
-      const img = document.createElement('img');
-      img.className = 'memory2-heart';
-      img.alt = index === 0 ? 'Leben' : '';
-      if (index > 0) img.setAttribute('aria-hidden', 'true');
-      livesWrap?.appendChild(img);
-      return img;
-    });
-
-    function updateHearts() {
-      heartNodes.forEach((node, index) => {
-        node.src = index < lives ? HEART.full : HEART.broken;
-        node.classList.toggle('broken', index >= lives);
-      });
+    function sample(arr, n) {
+      const copy = arr.slice();
+      const out = [];
+      while (copy.length && out.length < n) {
+        out.push(copy.splice(Math.floor(Math.random() * copy.length), 1)[0]);
+      }
+      return out;
     }
 
-    function updateScore() {
-      if (scoreEl) scoreEl.textContent = `Boden: ${collected} / ${SOFT_TARGET}`;
+    function shuffleArray(arr) {
+      for (let i = arr.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function buildRoundCards() {
+      const soft = { ...softPool[Math.floor(Math.random() * softPool.length)] };
+      const sharp = sample(sharpPool, 8).map(item => ({ ...item }));
+      cards = shuffleArray([soft, ...sharp]).map((card, index) => ({
+        ...card,
+        id: `${Date.now()}-${index}-${Math.random().toString(16).slice(2)}`,
+        picked:false
+      }));
+      cardFace = 'front';
     }
 
     function setMessage(text, kind='') {
@@ -2826,18 +2834,26 @@
       messageEl.className = `touch4-message ${kind}`;
     }
 
+    function updateScore() {
+      if (scoreEl) scoreEl.textContent = `Grube: ${pitCards.length} / ${TOTAL_ROUNDS}`;
+    }
+
     function selectedCellIndex() {
-      const col = clamp(Math.floor(markerX * 4), 0, 3);
-      const row = clamp(Math.floor(markerY * 4), 0, 3);
-      return row * 4 + col;
+      const col = clamp(Math.floor(markerX * GRID), 0, GRID - 1);
+      const row = clamp(Math.floor(markerY * GRID), 0, GRID - 1);
+      return row * GRID + col;
     }
 
     function renderGrid() {
       const active = selectedCellIndex();
-      grid.innerHTML = items.map(item => {
-        const activeClass = item.index === active ? 'active' : '';
-        return `<button class="touch4-cell ${activeClass}" type="button" data-index="${item.index}" aria-label="${item.label}">
-          <span class="touch4-item ${item.type} ${item.removed ? 'removed' : ''}">${item.removed ? '' : item.icon}</span>
+      grid.innerHTML = cards.map((card, index) => {
+        const activeClass = index === active ? 'active' : '';
+        const hiddenClass = cardFace === 'back' ? 'face-down' : 'face-up';
+        const pickedClass = card.picked ? 'picked' : '';
+        const content = cardFace === 'back' || card.picked ? '' : card.icon;
+        const label = cardFace === 'back' ? 'Verdeckte Karte' : card.label;
+        return `<button class="touch4-cell ${activeClass} ${hiddenClass} ${pickedClass}" type="button" data-index="${index}" aria-label="${label}">
+          <span class="touch4-item ${card.type}">${content}</span>
         </button>`;
       }).join('');
     }
@@ -2845,7 +2861,7 @@
     function updateActiveCell() {
       const active = selectedCellIndex();
       grid.querySelectorAll('.touch4-cell').forEach((cell, index) => {
-        cell.classList.toggle('active', index === active);
+        cell.classList.toggle('active', index === active && phase !== 'reveal' && phase !== 'shuffle');
       });
     }
 
@@ -2862,33 +2878,164 @@
       rightBtn.classList.toggle('locked', phase !== 'right');
     }
 
-    function resetCrane() {
+    function resetCraneForChoice() {
       markerX = START_X;
       markerY = START_Y;
-      phase = 'up';
       holdingUp = false;
       holdingRight = false;
       hook.classList.remove('dropping','lifting','carrying');
-      setControls();
       updateHook();
-      setMessage('Halte ↑ gedrückt, wähle die Höhe und lass los. Danach mit → nach rechts fahren.', 'neutral');
     }
 
-    function addBridgeSegment() {
-      if (!bridge) return;
-      const segment = document.createElement('span');
-      segment.className = 'touch4-bridge-segment';
-      segment.textContent = ['🧸','🧽','🪶','☁️','🛏️'][Math.min(collected - 1, 4)] || '☁️';
-      bridge.appendChild(segment);
-      bridge.classList.add('pulse');
-      window.setTimeout(() => bridge.classList.remove('pulse'), 320);
+    function renderPitSlots(revealIndex = -1) {
+      bridge.innerHTML = '';
+      for (let i = 0; i < TOTAL_ROUNDS; i += 1) {
+        const card = pitCards[i];
+        const slot = document.createElement('span');
+        slot.className = 'touch4-bridge-segment touch4-pit-card-slot';
+        if (!card) {
+          slot.classList.add('empty');
+          slot.textContent = '';
+        } else if (i <= revealIndex) {
+          slot.classList.add('revealed', card.type);
+          slot.textContent = card.icon;
+        } else {
+          slot.classList.add('face-down');
+          slot.textContent = '';
+        }
+        bridge.appendChild(slot);
+      }
     }
 
-    function heroCrossesBridge() {
-      hero?.classList.add('crossing');
-      setMessage('Der weiche Boden ist fertig. Sir Nervus kann sicher über die Grube!', 'good');
-      playSound('levelunlocked');
-      window.setTimeout(() => showResult(true), 1250);
+    function adjacentSwap() {
+      if (!cards.length) return;
+      const i = Math.floor(Math.random() * cards.length);
+      const row = Math.floor(i / GRID);
+      const col = i % GRID;
+      const neighbors = [];
+      if (col > 0) neighbors.push(i - 1);
+      if (col < GRID - 1) neighbors.push(i + 1);
+      if (row > 0) neighbors.push(i - GRID);
+      if (row < GRID - 1) neighbors.push(i + GRID);
+      const j = neighbors[Math.floor(Math.random() * neighbors.length)];
+      [cards[i], cards[j]] = [cards[j], cards[i]];
+      renderGrid();
+      const cells = grid.querySelectorAll('.touch4-cell');
+      cells[i]?.classList.add('swapped');
+      cells[j]?.classList.add('swapped');
+      window.setTimeout(() => {
+        cells[i]?.classList.remove('swapped');
+        cells[j]?.classList.remove('swapped');
+      }, 380);
+    }
+
+    function beginRound() {
+      if (finished) return;
+      phase = 'reveal';
+      buildRoundCards();
+      resetCraneForChoice();
+      setControls();
+      updateScore();
+      renderPitSlots();
+      renderGrid();
+      setMessage('Merke dir die eine weiche Karte.', 'neutral');
+      window.setTimeout(beginShuffle, REVEAL_MS);
+    }
+
+    function beginShuffle() {
+      if (finished) return;
+      phase = 'shuffle';
+      cardFace = 'back';
+      renderGrid();
+      setControls();
+      setMessage('Die Karten werden verdeckt gemischt.', 'neutral');
+      shuffleStart = performance.now();
+      shuffleTimer = window.setInterval(() => {
+        adjacentSwap();
+        if (performance.now() - shuffleStart >= SHUFFLE_MS) {
+          window.clearInterval(shuffleTimer);
+          shuffleTimer = 0;
+          beginChoice();
+        }
+      }, SWAP_MS);
+    }
+
+    function beginChoice() {
+      if (finished) return;
+      phase = 'up';
+      resetCraneForChoice();
+      setControls();
+      renderGrid();
+      setMessage('Wähle mit dem roten Kran eine verdeckte Karte.', 'neutral');
+    }
+
+    function dropCrane() {
+      if (finished || phase !== 'right') return;
+      phase = 'drop';
+      holdingRight = false;
+      setControls();
+      hook.classList.add('dropping');
+      setMessage('Der Kran fällt und nimmt die verdeckte Karte auf.', 'neutral');
+      playSound('levelstart');
+      window.setTimeout(resolveGrab, 620);
+    }
+
+    function resolveGrab() {
+      if (finished) return;
+      const index = selectedCellIndex();
+      const card = cards[index];
+      if (!card || card.picked) {
+        setMessage('Dort liegt keine Karte. Die Runde startet neu.', 'neutral');
+        hook.classList.add('lifting');
+        window.setTimeout(beginRound, 700);
+        return;
+      }
+      card.picked = true;
+      pitCards.push({ ...card });
+      playSound('collect');
+      renderGrid();
+      renderPitSlots();
+      updateScore();
+      hook.classList.add('lifting');
+      if (pitCards.length >= TOTAL_ROUNDS) {
+        window.setTimeout(revealPitCards, 850);
+      } else {
+        setMessage('Die Karte liegt verdeckt in der Grube. Nächste Runde.', 'good');
+        window.setTimeout(beginRound, 950);
+      }
+    }
+
+    function revealPitCards() {
+      if (finished) return;
+      phase = 'revealPit';
+      setControls();
+      setMessage('Die Karten in der Grube werden aufgedeckt.', 'neutral');
+      let revealIndex = -1;
+      const tick = () => {
+        revealIndex += 1;
+        renderPitSlots(revealIndex);
+        playSound('flip');
+        if (revealIndex < pitCards.length - 1) {
+          window.setTimeout(tick, 800);
+        } else {
+          window.setTimeout(evaluateBridge, 800);
+        }
+      };
+      window.setTimeout(tick, 420);
+    }
+
+    function evaluateBridge() {
+      const hasSharp = pitCards.some(card => card.type === 'sharp');
+      if (hasSharp) {
+        setMessage('Eine spitze Karte liegt in der Grube. Sir Nervus kann nicht sicher laufen.', 'bad');
+        playSound('hurt');
+        window.setTimeout(() => showResult(false), 900);
+      } else {
+        setMessage('Alle Karten sind weich. Sir Nervus läuft über den sicheren Boden.', 'good');
+        hero?.classList.add('crossing');
+        playSound('levelunlocked');
+        window.setTimeout(() => showResult(true), 1300);
+      }
     }
 
     function showResult(won) {
@@ -2896,6 +3043,7 @@
       finished = true;
       holdingUp = false;
       holdingRight = false;
+      if (shuffleTimer) window.clearInterval(shuffleTimer);
       setControls();
       stopSound('minigame_background');
       if (rafId) cancelAnimationFrame(rafId);
@@ -2906,8 +3054,8 @@
       }
       resultTitle.textContent = won ? 'Gewonnen' : 'Verloren';
       resultText.textContent = won
-        ? 'Du hast nur weiche Dinge für den Boden gesammelt. Sir Nervus hat die Grube sicher überquert.'
-        : 'Sir Nervus hat zu viele spitze Gegenstände erwischt.';
+        ? 'Du hast drei weiche Tastkarten gesammelt. Sir Nervus konnte sicher über die Grube laufen.'
+        : 'Mindestens eine Karte war spitz. Der Tastsinn warnt: Dieser Weg ist gefährlich.';
       playSound(won ? 'win' : 'lose');
       retryBtn.textContent = won ? 'Zurück zum Spielfeld' : 'Neuer Versuch';
       retryBtn.onclick = () => {
@@ -2924,67 +3072,12 @@
       show(result);
     }
 
-    function evaluateGrab() {
-      const index = selectedCellIndex();
-      const item = items[index];
-
-      if (!item || item.removed) {
-        setMessage('An dieser Stelle liegt nichts mehr. Der Kran startet neu.', 'neutral');
-        playSound('flip');
-      } else if (item.type === 'soft') {
-        item.removed = true;
-        collected += 1;
-        addBridgeSegment();
-        setMessage(`${item.label}: weich. Genau richtig für den Boden!`, 'good');
-        playSound('collect');
-      } else if (item.type === 'sharp') {
-        item.removed = true;
-        lives -= 1;
-        setMessage(`${item.label}: spitz. Das tut weh und kostet ein Herz!`, 'bad');
-        playSound('glass_break');
-        playSound('hurt');
-        updateHearts();
-      } else {
-        item.removed = true;
-        setMessage(`${item.label}: nicht weich genug. Kein guter Boden für die Grube.`, 'neutral');
-        playSound('falsch_1');
-      }
-
-      renderGrid();
-      updateScore();
-
-      if (collected >= SOFT_TARGET) {
-        window.setTimeout(heroCrossesBridge, 520);
-        return;
-      }
-      if (lives <= 0) {
-        window.setTimeout(() => showResult(false), 520);
-        return;
-      }
-
-      phase = 'reset';
-      setControls();
-      hook.classList.add('lifting');
-      window.setTimeout(resetCrane, 760);
-    }
-
-    function dropCrane() {
-      if (finished || phase !== 'right') return;
-      phase = 'drop';
-      holdingRight = false;
-      setControls();
-      hook.classList.add('dropping');
-      setMessage('Der Kran fällt nach unten und greift den Gegenstand unter der grünen Markierung.', 'neutral');
-      playSound('levelstart');
-      window.setTimeout(evaluateGrab, 620);
-    }
-
     function finishUpSelection() {
       if (finished || phase !== 'up') return;
       holdingUp = false;
       phase = 'right';
       setControls();
-      setMessage('Höhe gewählt. Halte jetzt → gedrückt und lass los, wenn die grüne Markierung richtig steht.', 'neutral');
+      setMessage('Höhe gewählt. Halte jetzt → und lass los, um die Karte fallen zu lassen.', 'neutral');
       playSound('flip');
     }
 
@@ -3044,7 +3137,7 @@
       rafId = requestAnimationFrame(loop);
     }
 
-    $('touch4StartBtn')?.addEventListener('click', () => hide(intro));
+    $('touch4StartBtn')?.addEventListener('click', () => { hide(intro); beginRound(); });
     $('touch4SettingsBtn')?.addEventListener('click', () => show(menu));
     $('touch4CloseMenuBtn')?.addEventListener('click', () => hide(menu));
     $('touch4MenuBoardBtn')?.addEventListener('click', () => { stopSound('minigame_background'); location.href = pageUrl('index.html'); });
@@ -3053,13 +3146,14 @@
     bindHold(rightBtn, 'right');
     window.addEventListener('resize', () => { updateHook(); });
 
-    renderGrid();
-    updateHearts();
     updateScore();
-    resetCrane();
+    renderPitSlots();
+    resetCraneForChoice();
+    setControls();
     show(intro);
     rafId = requestAnimationFrame(loop);
   }
+
 
   function initCodes() {
     addSpeaker(); $('printCodesBtn')?.addEventListener('click', () => print());

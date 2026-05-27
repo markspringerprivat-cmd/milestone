@@ -4,42 +4,37 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Tastsinn · Fühl-Kran</title>
-  <link rel="stylesheet" href="./css/style.css?v=v4_56_touch_crane_pit_20260527">
-  <link rel="stylesheet" href="./css/v4.css?v=v4_56_touch_crane_pit_20260527">
-  <script src="./js/app-v4.js?v=v4_56_touch_crane_pit_20260527" defer></script>
+  <link rel="stylesheet" href="./css/style.css?v=v4_57_touch_crane_memory_pit_20260527">
+  <link rel="stylesheet" href="./css/v4.css?v=v4_57_touch_crane_memory_pit_20260527">
+  <script src="./js/app-v4.js?v=v4_57_touch_crane_memory_pit_20260527" defer></script>
 </head>
 <body data-page="minigame4">
   <main class="touch4-page" aria-label="Tastsinn-Kran">
-    <section class="touch4-stage touch4-pit-stage" aria-label="Fühl-Kran-Spielfeld">
+    <section class="touch4-stage touch4-pit-stage touch4-memory-stage" aria-label="Fühl-Kran-Spielfeld">
       <button id="touch4SettingsBtn" class="mini-settings-btn" type="button" aria-label="Optionen">⚙</button>
 
-      <div class="touch4-hud">
-        <div id="touch4Lives" class="memory2-lives" aria-label="Lebensanzeige"></div>
-        <div id="touch4Score" class="touch4-score">Boden: 0 / 5</div>
+      <div class="touch4-hud touch4-memory-hud">
+        <div id="touch4Score" class="touch4-score">Auswahl: 0 / 3</div>
       </div>
 
-      <p id="touch4Message" class="touch4-message">Sammle weiche Gegenstände für die Brücke.</p>
+      <p id="touch4Message" class="touch4-message">Merke dir die weiche Karte.</p>
 
       <section class="touch4-crane-area" aria-label="Kranspielfeld">
-        <div class="touch4-arrow touch4-arrow-up" aria-hidden="true">↑</div>
-        <div class="touch4-arrow touch4-arrow-right" aria-hidden="true">→</div>
+        <div id="touch4CraneField" class="touch4-crane-field touch4-memory-field">
+          <div id="touch4Grid" class="touch4-grid touch4-memory-grid" aria-label="Verdeckte Tastkarten"></div>
 
-        <div id="touch4CraneField" class="touch4-crane-field">
-          <div id="touch4Grid" class="touch4-grid" aria-label="Gegenstände"></div>
-
-          <div id="touch4Hook" class="touch4-hook" aria-hidden="true">
+          <div id="touch4Hook" class="touch4-hook touch4-red-crane" aria-hidden="true">
             <div class="touch4-hook-cable"></div>
             <div class="touch4-hook-head"></div>
-            <div class="touch4-hook-marker"></div>
           </div>
         </div>
       </section>
 
-      <section class="touch4-pit-scene" aria-label="Fallgrube">
+      <section class="touch4-pit-scene touch4-memory-pit-scene" aria-label="Fallgrube">
         <div class="touch4-start-pad" aria-hidden="true"></div>
         <img id="touch4Hero" class="touch4-hero" src="./assets/images/minigame/mini_walk_right_1.png" alt="Sir Nervus">
         <div class="touch4-pit">
-          <div id="touch4Bridge" class="touch4-bridge" aria-hidden="true"></div>
+          <div id="touch4Bridge" class="touch4-bridge touch4-pit-slots" aria-label="Gesammelte Karten"></div>
         </div>
         <div class="touch4-end-pad" aria-hidden="true"></div>
       </section>
@@ -52,8 +47,8 @@
       <div id="touch4Intro" class="modal">
         <div class="modal-card touch4-intro-card">
           <h2>Tastsinn: Fühl-Kran</h2>
-          <p>Die Haut erkennt, ob etwas weich, hart oder spitz ist. Weiche Dinge können Sir Nervus helfen, sicher über die Grube zu laufen. Spitze Dinge lösen Schmerz aus und kosten ein Herz.</p>
-          <p>Halte zuerst ↑ gedrückt, um die Höhe der grünen Markierung zu wählen. Danach halte → gedrückt. Wenn du loslässt, fällt der Kran nach unten und greift genau das Ding unter der grünen Markierung.</p>
+          <p>Die Haut unterscheidet weiche und spitze Reize. Merke dir die weiche Karte, sammle dreimal und baue daraus einen sicheren Weg über die Grube.</p>
+          <p>Nach dem Mischen wählst du mit dem Kran eine verdeckte Karte. Ist am Ende eine spitze Karte in der Grube, ist der Weg nicht sicher.</p>
           <div class="modal-actions">
             <button id="touch4StartBtn" class="game-btn" type="button">Spiel starten</button>
           </div>
@@ -63,7 +58,7 @@
       <div id="touch4Menu" class="modal hidden">
         <div class="modal-card">
           <h2>Pause</h2>
-          <p>Sammle nur weiche Dinge. Spitze Gegenstände kosten ein Herz. Mit weichen Dingen füllst du die Grube.</p>
+          <p>Merke dir die weiche Karte und lege drei verdeckte Karten in die Grube. Danach werden sie nacheinander aufgedeckt.</p>
           <div class="modal-actions">
             <button id="touch4CloseMenuBtn" class="game-btn" type="button">Weiter</button>
             <button id="touch4MenuBoardBtn" class="game-btn muted" type="button">Zurück zum Spielfeld</button>

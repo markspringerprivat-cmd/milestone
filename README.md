@@ -295,3 +295,24 @@ Test: `minigame3.html?v=51`
 
 ### Test
 - `minigame4.html?slot=7&v=56`
+
+
+## Update v57 – Kran-Merkspiel mit Fallgrube
+
+- Level 8 / `minigame4.html` wurde zu einem 3×3-Merkspiel umgebaut.
+- Pro Runde werden 8 spitze Gegenstände und 1 weicher Gegenstand gezeigt.
+- Die Gegenstände sind 5 Sekunden sichtbar.
+- Danach werden die Karten verdeckt und 5 Sekunden lang langsam gemischt.
+- Während des Mischens sind die Gegenstände nicht sichtbar.
+- Der Kran ist jetzt ein sichtbarer roter Punkt statt nur ein grüner Feldrahmen.
+- Mit ↑ wird die Höhe gewählt, danach mit → die horizontale Position.
+- Beim Loslassen von → fällt der Kran nach unten und wählt die verdeckte Karte darunter.
+- Drei ausgewählte Karten fallen verdeckt in die Grube.
+- Danach werden die drei Grubenkarten nacheinander aufgedeckt.
+- Sobald eine spitze Karte dabei ist, ist das Level verloren.
+- Das Herzsystem wurde für dieses Minigame entfernt.
+- Große schwarze Pfeile und sichtbare Feldlinien wurden entfernt.
+
+### Test
+
+`minigame4.html?slot=7&v=57`

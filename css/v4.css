@@ -3656,3 +3656,214 @@ body[data-page="minigame"]{
     bottom:max(74px, calc(env(safe-area-inset-bottom) + 70px))!important;
   }
 }
+
+
+/* === Touch crane v57: 3x3 memory pit crane === */
+.touch4-memory-stage .touch4-hud{
+  top:max(8px, env(safe-area-inset-top) + 6px)!important;
+  justify-content:center!important;
+}
+.touch4-memory-stage #touch4Lives,
+.touch4-memory-stage .memory2-lives{
+  display:none!important;
+}
+.touch4-memory-stage .touch4-score{
+  font-size:clamp(.85rem, 2.9vw, 1.05rem)!important;
+  padding:7px 14px!important;
+  border-radius:999px!important;
+}
+.touch4-memory-stage .touch4-message{
+  top:calc(max(42px, env(safe-area-inset-top) + 38px))!important;
+  max-width:min(86vw, 520px)!important;
+  font-size:clamp(.78rem, 2.8vw, .98rem)!important;
+  padding:7px 12px!important;
+}
+.touch4-memory-stage .touch4-crane-area{
+  top:calc(max(80px, env(safe-area-inset-top) + 70px))!important;
+  height:min(42svh, 360px)!important;
+}
+.touch4-memory-stage .touch4-crane-field{
+  position:relative!important;
+  width:min(86vw, 430px)!important;
+  height:min(40svh, 340px)!important;
+  margin:0 auto!important;
+  border:4px solid rgba(33,39,48,.78)!important;
+  border-radius:18px!important;
+  background:linear-gradient(180deg, rgba(255,255,255,.88), rgba(234,239,247,.80))!important;
+  box-shadow:0 12px 24px rgba(0,0,0,.22), inset 0 0 0 2px rgba(255,255,255,.45)!important;
+  overflow:visible!important;
+}
+.touch4-memory-stage .touch4-arrow{
+  display:none!important;
+}
+.touch4-memory-grid{
+  position:absolute!important;
+  left:12%!important;
+  top:10%!important;
+  width:76%!important;
+  height:76%!important;
+  display:grid!important;
+  grid-template-columns:repeat(3, 1fr)!important;
+  grid-template-rows:repeat(3, 1fr)!important;
+  gap:clamp(8px, 2vw, 14px)!important;
+  border:0!important;
+  background:transparent!important;
+  pointer-events:none!important;
+}
+.touch4-memory-grid .touch4-cell{
+  position:relative!important;
+  border:0!important;
+  border-radius:16px!important;
+  background:rgba(255,255,255,.62)!important;
+  box-shadow:0 6px 12px rgba(0,0,0,.14), inset 0 0 0 2px rgba(255,255,255,.55)!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  transform:translateZ(0)!important;
+  transition:transform .3s ease, box-shadow .25s ease, background .25s ease!important;
+}
+.touch4-memory-grid .touch4-cell.active{
+  box-shadow:0 6px 12px rgba(0,0,0,.14), inset 0 0 0 2px rgba(255,255,255,.55)!important;
+}
+.touch4-memory-grid .touch4-cell.swapped{
+  transform:scale(.94)!important;
+}
+.touch4-memory-grid .touch4-cell.face-down{
+  background:linear-gradient(145deg, #7b6b52, #d0b67e 47%, #8c7143)!important;
+}
+.touch4-memory-grid .touch4-cell.face-down::after{
+  content:'';
+  position:absolute;
+  inset:18%;
+  border-radius:12px;
+  border:2px solid rgba(255,244,182,.45);
+  background:rgba(83,57,24,.18);
+}
+.touch4-memory-grid .touch4-cell.picked{
+  opacity:.22!important;
+  transform:scale(.85)!important;
+}
+.touch4-memory-grid .touch4-item{
+  font-size:clamp(1.65rem, 8.5vw, 3rem)!important;
+  line-height:1!important;
+  filter:drop-shadow(0 3px 4px rgba(0,0,0,.25))!important;
+}
+.touch4-red-crane{
+  position:absolute!important;
+  width:34px!important;
+  height:34px!important;
+  transform:translate(-50%, -50%)!important;
+  z-index:10!important;
+  pointer-events:none!important;
+  transition:filter .15s ease!important;
+}
+.touch4-red-crane .touch4-hook-cable{
+  position:absolute!important;
+  left:50%!important;
+  bottom:50%!important;
+  width:4px!important;
+  height:clamp(34px, 11svh, 82px)!important;
+  transform:translateX(-50%)!important;
+  background:linear-gradient(#3d4754, #141a22)!important;
+  border-radius:999px!important;
+  box-shadow:0 2px 4px rgba(0,0,0,.25)!important;
+}
+.touch4-red-crane .touch4-hook-head{
+  position:absolute!important;
+  inset:0!important;
+  width:34px!important;
+  height:34px!important;
+  border-radius:999px!important;
+  background:radial-gradient(circle at 35% 30%, #ff9082, #e6221b 55%, #8f0805)!important;
+  border:3px solid rgba(92,10,8,.75)!important;
+  box-shadow:0 5px 10px rgba(0,0,0,.35), 0 0 0 5px rgba(255,45,34,.18)!important;
+}
+.touch4-red-crane.dropping .touch4-hook-head{
+  animation:touch4RedDrop .55s ease-in-out!important;
+}
+.touch4-red-crane.carrying .touch4-hook-head{
+  filter:brightness(1.08)!important;
+}
+@keyframes touch4RedDrop{
+  0%{transform:translateY(0) scale(1)}
+  55%{transform:translateY(38px) scale(.95)}
+  100%{transform:translateY(0) scale(1)}
+}
+.touch4-memory-pit-scene{
+  bottom:calc(max(74px, env(safe-area-inset-bottom) + 72px))!important;
+  height:min(26svh, 220px)!important;
+}
+.touch4-memory-pit-scene .touch4-pit{
+  border-color:#ff8a2a!important;
+  border-width:4px!important;
+  background:linear-gradient(180deg, rgba(32,22,12,.05), rgba(32,22,12,.18))!important;
+}
+.touch4-pit-slots{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:clamp(8px, 2vw, 14px)!important;
+  width:100%!important;
+  height:100%!important;
+  padding:0 10px!important;
+}
+.touch4-pit-card-slot{
+  width:clamp(48px, 16vw, 74px)!important;
+  height:clamp(58px, 18vw, 84px)!important;
+  border-radius:14px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  font-size:clamp(1.5rem, 7vw, 2.4rem)!important;
+  border:2px solid rgba(84,57,24,.35)!important;
+  box-shadow:0 6px 12px rgba(0,0,0,.18)!important;
+}
+.touch4-pit-card-slot.empty{
+  opacity:.25!important;
+  border-style:dashed!important;
+  background:rgba(255,255,255,.18)!important;
+}
+.touch4-pit-card-slot.face-down{
+  background:linear-gradient(145deg, #7b6b52, #d0b67e 47%, #8c7143)!important;
+}
+.touch4-pit-card-slot.revealed.soft{
+  background:linear-gradient(180deg,#fff7c1,#ffd86a)!important;
+}
+.touch4-pit-card-slot.revealed.sharp{
+  background:linear-gradient(180deg,#ffd5d5,#ff7979)!important;
+}
+.touch4-memory-stage .touch4-bottom-controls{
+  gap:14px!important;
+}
+.touch4-memory-stage .touch4-hold-btn{
+  min-width:min(42vw, 160px)!important;
+  min-height:52px!important;
+  font-size:1.4rem!important;
+}
+.touch4-memory-stage .touch4-hold-btn:disabled,
+.touch4-memory-stage .touch4-hold-btn.locked{
+  opacity:.46!important;
+  filter:grayscale(.75)!important;
+}
+@media(max-width:560px){
+  .touch4-memory-stage .touch4-crane-area{
+    top:calc(max(78px, env(safe-area-inset-top) + 66px))!important;
+    height:min(41svh, 305px)!important;
+  }
+  .touch4-memory-stage .touch4-crane-field{
+    width:88vw!important;
+    height:min(39svh, 288px)!important;
+  }
+  .touch4-memory-pit-scene{
+    bottom:calc(max(80px, env(safe-area-inset-bottom) + 76px))!important;
+    height:min(25svh, 196px)!important;
+  }
+  .touch4-red-crane{
+    width:30px!important;
+    height:30px!important;
+  }
+  .touch4-red-crane .touch4-hook-head{
+    width:30px!important;
+    height:30px!important;
+  }
+}
