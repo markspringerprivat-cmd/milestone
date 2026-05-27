@@ -276,3 +276,22 @@ Test: `minigame3.html?v=51`
 
 - Board: `index.html?v=54`
 - Level 8 direkt: `minigame4.html?slot=7&v=54`
+
+
+## Update v56 – Level 8 Tastsinn-Kran mit Fallgrube
+
+- Minigame 4 wurde auf die gezeichnete 2D-Fallgruben-Idee umgebaut.
+- Unten steht Sir Nervus links vor einer Fallgrube.
+- Oben befindet sich ein 4×4-Kranspielfeld mit weichen, spitzen und neutralen Gegenständen.
+- Steuerung:
+  - ↑ gedrückt halten: grüne Kranmarkierung fährt langsam nach oben.
+  - Nach Loslassen wird ↑ ausgegraut.
+  - → gedrückt halten: grüne Markierung fährt langsam nach rechts.
+  - Beim Loslassen oder am rechten Rand fällt der Kran nach unten.
+- Gegriffen wird exakt das Item unter der grünen Markierung.
+- Weiche Items füllen die Fallgrube als sicheren Boden.
+- Spitze Items verursachen Schaden.
+- Ziel: 5 weiche Bodenstücke sammeln, damit Sir Nervus über die Grube laufen kann.
+
+### Test
+- `minigame4.html?slot=7&v=56`

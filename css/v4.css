@@ -3353,3 +3353,306 @@ body[data-page="minigame"]{
   .touch4-control{ min-width:42px; }
   .touch4-grab{ min-width:74px; }
 }
+
+
+/* === Touch crane v56: 2D pit crane prototype === */
+.touch4-pit-stage{
+  min-height:100svh!important;
+  background:
+    radial-gradient(circle at 22% 12%, rgba(255,255,255,.7), transparent 23%),
+    var(--touch4-bg, linear-gradient(180deg,#9bd8ff,#edf8ff))!important;
+  background-size:cover!important;
+  background-position:center!important;
+}
+.touch4-pit-stage .touch4-message{
+  top:max(58px, calc(env(safe-area-inset-top) + 48px))!important;
+  left:12px!important;
+  right:12px!important;
+  z-index:34!important;
+  font-size:.9rem!important;
+  padding:7px 10px!important;
+}
+.touch4-crane-area{
+  position:absolute!important;
+  left:50%!important;
+  top:max(108px, calc(env(safe-area-inset-top) + 94px))!important;
+  transform:translateX(-50%)!important;
+  width:min(92vw, 450px)!important;
+  height:min(48svh, 420px)!important;
+  z-index:8!important;
+}
+.touch4-crane-field{
+  position:absolute!important;
+  right:0!important;
+  top:42px!important;
+  width:min(74vw, 330px)!important;
+  aspect-ratio:1/1!important;
+  border:4px solid #151515!important;
+  border-radius:2px!important;
+  background:rgba(245,247,248,.72)!important;
+  box-shadow:0 8px 18px rgba(20,35,48,.22)!important;
+  overflow:visible!important;
+}
+.touch4-pit-stage .touch4-grid{
+  position:absolute!important;
+  inset:0!important;
+  display:grid!important;
+  grid-template-columns:repeat(4,1fr)!important;
+  grid-template-rows:repeat(4,1fr)!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  aspect-ratio:auto!important;
+  box-shadow:none!important;
+  overflow:hidden!important;
+}
+.touch4-pit-stage .touch4-cell{
+  position:relative!important;
+  border:1px solid rgba(0,0,0,.16)!important;
+  background:rgba(255,255,255,.38)!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:0!important;
+}
+.touch4-pit-stage .touch4-cell.active{
+  outline:3px solid rgba(22,170,72,.88)!important;
+  outline-offset:-5px!important;
+  z-index:2!important;
+}
+.touch4-pit-stage .touch4-item{
+  width:70%!important;
+  height:70%!important;
+  border-radius:16px!important;
+  display:grid!important;
+  place-items:center!important;
+  font-size:clamp(1.45rem, 7vw, 2.45rem)!important;
+  border:2px solid rgba(255,255,255,.5)!important;
+  box-shadow:0 6px 10px rgba(0,0,0,.18), inset 0 2px 0 rgba(255,255,255,.4)!important;
+}
+.touch4-pit-stage .touch4-item.soft{ background:linear-gradient(180deg,#f8ffff,#aadfff)!important; }
+.touch4-pit-stage .touch4-item.sharp{ background:linear-gradient(180deg,#fff0ef,#ffb5b0)!important; }
+.touch4-pit-stage .touch4-item.neutral{ background:linear-gradient(180deg,#faf8f0,#ded9cf)!important; }
+.touch4-pit-stage .touch4-item.removed{ opacity:0!important; }
+.touch4-arrow{
+  position:absolute!important;
+  z-index:3!important;
+  color:#151515!important;
+  font-weight:1000!important;
+  line-height:1!important;
+  pointer-events:none!important;
+  text-shadow:0 2px 0 rgba(255,255,255,.55)!important;
+}
+.touch4-arrow-up{
+  left:3px!important;
+  top:46px!important;
+  font-size:min(29vw, 128px)!important;
+}
+.touch4-arrow-right{
+  left:25%!important;
+  top:0!important;
+  font-size:min(32vw, 142px)!important;
+}
+.touch4-hook{
+  position:absolute!important;
+  left:9%!important;
+  top:87%!important;
+  width:0!important;
+  height:0!important;
+  transform:translate(-50%, -50%)!important;
+  z-index:22!important;
+  pointer-events:none!important;
+  transition:transform .12s linear!important;
+}
+.touch4-hook-cable{
+  position:absolute!important;
+  left:-2px!important;
+  bottom:0!important;
+  width:4px!important;
+  height:58px!important;
+  border-radius:999px!important;
+  background:#29303a!important;
+  transform:translateY(-13px)!important;
+  box-shadow:0 1px 0 rgba(255,255,255,.3)!important;
+}
+.touch4-hook-head{
+  position:absolute!important;
+  left:-16px!important;
+  top:-16px!important;
+  width:32px!important;
+  height:32px!important;
+  border-radius:10px 10px 16px 16px!important;
+  background:linear-gradient(180deg,#fee17a,#d18d10)!important;
+  border:2px solid rgba(80,56,12,.55)!important;
+  box-shadow:0 5px 10px rgba(0,0,0,.28), inset 0 2px 0 rgba(255,255,255,.45)!important;
+}
+.touch4-hook-marker{
+  position:absolute!important;
+  left:-14px!important;
+  top:-14px!important;
+  width:28px!important;
+  height:28px!important;
+  border-radius:50%!important;
+  border:4px solid #24a64d!important;
+  background:rgba(37,174,75,.14)!important;
+  box-shadow:0 0 0 3px rgba(255,255,255,.9), 0 0 12px rgba(37,174,75,.72)!important;
+}
+.touch4-hook.dropping{
+  transform:translate(-50%, calc(-50% + 56px))!important;
+  transition:transform .55s ease-in!important;
+}
+.touch4-hook.lifting{
+  transform:translate(-50%, -50%) scale(.96)!important;
+}
+.touch4-hook.carrying .touch4-hook-marker{
+  animation:touch4MarkerPulse .55s ease-in-out infinite alternate!important;
+}
+@keyframes touch4MarkerPulse{
+  from{transform:scale(1)}
+  to{transform:scale(1.12)}
+}
+.touch4-pit-scene{
+  position:absolute!important;
+  left:0!important;
+  right:0!important;
+  bottom:max(74px, calc(env(safe-area-inset-bottom) + 70px))!important;
+  height:min(29svh, 235px)!important;
+  z-index:10!important;
+}
+.touch4-start-pad{
+  position:absolute!important;
+  left:8%!important;
+  bottom:34%!important;
+  width:18%!important;
+  aspect-ratio:1/1!important;
+  border:4px solid #ff2c45!important;
+  background:rgba(255,255,255,.20)!important;
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.28)!important;
+}
+.touch4-pit-scene .touch4-hero{
+  position:absolute!important;
+  left:5%!important;
+  bottom:39%!important;
+  width:24%!important;
+  height:56%!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+  z-index:4!important;
+  transition:left 1.05s ease, transform 1.05s ease!important;
+  filter:drop-shadow(0 7px 8px rgba(0,0,0,.26))!important;
+}
+.touch4-pit-scene .touch4-hero.crossing{
+  left:72%!important;
+  transform:translateY(-5px)!important;
+}
+.touch4-pit{
+  position:absolute!important;
+  left:31%!important;
+  right:23%!important;
+  bottom:16%!important;
+  height:44%!important;
+  border-left:5px solid #ff7d2a!important;
+  border-right:5px solid #ff7d2a!important;
+  border-bottom:5px solid #ff7d2a!important;
+  border-top:0!important;
+  border-radius:0 0 8px 8px!important;
+  background:linear-gradient(180deg,rgba(20,10,6,.08),rgba(20,10,6,.18))!important;
+}
+.touch4-pit::before,
+.touch4-pit::after{
+  content:""!important;
+  position:absolute!important;
+  top:0!important;
+  width:34vw!important;
+  max-width:180px!important;
+  height:5px!important;
+  background:#ff7d2a!important;
+}
+.touch4-pit::before{ right:100%!important; }
+.touch4-pit::after{ left:100%!important; }
+.touch4-bridge{
+  position:absolute!important;
+  left:4px!important;
+  right:4px!important;
+  top:-16px!important;
+  height:40px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-evenly!important;
+  gap:3px!important;
+  transition:transform .25s ease!important;
+}
+.touch4-bridge.pulse{ transform:scale(1.05)!important; }
+.touch4-bridge-segment{
+  flex:1 1 0!important;
+  height:34px!important;
+  display:grid!important;
+  place-items:center!important;
+  border-radius:12px!important;
+  background:linear-gradient(180deg,#f6ffff,#afdff3)!important;
+  border:2px solid rgba(255,255,255,.78)!important;
+  box-shadow:0 5px 8px rgba(0,0,0,.18), inset 0 2px 0 rgba(255,255,255,.5)!important;
+  font-size:1.35rem!important;
+}
+.touch4-end-pad{
+  position:absolute!important;
+  right:5%!important;
+  bottom:36%!important;
+  width:14%!important;
+  aspect-ratio:1/1!important;
+  border-radius:50%!important;
+  border:4px solid #25a64d!important;
+  background:rgba(37,166,77,.12)!important;
+}
+.touch4-bottom-controls{
+  position:absolute!important;
+  left:0!important;
+  right:0!important;
+  bottom:max(8px, env(safe-area-inset-bottom))!important;
+  height:64px!important;
+  z-index:40!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:22px!important;
+  padding:0 12px!important;
+}
+.touch4-hold-btn{
+  appearance:none!important;
+  width:min(38vw, 148px)!important;
+  height:52px!important;
+  border:0!important;
+  border-radius:999px!important;
+  font-size:1.65rem!important;
+  font-weight:1000!important;
+  color:#392800!important;
+  background:linear-gradient(180deg,#fff09d,#ffc51f)!important;
+  box-shadow:0 7px 12px rgba(0,0,0,.26), inset 0 2px 0 rgba(255,255,255,.6)!important;
+  touch-action:none!important;
+}
+.touch4-hold-btn:disabled,
+.touch4-hold-btn.locked{
+  color:#747474!important;
+  background:linear-gradient(180deg,#dfdfdf,#b8b8b8)!important;
+  box-shadow:0 4px 8px rgba(0,0,0,.16)!important;
+}
+.touch4-hold-btn:active:not(:disabled){
+  transform:translateY(1px) scale(.985)!important;
+}
+@media(max-width:420px){
+  .touch4-crane-area{
+    top:max(104px, calc(env(safe-area-inset-top) + 90px))!important;
+    width:94vw!important;
+    height:min(45svh, 360px)!important;
+  }
+  .touch4-crane-field{
+    width:min(73vw, 292px)!important;
+    top:38px!important;
+  }
+  .touch4-arrow-up{ font-size:min(28vw, 112px)!important; }
+  .touch4-arrow-right{ left:23%!important; font-size:min(30vw, 124px)!important; }
+  .touch4-pit-scene{
+    height:min(28svh, 210px)!important;
+    bottom:max(74px, calc(env(safe-area-inset-bottom) + 70px))!important;
+  }
+}

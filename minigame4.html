@@ -4,51 +4,56 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Tastsinn · Fühl-Kran</title>
-  <link rel="stylesheet" href="./css/style.css?v=v4_54_touch_crane_level8_20260527">
-  <link rel="stylesheet" href="./css/v4.css?v=v4_54_touch_crane_level8_20260527">
-  <script src="./js/app-v4.js?v=v4_54_touch_crane_level8_20260527" defer></script>
+  <link rel="stylesheet" href="./css/style.css?v=v4_56_touch_crane_pit_20260527">
+  <link rel="stylesheet" href="./css/v4.css?v=v4_56_touch_crane_pit_20260527">
+  <script src="./js/app-v4.js?v=v4_56_touch_crane_pit_20260527" defer></script>
 </head>
 <body data-page="minigame4">
   <main class="touch4-page" aria-label="Tastsinn-Kran">
-    <section class="touch4-stage" aria-label="Fühl-Kran-Spielfeld">
+    <section class="touch4-stage touch4-pit-stage" aria-label="Fühl-Kran-Spielfeld">
       <button id="touch4SettingsBtn" class="mini-settings-btn" type="button" aria-label="Optionen">⚙</button>
 
       <div class="touch4-hud">
         <div id="touch4Lives" class="memory2-lives" aria-label="Lebensanzeige"></div>
-        <div id="touch4Score" class="touch4-score">Weich: 0 / 5</div>
+        <div id="touch4Score" class="touch4-score">Boden: 0 / 5</div>
       </div>
 
-      <h1 class="touch4-title">Fühl-Kran</h1>
-      <p id="touch4Message" class="touch4-message">Sammle nur weiche Dinge. Spitze Gegenstände tun weh.</p>
+      <p id="touch4Message" class="touch4-message">Sammle weiche Gegenstände für die Brücke.</p>
 
-      <div class="touch4-machine" aria-label="Kranfeld">
-        <div class="touch4-rail"></div>
-        <div id="touch4Crane" class="touch4-crane" aria-hidden="true">
-          <div class="touch4-carriage"></div>
-          <div id="touch4Cable" class="touch4-cable"></div>
-          <div id="touch4Claw" class="touch4-claw">⌄</div>
-        </div>
-        <div id="touch4Grid" class="touch4-grid" aria-label="Gegenstände"></div>
-      </div>
+      <section class="touch4-crane-area" aria-label="Kranspielfeld">
+        <div class="touch4-arrow touch4-arrow-up" aria-hidden="true">↑</div>
+        <div class="touch4-arrow touch4-arrow-right" aria-hidden="true">→</div>
 
-      <div class="touch4-console" aria-label="Schaltkonsole">
-        <img class="touch4-hero" src="./assets/images/characters/held.webp" alt="Sir Nervus an der Konsole">
-        <div class="touch4-controls">
-          <button id="touch4UpBtn" class="touch4-control" type="button">↑</button>
-          <div class="touch4-control-row">
-            <button id="touch4LeftBtn" class="touch4-control" type="button">←</button>
-            <button id="touch4GrabBtn" class="touch4-grab" type="button">Greifen</button>
-            <button id="touch4RightBtn" class="touch4-control" type="button">→</button>
+        <div id="touch4CraneField" class="touch4-crane-field">
+          <div id="touch4Grid" class="touch4-grid" aria-label="Gegenstände"></div>
+
+          <div id="touch4Hook" class="touch4-hook" aria-hidden="true">
+            <div class="touch4-hook-cable"></div>
+            <div class="touch4-hook-head"></div>
+            <div class="touch4-hook-marker"></div>
           </div>
-          <button id="touch4DownBtn" class="touch4-control" type="button">↓</button>
         </div>
+      </section>
+
+      <section class="touch4-pit-scene" aria-label="Fallgrube">
+        <div class="touch4-start-pad" aria-hidden="true"></div>
+        <img id="touch4Hero" class="touch4-hero" src="./assets/images/minigame/mini_walk_right_1.png" alt="Sir Nervus">
+        <div class="touch4-pit">
+          <div id="touch4Bridge" class="touch4-bridge" aria-hidden="true"></div>
+        </div>
+        <div class="touch4-end-pad" aria-hidden="true"></div>
+      </section>
+
+      <div class="touch4-bottom-controls" aria-label="Kransteuerung">
+        <button id="touch4UpHoldBtn" class="touch4-hold-btn" type="button" aria-label="Kran nach oben bewegen">↑</button>
+        <button id="touch4RightHoldBtn" class="touch4-hold-btn" type="button" aria-label="Kran nach rechts bewegen" disabled>→</button>
       </div>
 
       <div id="touch4Intro" class="modal">
         <div class="modal-card touch4-intro-card">
-          <h2>Tastsinn: weich oder spitz?</h2>
-          <p>Die Haut erkennt Berührung, Druck und Oberflächen. Weiche Dinge fühlen sich ungefährlich an. Spitze Dinge können Schmerzen auslösen und warnen den Körper.</p>
-          <p>Steuere den Kran über das Feld. Sammle alle weichen Gegenstände und vermeide die spitzen.</p>
+          <h2>Tastsinn: Fühl-Kran</h2>
+          <p>Die Haut erkennt, ob etwas weich, hart oder spitz ist. Weiche Dinge können Sir Nervus helfen, sicher über die Grube zu laufen. Spitze Dinge lösen Schmerz aus und kosten ein Herz.</p>
+          <p>Halte zuerst ↑ gedrückt, um die Höhe der grünen Markierung zu wählen. Danach halte → gedrückt. Wenn du loslässt, fällt der Kran nach unten und greift genau das Ding unter der grünen Markierung.</p>
           <div class="modal-actions">
             <button id="touch4StartBtn" class="game-btn" type="button">Spiel starten</button>
           </div>
@@ -58,7 +63,7 @@
       <div id="touch4Menu" class="modal hidden">
         <div class="modal-card">
           <h2>Pause</h2>
-          <p>Sammle alle weichen Gegenstände. Spitze Gegenstände kosten ein Herz.</p>
+          <p>Sammle nur weiche Dinge. Spitze Gegenstände kosten ein Herz. Mit weichen Dingen füllst du die Grube.</p>
           <div class="modal-actions">
             <button id="touch4CloseMenuBtn" class="game-btn" type="button">Weiter</button>
             <button id="touch4MenuBoardBtn" class="game-btn muted" type="button">Zurück zum Spielfeld</button>

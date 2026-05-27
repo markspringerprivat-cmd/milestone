@@ -2735,10 +2735,11 @@
 
     const slot = Number(qs('slot')) || 7;
     const stage = document.querySelector('.touch4-stage');
+    const field = $('touch4CraneField');
     const grid = $('touch4Grid');
-    const crane = $('touch4Crane');
-    const cable = $('touch4Cable');
-    const claw = $('touch4Claw');
+    const hook = $('touch4Hook');
+    const bridge = $('touch4Bridge');
+    const hero = $('touch4Hero');
     const scoreEl = $('touch4Score');
     const messageEl = $('touch4Message');
     const livesWrap = $('touch4Lives');
@@ -2750,17 +2751,36 @@
     const retryBtn = $('touch4RetryBtn');
     const boardBtn = $('touch4BoardBtn');
     const menu = $('touch4Menu');
-    if (!stage || !grid || !crane) return;
+    const upBtn = $('touch4UpHoldBtn');
+    const rightBtn = $('touch4RightHoldBtn');
+    if (!stage || !field || !grid || !hook || !upBtn || !rightBtn) return;
+
     stage.style.setProperty('--touch4-bg', `url("${popupBgForMeta({ slot, isBoss:false })}")`);
 
-    const HEART = { full: assetUrl('assets/images/minigame/mini_heart_full.png'), broken: assetUrl('assets/images/minigame/mini_heart_broken.png') };
+    const HEART = {
+      full: assetUrl('assets/images/minigame/mini_heart_full.png'),
+      broken: assetUrl('assets/images/minigame/mini_heart_broken.png')
+    };
+
     const SOFT_TARGET = 5;
+    const START_X = 0.09;
+    const START_Y = 0.87;
+    const MIN_Y = 0.10;
+    const MAX_X = 0.93;
+    const UP_SPEED = 0.00048;
+    const RIGHT_SPEED = 0.00056;
+
     let lives = 3;
     let collected = 0;
-    let craneX = 0;
-    let craneY = 0;
-    let busy = false;
+    let markerX = START_X;
+    let markerY = START_Y;
+    let phase = 'up'; // up -> right -> drop -> reset
+    let holdingUp = false;
+    let holdingRight = false;
     let finished = false;
+    let rafId = 0;
+    let lastTs = 0;
+
     const items = [
       { icon:'🧸', label:'Stofftier', type:'soft' },
       { icon:'🧽', label:'Schwamm', type:'soft' },
@@ -2769,8 +2789,8 @@
       { icon:'🛏️', label:'Kissen', type:'soft' },
       { icon:'🌵', label:'Kaktus', type:'sharp' },
       { icon:'📌', label:'Nadel', type:'sharp' },
-      { icon:'🦷', label:'Dorn', type:'sharp' },
-      { icon:'🔪', label:'Scharfe Kante', type:'sharp' },
+      { icon:'🦔', label:'Stacheln', type:'sharp' },
+      { icon:'🔺', label:'Spitze Kante', type:'sharp' },
       { icon:'🪨', label:'Stein', type:'neutral' },
       { icon:'🪵', label:'Holz', type:'neutral' },
       { icon:'🧊', label:'Eis', type:'neutral' },
@@ -2788,44 +2808,106 @@
       livesWrap?.appendChild(img);
       return img;
     });
+
     function updateHearts() {
-      heartNodes.forEach((node, index) => { node.src = index < lives ? HEART.full : HEART.broken; node.classList.toggle('broken', index >= lives); });
+      heartNodes.forEach((node, index) => {
+        node.src = index < lives ? HEART.full : HEART.broken;
+        node.classList.toggle('broken', index >= lives);
+      });
     }
+
     function updateScore() {
-      if (scoreEl) scoreEl.textContent = `Weich: ${collected} / ${SOFT_TARGET}`;
+      if (scoreEl) scoreEl.textContent = `Boden: ${collected} / ${SOFT_TARGET}`;
     }
+
     function setMessage(text, kind='') {
       if (!messageEl) return;
       messageEl.textContent = text;
       messageEl.className = `touch4-message ${kind}`;
     }
+
+    function selectedCellIndex() {
+      const col = clamp(Math.floor(markerX * 4), 0, 3);
+      const row = clamp(Math.floor(markerY * 4), 0, 3);
+      return row * 4 + col;
+    }
+
     function renderGrid() {
-      grid.innerHTML = items.map(item => `<button class="touch4-cell" type="button" data-index="${item.index}" aria-label="${item.label}"><span class="touch4-item ${item.type} ${item.removed ? 'removed' : ''}">${item.removed ? '' : item.icon}</span></button>`).join('');
+      const active = selectedCellIndex();
+      grid.innerHTML = items.map(item => {
+        const activeClass = item.index === active ? 'active' : '';
+        return `<button class="touch4-cell ${activeClass}" type="button" data-index="${item.index}" aria-label="${item.label}">
+          <span class="touch4-item ${item.type} ${item.removed ? 'removed' : ''}">${item.removed ? '' : item.icon}</span>
+        </button>`;
+      }).join('');
     }
-    function cellSize() {
-      const rect = grid.getBoundingClientRect();
-      return { w: rect.width / 4, h: rect.height / 4, left: grid.offsetLeft, top: grid.offsetTop };
+
+    function updateActiveCell() {
+      const active = selectedCellIndex();
+      grid.querySelectorAll('.touch4-cell').forEach((cell, index) => {
+        cell.classList.toggle('active', index === active);
+      });
     }
-    function moveCrane() {
-      const c = cellSize();
-      const x = c.left + craneX * c.w + c.w / 2;
-      const y = c.top + craneY * c.h + c.h / 2;
-      crane.style.left = `${x}px`;
-      crane.style.top = `${Math.max(28, y - c.h * .72)}px`;
+
+    function updateHook() {
+      hook.style.left = `${markerX * 100}%`;
+      hook.style.top = `${markerY * 100}%`;
+      updateActiveCell();
     }
-    function move(dx, dy) {
-      if (busy || finished) return;
-      craneX = clamp(craneX + dx, 0, 3);
-      craneY = clamp(craneY + dy, 0, 3);
-      moveCrane();
-      playSound('flip');
+
+    function setControls() {
+      upBtn.disabled = finished || phase !== 'up';
+      rightBtn.disabled = finished || phase !== 'right';
+      upBtn.classList.toggle('locked', phase !== 'up');
+      rightBtn.classList.toggle('locked', phase !== 'right');
     }
+
+    function resetCrane() {
+      markerX = START_X;
+      markerY = START_Y;
+      phase = 'up';
+      holdingUp = false;
+      holdingRight = false;
+      hook.classList.remove('dropping','lifting','carrying');
+      setControls();
+      updateHook();
+      setMessage('Halte ↑ gedrückt, wähle die Höhe und lass los. Danach mit → nach rechts fahren.', 'neutral');
+    }
+
+    function addBridgeSegment() {
+      if (!bridge) return;
+      const segment = document.createElement('span');
+      segment.className = 'touch4-bridge-segment';
+      segment.textContent = ['🧸','🧽','🪶','☁️','🛏️'][Math.min(collected - 1, 4)] || '☁️';
+      bridge.appendChild(segment);
+      bridge.classList.add('pulse');
+      window.setTimeout(() => bridge.classList.remove('pulse'), 320);
+    }
+
+    function heroCrossesBridge() {
+      hero?.classList.add('crossing');
+      setMessage('Der weiche Boden ist fertig. Sir Nervus kann sicher über die Grube!', 'good');
+      playSound('levelunlocked');
+      window.setTimeout(() => showResult(true), 1250);
+    }
+
     function showResult(won) {
+      if (finished) return;
       finished = true;
+      holdingUp = false;
+      holdingRight = false;
+      setControls();
       stopSound('minigame_background');
-      if (resultImage) { resultImage.src = won ? ASSETS.text.gewonnen : ASSETS.text.verloren; resultImage.alt = won ? 'Gewonnen' : 'Verloren'; show(resultImage); }
+      if (rafId) cancelAnimationFrame(rafId);
+      if (resultImage) {
+        resultImage.src = won ? ASSETS.text.gewonnen : ASSETS.text.verloren;
+        resultImage.alt = won ? 'Gewonnen' : 'Verloren';
+        show(resultImage);
+      }
       resultTitle.textContent = won ? 'Gewonnen' : 'Verloren';
-      resultText.textContent = won ? 'Du hast alle weichen Gegenstände ertastet und spitze Gefahren vermieden.' : 'Sir Nervus hat zu viele spitze Dinge erwischt.';
+      resultText.textContent = won
+        ? 'Du hast nur weiche Dinge für den Boden gesammelt. Sir Nervus hat die Grube sicher überquert.'
+        : 'Sir Nervus hat zu viele spitze Gegenstände erwischt.';
       playSound(won ? 'win' : 'lose');
       retryBtn.textContent = won ? 'Zurück zum Spielfeld' : 'Neuer Versuch';
       retryBtn.onclick = () => {
@@ -2841,44 +2923,125 @@
       show(boardBtn);
       show(result);
     }
-    function grab() {
-      if (busy || finished) return;
-      busy = true;
-      cable?.classList.add('down');
-      claw?.classList.add('down');
+
+    function evaluateGrab() {
+      const index = selectedCellIndex();
+      const item = items[index];
+
+      if (!item || item.removed) {
+        setMessage('An dieser Stelle liegt nichts mehr. Der Kran startet neu.', 'neutral');
+        playSound('flip');
+      } else if (item.type === 'soft') {
+        item.removed = true;
+        collected += 1;
+        addBridgeSegment();
+        setMessage(`${item.label}: weich. Genau richtig für den Boden!`, 'good');
+        playSound('collect');
+      } else if (item.type === 'sharp') {
+        item.removed = true;
+        lives -= 1;
+        setMessage(`${item.label}: spitz. Das tut weh und kostet ein Herz!`, 'bad');
+        playSound('glass_break');
+        playSound('hurt');
+        updateHearts();
+      } else {
+        item.removed = true;
+        setMessage(`${item.label}: nicht weich genug. Kein guter Boden für die Grube.`, 'neutral');
+        playSound('falsch_1');
+      }
+
+      renderGrid();
+      updateScore();
+
+      if (collected >= SOFT_TARGET) {
+        window.setTimeout(heroCrossesBridge, 520);
+        return;
+      }
+      if (lives <= 0) {
+        window.setTimeout(() => showResult(false), 520);
+        return;
+      }
+
+      phase = 'reset';
+      setControls();
+      hook.classList.add('lifting');
+      window.setTimeout(resetCrane, 760);
+    }
+
+    function dropCrane() {
+      if (finished || phase !== 'right') return;
+      phase = 'drop';
+      holdingRight = false;
+      setControls();
+      hook.classList.add('dropping');
+      setMessage('Der Kran fällt nach unten und greift den Gegenstand unter der grünen Markierung.', 'neutral');
       playSound('levelstart');
-      window.setTimeout(() => {
-        const index = craneY * 4 + craneX;
-        const item = items[index];
-        if (!item || item.removed) {
-          setMessage('Hier ist nichts mehr. Fahre weiter.', 'neutral');
-          playSound('flip');
-        } else if (item.type === 'soft') {
-          item.removed = true;
-          collected += 1;
-          setMessage(`${item.label}: weich – richtig gesammelt!`, 'good');
-          playSound('collect');
-        } else if (item.type === 'sharp') {
-          item.removed = true;
-          lives -= 1;
-          setMessage(`${item.label}: spitz – aua!`, 'bad');
-          playSound('glass_break');
-          playSound('hurt');
-          updateHearts();
+      window.setTimeout(evaluateGrab, 620);
+    }
+
+    function finishUpSelection() {
+      if (finished || phase !== 'up') return;
+      holdingUp = false;
+      phase = 'right';
+      setControls();
+      setMessage('Höhe gewählt. Halte jetzt → gedrückt und lass los, wenn die grüne Markierung richtig steht.', 'neutral');
+      playSound('flip');
+    }
+
+    function startHold(kind, ev) {
+      ev?.preventDefault?.();
+      if (finished) return;
+      if (kind === 'up' && phase === 'up') holdingUp = true;
+      if (kind === 'right' && phase === 'right') holdingRight = true;
+    }
+
+    function stopHold(kind, ev) {
+      ev?.preventDefault?.();
+      if (finished) return;
+      if (kind === 'up' && holdingUp) finishUpSelection();
+      if (kind === 'right' && holdingRight) dropCrane();
+    }
+
+    function bindHold(btn, kind) {
+      if (!btn) return;
+      btn.addEventListener('pointerdown', ev => {
+        try { btn.setPointerCapture(ev.pointerId); } catch (_) {}
+        startHold(kind, ev);
+      });
+      btn.addEventListener('pointerup', ev => stopHold(kind, ev));
+      btn.addEventListener('pointercancel', ev => stopHold(kind, ev));
+      btn.addEventListener('lostpointercapture', ev => {
+        if (kind === 'up' && holdingUp) finishUpSelection();
+        if (kind === 'right' && holdingRight) dropCrane();
+      });
+    }
+
+    function loop(ts) {
+      if (finished) return;
+      if (!lastTs) lastTs = ts;
+      const dt = Math.min(40, ts - lastTs);
+      lastTs = ts;
+
+      if (holdingUp && phase === 'up') {
+        markerY = Math.max(MIN_Y, markerY - UP_SPEED * dt);
+        hook.classList.add('carrying');
+        if (markerY <= MIN_Y + 0.001) finishUpSelection();
+        updateHook();
+      } else {
+        hook.classList.remove('carrying');
+      }
+
+      if (holdingRight && phase === 'right') {
+        markerX = Math.min(MAX_X, markerX + RIGHT_SPEED * dt);
+        if (markerX >= MAX_X - 0.001) {
+          updateHook();
+          dropCrane();
         } else {
-          setMessage(`${item.label}: nicht weich. Lass es lieber liegen.`, 'neutral');
-          playSound('falsch_1');
+          updateHook();
         }
-        renderGrid();
-        updateScore();
-        window.setTimeout(() => {
-          cable?.classList.remove('down');
-          claw?.classList.remove('down');
-          busy = false;
-          if (collected >= SOFT_TARGET) showResult(true);
-          else if (lives <= 0) showResult(false);
-        }, 420);
-      }, 520);
+      }
+
+      rafId = requestAnimationFrame(loop);
     }
 
     $('touch4StartBtn')?.addEventListener('click', () => hide(intro));
@@ -2886,19 +3049,16 @@
     $('touch4CloseMenuBtn')?.addEventListener('click', () => hide(menu));
     $('touch4MenuBoardBtn')?.addEventListener('click', () => { stopSound('minigame_background'); location.href = pageUrl('index.html'); });
     boardBtn?.addEventListener('click', () => { stopSound('minigame_background'); location.href = pageUrl('index.html'); });
-    $('touch4LeftBtn')?.addEventListener('click', () => move(-1,0));
-    $('touch4RightBtn')?.addEventListener('click', () => move(1,0));
-    $('touch4UpBtn')?.addEventListener('click', () => move(0,-1));
-    $('touch4DownBtn')?.addEventListener('click', () => move(0,1));
-    $('touch4GrabBtn')?.addEventListener('click', grab);
-    window.addEventListener('resize', moveCrane);
+    bindHold(upBtn, 'up');
+    bindHold(rightBtn, 'right');
+    window.addEventListener('resize', () => { updateHook(); });
 
     renderGrid();
     updateHearts();
     updateScore();
-    setMessage('Sammle alle weichen Dinge. Spitze Gegenstände kosten ein Herz.');
-    requestAnimationFrame(moveCrane);
+    resetCrane();
     show(intro);
+    rafId = requestAnimationFrame(loop);
   }
 
   function initCodes() {
