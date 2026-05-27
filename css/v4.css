@@ -2955,3 +2955,49 @@ body[data-page="minigame"]{
     height:min(12.5svh, 74px)!important;
   }
 }
+
+
+/* === Smell pipe refinement v48: stabile Oger-/Wolken-Logik === */
+.pipe3-ogre-zone{
+  z-index:18!important;
+  width:min(20vw, 86px)!important;
+  height:min(14svh, 94px)!important;
+  left:0!important;
+  top:0!important;
+}
+.pipe3-ogre{
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+}
+.pipe3-spray-overlay{
+  z-index:60!important;
+  pointer-events:none!important;
+  width:auto!important;
+  max-width:none!important;
+  left:0!important;
+  top:0!important;
+  opacity:0!important;
+  transition:opacity .45s ease!important;
+  filter:drop-shadow(0 8px 14px rgba(166,112,220,.18))!important;
+}
+.pipe3-spray-overlay:not(.hidden){
+  opacity:1!important;
+}
+.pipe3-spray-overlay.fade-out{
+  opacity:0!important;
+}
+.pipe3-valve-pad.ready{
+  box-shadow:0 0 0 3px rgba(255,215,56,.98), 0 0 18px rgba(255,218,74,.85), inset 0 0 8px rgba(255,240,150,.35)!important;
+  border-radius:18px!important;
+}
+.pipe3-valve-btn.not-ready{
+  animation:pipe3ValveNudge .38s ease!important;
+}
+@media(max-width:560px){
+  .pipe3-ogre-zone{
+    width:min(20vw, 72px)!important;
+    height:min(12svh, 78px)!important;
+  }
+}

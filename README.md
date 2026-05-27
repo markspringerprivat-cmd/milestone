@@ -152,3 +152,24 @@ Die JavaScript-Navigation benutzt `pageUrl(...)`, damit `index.html`, `level.htm
 - Das Ventil dreht jetzt 2 Sekunden statt 3 Sekunden.
 - Der Tipp-Button unten rechts setzt eine Lösungskachel korrekt, markiert sie grün und sperrt sie.
 - Das Ventilbild wurde erneut freigestellt, inklusive heller Innenflächen.
+
+
+## Minigame3 v48 – stabile Oger-/Duftwolken-Logik
+
+Diese Version stabilisiert das Riech-Minispiel:
+
+- Der Oger wird per JavaScript am realen Rohrfeld ausgerichtet.
+- Position: mittig über den beiden oberen linken Kacheln, am oberen Spielfeldrand.
+- Die Duftwolke wird nicht mehr an der Düse berechnet, sondern exakt über dem Oger zentriert.
+- Die Duftwolke liegt im Vordergrund und ist nur etwas größer als der Oger, damit sie ihn verdeckt.
+- Beim korrekten Ventil-Klick:
+  1. Banane verschwindet sofort.
+  2. Ventil dreht 2 Sekunden.
+  3. Duftwolke ist genau diese 2 Sekunden sichtbar.
+  4. Während die Wolke sichtbar ist, wird der Oger im Hintergrund zu `ogre_clean`.
+  5. Wolke verschwindet.
+  6. Der saubere Oger bleibt 3 Sekunden sichtbar.
+  7. Danach erscheint das Gewinn-Popup.
+- Wenn der Weg noch nicht vollständig grün verbunden ist, verliert man nicht mehr sofort. Das Ventil bewegt sich nur kurz und springt zurück.
+- Sobald der Weg vollständig korrekt ist, bekommt die Ventil-Kachel einen goldenen Rahmen.
+- Cache-Buster für `minigame3.html`: `v4_48_stable_ogre_cloud_valve_20260526`.

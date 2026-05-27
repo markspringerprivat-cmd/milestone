@@ -2358,8 +2358,9 @@
       const zoneRect = ogreZone.getBoundingClientRect();
       const tileW = boardRect.width / 6;
       const desiredCenterX = (boardRect.left - stageRect.left) + tileW;
-      const desiredLeft = Math.max(8, desiredCenterX - zoneRect.width / 2);
-      const desiredTop = Math.max(8, boardRect.top - stageRect.top - zoneRect.height * 0.30);
+      const desiredLeft = Math.max(4, Math.min(stageRect.width - zoneRect.width - 4, desiredCenterX - zoneRect.width / 2));
+      // Der Oger steht auf dem oberen Rand des Rohrfelds, mittig über Kachel 1 und 2.
+      const desiredTop = Math.max(4, boardRect.top - stageRect.top - zoneRect.height * 0.82);
       ogreZone.style.left = `${desiredLeft}px`;
       ogreZone.style.top = `${desiredTop}px`;
     }
@@ -2367,16 +2368,18 @@
       if (!sprayOverlay) return;
       const stageRect = stage.getBoundingClientRect();
       const ogreRect = ogre.getBoundingClientRect();
-      const naturalW = sprayOverlay.naturalWidth || 1280;
-      const naturalH = sprayOverlay.naturalHeight || 1280;
+      const naturalW = sprayOverlay.naturalWidth || 360;
+      const naturalH = sprayOverlay.naturalHeight || 317;
       const ratio = naturalH / naturalW;
-      const size = Math.min(stageRect.width * 0.58, Math.max(210, Math.max(ogreRect.width, ogreRect.height) + 84));
-      const width = size;
+      // Die Wolke wird nicht mehr aus der Düse berechnet, sondern rein über dem Oger zentriert.
+      // Sie ist bewusst nur etwas größer als der Oger, damit sie ihn verdeckt, aber nicht das halbe Feld.
+      const ogreMax = Math.max(ogreRect.width, ogreRect.height);
+      const width = Math.min(stageRect.width * 0.48, Math.max(130, ogreMax + 70));
       const height = width * ratio;
       const centerX = ogreRect.left - stageRect.left + ogreRect.width * 0.50;
       const centerY = ogreRect.top - stageRect.top + ogreRect.height * 0.50;
-      const left = centerX - width * 0.50;
-      const top = centerY - height * 0.50;
+      const left = Math.max(0, Math.min(stageRect.width - width, centerX - width * 0.50));
+      const top = Math.max(0, Math.min(stageRect.height - height, centerY - height * 0.50));
       sprayOverlay.style.width = `${width}px`;
       sprayOverlay.style.left = `${left}px`;
       sprayOverlay.style.top = `${top}px`;
