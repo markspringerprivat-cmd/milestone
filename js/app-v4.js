@@ -2761,12 +2761,12 @@
     const REVEAL_MS = 5000;
     const SHUFFLE_MS = 5000;
     const SWAP_MS = 1000;
-    const START_X = 0.07;
-    const START_Y = 0.90;
-    const MIN_Y = 0.08;
-    const MAX_X = 0.94;
-    const UP_SPEED = 0.00048;
-    const RIGHT_SPEED = 0.00056;
+    const START_X = 1 / (GRID * 2);
+    const START_Y = 1 - (1 / (GRID * 2));
+    const MIN_Y = 1 / (GRID * 2);
+    const MAX_X = 1 - (1 / (GRID * 2));
+    const UP_SPEED = 0.00050;
+    const RIGHT_SPEED = 0.00058;
 
     const softPool = [
       { icon:'🧸', label:'Stofftier', type:'soft' },
@@ -2856,6 +2856,7 @@
           <span class="touch4-item ${card.type}">${content}</span>
         </button>`;
       }).join('');
+      requestAnimationFrame(updateHook);
     }
 
     function updateActiveCell() {
@@ -2866,8 +2867,12 @@
     }
 
     function updateHook() {
-      hook.style.left = `${markerX * 100}%`;
-      hook.style.top = `${markerY * 100}%`;
+      const fieldRect = field.getBoundingClientRect();
+      const gridRect = grid.getBoundingClientRect();
+      const left = (gridRect.left - fieldRect.left) + markerX * gridRect.width;
+      const top = (gridRect.top - fieldRect.top) + markerY * gridRect.height;
+      hook.style.left = `${left}px`;
+      hook.style.top = `${top}px`;
       updateActiveCell();
     }
 
@@ -2918,15 +2923,15 @@
       if (row > 0) neighbors.push(i - GRID);
       if (row < GRID - 1) neighbors.push(i + GRID);
       const j = neighbors[Math.floor(Math.random() * neighbors.length)];
-      [cards[i], cards[j]] = [cards[j], cards[i]];
-      renderGrid();
       const cells = grid.querySelectorAll('.touch4-cell');
-      cells[i]?.classList.add('swapped');
-      cells[j]?.classList.add('swapped');
+      const dir = j === i + 1 ? 'right' : j === i - 1 ? 'left' : j === i + GRID ? 'down' : 'up';
+      const opposite = { right:'left', left:'right', down:'up', up:'down' }[dir];
+      cells[i]?.classList.add('swap-lift', `swap-${dir}`);
+      cells[j]?.classList.add('swap-lift', `swap-${opposite}`);
       window.setTimeout(() => {
-        cells[i]?.classList.remove('swapped');
-        cells[j]?.classList.remove('swapped');
-      }, 380);
+        [cards[i], cards[j]] = [cards[j], cards[i]];
+        renderGrid();
+      }, 420);
     }
 
     function beginRound() {
@@ -3144,7 +3149,7 @@
     boardBtn?.addEventListener('click', () => { stopSound('minigame_background'); location.href = pageUrl('index.html'); });
     bindHold(upBtn, 'up');
     bindHold(rightBtn, 'right');
-    window.addEventListener('resize', () => { updateHook(); });
+    window.addEventListener('resize', () => requestAnimationFrame(updateHook));
 
     updateScore();
     renderPitSlots();

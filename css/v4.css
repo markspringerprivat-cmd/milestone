@@ -3867,3 +3867,99 @@ body[data-page="minigame"]{
     height:30px!important;
   }
 }
+
+/* === Touch crane v58: clean 3x3 grid, visible crane movement and card-swap motion === */
+.touch4-memory-stage .touch4-message{
+  display:none!important;
+}
+.touch4-memory-stage .touch4-crane-area{
+  top:calc(max(58px, env(safe-area-inset-top) + 50px))!important;
+  height:min(48svh, 390px)!important;
+}
+.touch4-memory-stage .touch4-crane-field{
+  width:min(88vw, 440px)!important;
+  height:min(45svh, 360px)!important;
+  overflow:visible!important;
+}
+.touch4-memory-grid{
+  left:8%!important;
+  top:8%!important;
+  width:84%!important;
+  height:78%!important;
+  display:grid!important;
+  grid-template-columns:repeat(3, minmax(0, 1fr))!important;
+  grid-template-rows:repeat(3, minmax(0, 1fr))!important;
+  gap:clamp(10px, 2.4vw, 16px)!important;
+  align-items:stretch!important;
+  justify-items:stretch!important;
+}
+.touch4-memory-grid .touch4-cell{
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  aspect-ratio:auto!important;
+  border:0!important;
+  overflow:hidden!important;
+}
+.touch4-memory-grid .touch4-cell.active{
+  outline:none!important;
+  box-shadow:0 6px 12px rgba(0,0,0,.14), inset 0 0 0 2px rgba(255,255,255,.55)!important;
+}
+.touch4-memory-grid .touch4-item{
+  font-size:clamp(1.85rem, 9.5vw, 3.4rem)!important;
+  transform:none!important;
+}
+.touch4-red-crane{
+  width:38px!important;
+  height:38px!important;
+  z-index:30!important;
+  will-change:left, top!important;
+  filter:drop-shadow(0 8px 8px rgba(0,0,0,.38))!important;
+}
+.touch4-red-crane .touch4-hook-cable{
+  height:clamp(42px, 14svh, 108px)!important;
+  width:5px!important;
+  background:linear-gradient(#2e3540,#07090d)!important;
+}
+.touch4-red-crane .touch4-hook-head{
+  width:38px!important;
+  height:38px!important;
+  background:radial-gradient(circle at 35% 30%, #ffb4a8, #ed241e 56%, #850400)!important;
+  border:4px solid rgba(78,5,4,.82)!important;
+  box-shadow:0 6px 12px rgba(0,0,0,.42), 0 0 0 6px rgba(255,45,34,.20)!important;
+}
+.touch4-memory-grid .touch4-cell.swap-lift{
+  z-index:4!important;
+  box-shadow:0 18px 26px rgba(0,0,0,.30), inset 0 0 0 2px rgba(255,255,255,.55)!important;
+}
+.touch4-memory-grid .touch4-cell.swap-right{animation:touch4SwapRight .42s ease-in-out forwards!important;}
+.touch4-memory-grid .touch4-cell.swap-left{animation:touch4SwapLeft .42s ease-in-out forwards!important;}
+.touch4-memory-grid .touch4-cell.swap-down{animation:touch4SwapDown .42s ease-in-out forwards!important;}
+.touch4-memory-grid .touch4-cell.swap-up{animation:touch4SwapUp .42s ease-in-out forwards!important;}
+@keyframes touch4SwapRight{0%{transform:translate(0,0)}45%{transform:translate(0,-10px) scale(1.04)}100%{transform:translate(calc(100% + 12px),0)}}
+@keyframes touch4SwapLeft{0%{transform:translate(0,0)}45%{transform:translate(0,-10px) scale(1.04)}100%{transform:translate(calc(-100% - 12px),0)}}
+@keyframes touch4SwapDown{0%{transform:translate(0,0)}45%{transform:translate(0,-10px) scale(1.04)}100%{transform:translate(0,calc(100% + 12px))}}
+@keyframes touch4SwapUp{0%{transform:translate(0,0)}45%{transform:translate(0,-10px) scale(1.04)}100%{transform:translate(0,calc(-100% - 12px))}}
+@media(max-width:560px){
+  .touch4-memory-stage .touch4-crane-area{
+    top:calc(max(58px, env(safe-area-inset-top) + 48px))!important;
+    height:min(47svh, 330px)!important;
+  }
+  .touch4-memory-stage .touch4-crane-field{
+    width:90vw!important;
+    height:min(44svh, 318px)!important;
+  }
+  .touch4-memory-grid{
+    left:7%!important;
+    top:7%!important;
+    width:86%!important;
+    height:78%!important;
+    gap:10px!important;
+  }
+  .touch4-red-crane,
+  .touch4-red-crane .touch4-hook-head{
+    width:34px!important;
+    height:34px!important;
+  }
+}

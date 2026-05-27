@@ -316,3 +316,16 @@ Test: `minigame3.html?v=51`
 ### Test
 
 `minigame4.html?slot=7&v=57`
+
+
+## Update v58 – Kranbewegung und 3×3-Raster korrigiert
+
+- Das Kranfeld zeigt jetzt ein sauberes 3×3-Raster mit genau einem Item pro Feld.
+- Die Feldlinien bleiben unsichtbar, aber die Items sind gleichmäßig über drei Reihen und drei Spalten verteilt.
+- Der rote Kranpunkt bewegt sich sichtbar und langsam über das Raster.
+- Die Auswahl des Items richtet sich nach der Position des roten Kranpunkts.
+- Beim Mischen heben sich zwei Karten sichtbar an und tauschen ihre Position.
+- Die obere Beschreibung wurde ausgeblendet, damit mehr Platz für das Spielfeld bleibt.
+
+### Test
+- `minigame4.html?slot=7&v=58`
