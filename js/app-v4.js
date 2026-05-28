@@ -2856,6 +2856,7 @@
     const scoreEl = $('touch4Score');
     const messageEl = $('touch4Message');
     const continueBtn = $('touch4ContinueBtn');
+    const countdownEl = $('touch4Countdown');
     const intro = $('touch4Intro');
     const result = $('touch4Result');
     const resultImage = $('touch4ResultImage');
@@ -2925,6 +2926,24 @@
     function updateScore() {
       if (scoreEl) scoreEl.textContent = `Brücke: ${bridgeCards.length} / ${TOTAL_ROUNDS}`;
     }
+    function hideCountdown() {
+      if (!countdownEl) return;
+      countdownEl.classList.add('hidden');
+      countdownEl.textContent = '';
+    }
+    function startCountdown(seconds = 5) {
+      if (!countdownEl) return;
+      let remaining = seconds;
+      countdownEl.textContent = String(remaining);
+      countdownEl.classList.remove('hidden');
+      for (let i = 1; i <= seconds; i += 1) {
+        schedule(() => {
+          remaining = Math.max(0, seconds - i);
+          countdownEl.textContent = String(remaining);
+          if (remaining <= 0) hideCountdown();
+        }, i * 1000);
+      }
+    }
     function buildCardsForRound() {
       const soft = { ...softRounds[roundIndex], id:`soft-${roundIndex}-${Date.now()}` };
       const sharp = sharpCards.map((item, i) => ({ ...item, id:`sharp-${roundIndex}-${i}-${Date.now()}` }));
@@ -2941,7 +2960,8 @@
       grid.innerHTML = cards.map((card, index) => {
         const isFront = face === 'front';
         const state = isFront ? 'front' : 'back';
-        return `<button class="touch4-v60-card ${state}" type="button" data-index="${index}" ${selectable ? '' : 'disabled'} aria-label="${isFront ? card.label : 'verdeckte Karte'}">
+        const softMark = isFront && phase === 'show' && card.type === 'soft' ? ' soft-target' : '';
+        return `<button class="touch4-v60-card ${state}${softMark}" type="button" data-index="${index}" ${selectable ? '' : 'disabled'} aria-label="${isFront ? card.label : 'verdeckte Karte'}">
           ${cardInner(card, isFront)}
         </button>`;
       }).join('');
@@ -3017,18 +3037,30 @@
     function beginRound() {
       if (finished || roundIndex >= TOTAL_ROUNDS) return;
       phase = 'show';
+      grid.classList.remove('turning-to-back', 'chests-arrive');
       buildCardsForRound();
       renderGrid();
       renderBridge();
       updateScore();
+      startCountdown(5);
       const softName = ['Kissen', 'Wolke', 'Teddy'][roundIndex];
       setMessage(`Runde ${roundIndex + 1}: Merke dir den weichen Gegenstand (${softName}).`);
       schedule(() => {
         if (finished) return;
-        phase = 'mix';
-        face = 'back';
-        renderGrid();
-        schedule(() => mixCards(0), 250);
+        hideCountdown();
+        grid.classList.add('turning-to-back');
+        schedule(() => {
+          if (finished) return;
+          phase = 'mix';
+          face = 'back';
+          grid.classList.remove('turning-to-back');
+          grid.classList.add('chests-arrive');
+          renderGrid();
+          schedule(() => {
+            grid.classList.remove('chests-arrive');
+            mixCards(0);
+          }, 420);
+        }, 420);
       }, SHOW_MS);
     }
     function animateToBridge(cell, card, done) {
@@ -3058,6 +3090,7 @@
       const card = cards[index];
       if (!card) return;
       selected = true;
+      hideCountdown();
       phase = 'selected';
       setMessage('Die Karte wird verdeckt in die Brücke gelegt.');
       playSound('collect');

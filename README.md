@@ -375,3 +375,16 @@ Test: `minigame3.html?v=51`
 - Ritter-Bewegungslogik auf dem Spielbrett beibehalten.
 - Positionen der Levelpunkte an das neue Spielbrett angepasst.
 - Spielbrett-Geometrie auf vollständige Anzeige des neuen Hochformat-Bildes umgestellt.
+
+
+## v65 – Tastsinn-Brücke Feinschliff
+
+- Schatztruhen als transparente Kartenrückseite eingebunden.
+- Weiße/helle Hintergründe der Truhe freigestellt.
+- Raster-/Kästchenhintergründe oben und unten optisch entfernt.
+- Schwarze Grubenlinien optisch entfernt.
+- Brückenpositionen tiefer gesetzt und Truhen unten größer dargestellt.
+- Ritter etwas größer dargestellt.
+- Weicher Gegenstand blinkt während der Merken-Phase mit goldenem Rahmen.
+- Countdown von 5 Sekunden während der Merken-Phase ergänzt.
+- Übergang von Gegenständen zu Truhen geglättet.
