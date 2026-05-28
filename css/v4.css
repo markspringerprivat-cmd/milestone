@@ -4440,8 +4440,11 @@ body[data-page="board"] .board-screen{
   background: radial-gradient(circle at top, #1e2d6d 0%, #0b1230 45%, #050713 100%);
 }
 body[data-page="board"] .board-image{
-  object-fit: contain !important;
+  object-fit: cover !important;
   object-position: center center !important;
+  width: 100% !important;
+  height: 100% !important;
+  transform: translate(-50%,-50%) scale(1.02) !important;
 }
 body[data-page="board"] .map-inner{
   z-index: 3;
@@ -4530,4 +4533,93 @@ body[data-page="board"] .moving-hero-token .hero-token{
     width: clamp(84px, 18vw, 116px) !important;
     height: clamp(84px, 18vw, 116px) !important;
   }
+}
+
+
+/* === v4.62 board polish: full-fit board, dashed unlock paths, animated locks === */
+body[data-page="board"] .map-inner{
+  z-index:3;
+  overflow:visible;
+}
+body[data-page="board"] .board-paths{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  z-index:1;
+  pointer-events:none;
+  overflow:visible;
+}
+body[data-page="board"] .board-path{
+  fill:none;
+  stroke:#111827;
+  stroke-width:0.42;
+  stroke-linecap:round;
+  stroke-dasharray:7 6;
+  opacity:.9;
+  filter:drop-shadow(0 2px 3px rgba(255,255,255,.16));
+}
+body[data-page="board"] .board-path.revealed{
+  stroke-dashoffset:0;
+}
+body[data-page="board"] .board-path.reveal-now{
+  stroke-dashoffset:100;
+  animation:boardPathReveal .95s linear forwards;
+}
+@keyframes boardPathReveal{
+  from{stroke-dashoffset:100;opacity:.2}
+  to{stroke-dashoffset:0;opacity:1}
+}
+body[data-page="board"] .map-token.v4-node.level-circle-node{
+  min-width:72px;
+  min-height:72px;
+  z-index:4;
+}
+body[data-page="board"] .level-circle{
+  overflow:visible;
+}
+body[data-page="board"] .level-circle-lock-wrap{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:52%;
+  height:52%;
+  display:grid;
+  place-items:center;
+  transform:translate(-50%,-50%);
+  z-index:2;
+}
+body[data-page="board"] .level-circle-lock-img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  filter:drop-shadow(0 4px 8px rgba(0,0,0,.34));
+}
+body[data-page="board"] .level-circle-number.is-locked-number{
+  opacity:.35;
+  transform:scale(.95);
+}
+body[data-page="board"] .unlock-incoming .level-circle{
+  animation:unlockTargetPulse 1.2s ease-in-out forwards;
+}
+body[data-page="board"] .unlock-incoming .level-circle-lock-wrap{
+  animation:unlockLockDrop 1.18s cubic-bezier(.2,.9,.18,1) forwards;
+}
+@keyframes unlockTargetPulse{
+  0%{transform:scale(1);box-shadow:0 12px 26px rgba(6,19,58,.45), inset 0 3px 8px rgba(255,255,255,.28)}
+  35%{transform:scale(1.08);box-shadow:0 0 0 6px rgba(255,255,255,.28),0 12px 26px rgba(6,19,58,.45), inset 0 3px 8px rgba(255,255,255,.28)}
+  100%{transform:scale(1.02);box-shadow:0 0 0 10px rgba(255,255,255,0),0 12px 26px rgba(6,19,58,.45), inset 0 3px 8px rgba(255,255,255,.28)}
+}
+@keyframes unlockLockDrop{
+  0%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  35%{opacity:1;transform:translate(-50%,-56%) scale(1.12)}
+  100%{opacity:0;transform:translate(-50%,38%) scale(.4) rotate(16deg)}
+}
+body[data-page="board"] .node-locked .level-circle{
+  opacity:.96;
+}
+@media (max-width:700px){
+  body[data-page="board"] .board-path{stroke-width:.52}
+  body[data-page="board"] .map-token.v4-node.level-circle-node{min-width:64px;min-height:64px}
+  body[data-page="board"] .level-circle-lock-wrap{width:50%;height:50%}
 }

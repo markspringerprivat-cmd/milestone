@@ -100,18 +100,18 @@
   const PLACEHOLDER_LEVELS = [1, 3, 5, 7, 9, 11];
   const BOSS_SLOT = 10;
   const LEVEL_POSITIONS = [
-    { x: 36.5, y: 91.2 },
-    { x: 72.8, y: 86.4 },
-    { x: 78.4, y: 73.8 },
-    { x: 64.6, y: 63.0 },
-    { x: 27.8, y: 67.0 },
-    { x: 23.8, y: 54.2 },
-    { x: 58.0, y: 48.5 },
-    { x: 72.2, y: 42.4 },
-    { x: 70.5, y: 31.4 },
-    { x: 22.8, y: 23.0 },
-    { x: 50.0, y: 8.2 },
-    { x: 82.5, y: 22.2 }
+    { x: 31.0, y: 90.2 },
+    { x: 66.8, y: 84.6 },
+    { x: 70.5, y: 67.2 },
+    { x: 31.5, y: 63.8 },
+    { x: 22.8, y: 51.8 },
+    { x: 62.2, y: 47.6 },
+    { x: 66.4, y: 36.2 },
+    { x: 31.0, y: 36.8 },
+    { x: 23.4, y: 21.8 },
+    { x: 69.8, y: 21.2 },
+    { x: 86.0, y: 8.2 },
+    { x: 50.0, y: 9.8 }
   ];
   const BOARD_RATIO = 1024 / 1536;
   const STAGE_BACKGROUNDS = ['assets/images/stages/stage_gras.webp', 'assets/images/stages/stage_sand.webp', 'assets/images/stages/stage_eis.webp', 'assets/images/stages/stage_lava.webp', 'assets/images/stages/stage_himmel.webp', 'assets/images/stages/stage_all.webp'];
@@ -262,7 +262,7 @@
     document.body.appendChild(b);
   }
 
-  function defaultState() { return { stateVersion:STATE_VERSION, started:false, slots:Array(LEVEL_COUNT).fill(null), completed:Array(LEVEL_COUNT).fill(false), bossCompleted:false, heroIndex:null, introUsed:false }; }
+  function defaultState() { return { stateVersion:STATE_VERSION, started:false, slots:Array(LEVEL_COUNT).fill(null), completed:Array(LEVEL_COUNT).fill(false), bossCompleted:false, heroIndex:null, introUsed:false, revealedMax:0 }; }
   function normalizeState(raw) {
     const base = defaultState();
     if (!raw || raw.stateVersion !== STATE_VERSION) return base;
@@ -272,6 +272,13 @@
     state.slots = Array.from({ length: LEVEL_COUNT }, (_, i) => oldSlots[i] || null);
     state.completed = Array.from({ length: LEVEL_COUNT }, (_, i) => Boolean(oldCompleted[i]));
     if (!Number.isInteger(state.heroIndex) || state.heroIndex < 0 || state.heroIndex >= LEVEL_COUNT) state.heroIndex = null;
+    const inferredReveal = state.completed.every(Boolean)
+      ? LEVEL_COUNT - 1
+      : Math.max(0, Math.min(LEVEL_COUNT - 1, state.completed.findIndex(v => !v)));
+    state.revealedMax = Number.isInteger(state.revealedMax)
+      ? Math.max(0, Math.min(LEVEL_COUNT - 1, state.revealedMax))
+      : inferredReveal;
+    if (state.revealedMax < inferredReveal) state.revealedMax = inferredReveal;
     return state;
   }
   function getState() {
@@ -279,6 +286,7 @@
   }
   function setState(state) { localStorage.setItem(STORE, JSON.stringify(normalizeState(state))); }
   function currentSlot(state = getState()) { const i = state.completed.findIndex(v => !v); return i < 0 ? LEVEL_COUNT : i; }
+  function activeBoardSlot(state = getState()) { const slot = currentSlot(state); return slot < LEVEL_COUNT && slot <= state.revealedMax ? slot : null; }
   function allLevelsDone(state = getState()) { return state.completed.length === LEVEL_COUNT && state.completed.every(Boolean); }
   function usedIds(state = getState()) { return state.slots.filter(Boolean); }
   function dataForMeta(meta) { return meta?.isBoss || meta?.senseId === 'boss' ? BOSS : SENSES[meta?.senseId]; }
@@ -335,7 +343,7 @@
     $('scanJumpTopBtn')?.addEventListener('click', () => $('scanTitle')?.scrollIntoView({ behavior:'smooth', block:'start' }));
     $('launchLevelBtn')?.addEventListener('click', handleLaunchLevel);
     $('encounterBackBtn')?.addEventListener('click', handleEncounterBack);
-    $('levelUnlockedContinueBtn')?.addEventListener('click', () => { hide($('levelUnlockedModal')); playSound('background', { loop:true }); });
+    $('levelUnlockedContinueBtn')?.addEventListener('click', handleLevelUnlockedContinue);
     $('boardGuide')?.addEventListener('click', startIntroHeroJourney);
     $('boardGuide')?.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); startIntroHeroJourney(); } });
     window.addEventListener('resize', updateMapGeometry);
@@ -353,11 +361,11 @@
     const w = screen.clientWidth, h = screen.clientHeight;
     let imgW, imgH;
     if (w / h > BOARD_RATIO) {
-      imgH = h;
-      imgW = h * BOARD_RATIO;
-    } else {
       imgW = w;
       imgH = w / BOARD_RATIO;
+    } else {
+      imgH = h;
+      imgW = h * BOARD_RATIO;
     }
     inner.style.width = `${imgW}px`;
     inner.style.height = `${imgH}px`;
@@ -436,27 +444,73 @@
     });
   }
 
+  let pendingUnlockAnimation = null;
+  let pendingUnlockedFromSlot = null;
+
+  function createBoardPaths(state) {
+    const svgNS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(svgNS, 'svg');
+    svg.setAttribute('viewBox', '0 0 100 100');
+    svg.setAttribute('preserveAspectRatio', 'none');
+    svg.classList.add('board-paths');
+
+    const visibleLinks = Math.max(0, Math.min(state.revealedMax, LEVEL_COUNT - 1));
+    for (let i = 0; i < visibleLinks; i += 1) {
+      const from = LEVEL_POSITIONS[i];
+      const to = LEVEL_POSITIONS[i + 1];
+      const line = document.createElementNS(svgNS, 'line');
+      line.setAttribute('x1', from.x);
+      line.setAttribute('y1', from.y);
+      line.setAttribute('x2', to.x);
+      line.setAttribute('y2', to.y);
+      line.setAttribute('pathLength', '100');
+      line.setAttribute('class', 'board-path revealed');
+      svg.appendChild(line);
+    }
+
+    if (pendingUnlockAnimation && pendingUnlockAnimation.from + 1 === pendingUnlockAnimation.to) {
+      const from = LEVEL_POSITIONS[pendingUnlockAnimation.from];
+      const to = LEVEL_POSITIONS[pendingUnlockAnimation.to];
+      const line = document.createElementNS(svgNS, 'line');
+      line.setAttribute('x1', from.x);
+      line.setAttribute('y1', from.y);
+      line.setAttribute('x2', to.x);
+      line.setAttribute('y2', to.y);
+      line.setAttribute('pathLength', '100');
+      line.setAttribute('class', 'board-path reveal-now');
+      svg.appendChild(line);
+    }
+
+    return svg;
+  }
+
   function renderBoard() {
     const inner = $('mapInner'); if (!inner) return;
     const state = getState();
-    const active = currentSlot(state);
+    const active = activeBoardSlot(state);
     const heroIndex = Number.isInteger(state.heroIndex) ? state.heroIndex : null;
     inner.innerHTML = '';
+    inner.appendChild(createBoardPaths(state));
 
     LEVEL_POSITIONS.forEach((pos, index) => {
       const btn = document.createElement('button');
       btn.type = 'button';
       const done = state.completed[index];
       const isActive = index === active;
-      const isLocked = !done && !isActive;
-      btn.className = `map-token v4-node level-circle-node ${isPlaceholderSlot(index) ? 'placeholder-node' : 'quiz-node'} ${done ? 'node-done' : isActive ? 'node-active' : 'node-locked'}`;
+      const isLocked = index > state.revealedMax;
+      const isUnlockTarget = pendingUnlockAnimation?.to === index;
+      btn.className = `map-token v4-node level-circle-node ${isPlaceholderSlot(index) ? 'placeholder-node' : 'quiz-node'} ${done ? 'node-done' : isActive ? 'node-active' : 'node-locked'} ${isUnlockTarget ? 'unlock-incoming' : ''}`;
       btn.style.left = `${pos.x}%`;
       btn.style.top = `${pos.y}%`;
       btn.setAttribute('aria-label', `Level ${index + 1}${done ? ', abgeschlossen' : isActive ? ', verfügbar' : ', gesperrt'}`);
       btn.innerHTML = `
         <span class="level-circle">
-          <span class="level-circle-number">${index + 1}</span>
-          ${done ? '<span class="level-circle-status" aria-hidden="true">✓</span>' : isLocked ? '<span class="level-circle-status lock" aria-hidden="true">•</span>' : '<span class="level-circle-status star" aria-hidden="true">★</span>'}
+          <span class="level-circle-number${isLocked ? ' is-locked-number' : ''}">${index + 1}</span>
+          ${done
+            ? '<span class="level-circle-status" aria-hidden="true">✓</span>'
+            : isLocked
+              ? `<span class="level-circle-lock-wrap" aria-hidden="true"><img class="level-circle-lock-img" src="${assetUrl('assets/images/ui/lock.png')}" alt=""></span>`
+              : '<span class="level-circle-status star" aria-hidden="true">★</span>'}
         </span>`;
       btn.addEventListener('click', () => onLevelNode(index));
       inner.appendChild(btn);
@@ -500,7 +554,7 @@
   }
 
   async function onLevelNode(index) {
-    const state = getState(); const active = currentSlot(state); const completed = state.completed[index];
+    const state = getState(); const active = activeBoardSlot(state); const completed = state.completed[index];
     if (!completed && index !== active) return;
     const fromIntro = state.heroIndex === null && index === 0 && !state.introUsed;
     if (fromIntro) { $('boardGuide')?.classList.add('go-away'); await sleep(650); hide($('boardGuide')); }
@@ -556,6 +610,7 @@
     state.slots[10] = 'boss';
     state.heroIndex = 0;
     state.introUsed = true;
+    state.revealedMax = LEVEL_COUNT - 1;
     setState(state);
     localStorage.removeItem(RETURN_STORE);
     document.body.classList.remove('board-menu-open');
@@ -731,11 +786,8 @@
     playSound('levelunlocked');
     const next = currentSlot(getState());
     if (next >= LEVEL_COUNT) { showOutro(); return; }
-    await animateHeroTo(next);
-    const latest = getState();
-    if (isPlaceholderSlot(next)) showPlaceholder(next);
-    else if (latest.slots[next]) showEncounter(latest.slots[next], next);
-    else openScan(next);
+    localStorage.setItem(RETURN_STORE, JSON.stringify({ type:'unlocked', meta:{ slot:index, placeholder:true } }));
+    applyReturnModal();
   }
   function escapeToBoard(meta) {
     closeScan(); hide($('encounterModal'));
@@ -751,6 +803,30 @@
     playSound('levelunlocked');
   }
 
+  async function animateBoardUnlockPath(fromSlot) {
+    if (!Number.isInteger(fromSlot)) return;
+    const toSlot = fromSlot + 1;
+    if (toSlot >= LEVEL_COUNT) return;
+    const state = getState();
+    if (state.revealedMax >= toSlot) return;
+    pendingUnlockAnimation = { from: fromSlot, to: toSlot };
+    renderBoard();
+    await sleep(1450);
+    const latest = getState();
+    latest.revealedMax = Math.max(latest.revealedMax, toSlot);
+    setState(latest);
+    pendingUnlockAnimation = null;
+    renderBoard();
+  }
+
+  async function handleLevelUnlockedContinue() {
+    hide($('levelUnlockedModal'));
+    playSound('background', { loop:true, restart:true });
+    const fromSlot = pendingUnlockedFromSlot;
+    pendingUnlockedFromSlot = null;
+    if (Number.isInteger(fromSlot)) await animateBoardUnlockPath(fromSlot);
+  }
+
   function applyReturnModal() {
     const raw = localStorage.getItem(RETURN_STORE); if (!raw) return; localStorage.removeItem(RETURN_STORE);
     let data; try { data=JSON.parse(raw); } catch (_) { return; }
@@ -758,8 +834,16 @@
     applyStagePopup(modal, data.meta);
     const img = modal.querySelector('img'); const title=$('levelUnlockedTitle'); const kicker=$('levelUnlockedKicker'); const text=$('levelUnlockedText');
     stopSound('background');
-    if (data.type === 'escape') { img.src=ASSETS.escapeHero; kicker.textContent=''; title.textContent='Du bist entkommen.'; text.textContent='Scanne einen neuen QR-Code, um es erneut zu versuchen.'; }
-    else { img.src=ASSETS.winHero; kicker.textContent='Erfolg'; title.textContent='Neues Level freigeschaltet'; text.textContent='Weiter zum Spielbrett.'; playSound('levelunlocked'); }
+    pendingUnlockedFromSlot = null;
+    if (data.type === 'escape') {
+      img.src=ASSETS.escapeHero; kicker.textContent=''; title.textContent='Du bist entkommen.'; text.textContent='Scanne einen neuen QR-Code, um es erneut zu versuchen.';
+    }
+    else {
+      img.src=ASSETS.winHero; kicker.textContent='Erfolg'; title.textContent='Neues Level freigeschaltet'; text.textContent='Weiter zum Spielbrett.'; playSound('levelunlocked');
+      const completedSlot = Number(data?.meta?.slot);
+      const nextSlot = completedSlot + 1;
+      if (Number.isInteger(completedSlot) && nextSlot < LEVEL_COUNT) pendingUnlockedFromSlot = completedSlot;
+    }
     show(modal);
   }
 
