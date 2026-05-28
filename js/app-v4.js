@@ -2858,7 +2858,6 @@
     const continueBtn = $('touch4ContinueBtn');
     const countdownEl = $('touch4Countdown');
     const countdownNumEl = $('touch4CountdownNum');
-    const countdownProgressEl = $('touch4CountdownProgress');
     const intro = $('touch4Intro');
     const result = $('touch4Result');
     const resultImage = $('touch4ResultImage');
@@ -2867,10 +2866,15 @@
     const retryBtn = $('touch4RetryBtn');
     const boardBtn = $('touch4BoardBtn');
     const menu = $('touch4Menu');
+    const countdownSegmentEls = () => Array.from(document.querySelectorAll('.touch4-v60-countdown-segment'));
     if (!stage || !grid || !bridge) return;
 
     const TOUCH4_BG = assetUrl('assets/images/minigame4/lava_bg.png');
     const TOUCH4_CARD_BACK = assetUrl('assets/images/minigame4/card_back.png');
+    const TOUCH4_HERO_IDLE = assetUrl('assets/images/minigame4/knight_idle.png');
+    const TOUCH4_HERO_RUN = assetUrl('assets/images/minigame4/knight_run.png');
+    const TOUCH4_HERO_HURT = assetUrl('assets/images/minigame4/knight_hurt.png');
+    const TOUCH4_GAMEOVER_ART = assetUrl('assets/images/minigame4/knight_poked_gameover.png');
     stage.style.setProperty('--touch4-bg', `url("${TOUCH4_BG}")`);
 
     const TOTAL_ROUNDS = 3;
@@ -2902,6 +2906,8 @@
     let face = 'front';
     let timers = [];
     let countdownInterval = null;
+    let heroWalkInterval = null;
+    let heroFrame = 0;
     let finished = false;
     let selected = false;
 
@@ -2916,6 +2922,10 @@
       if (countdownInterval) {
         window.clearInterval(countdownInterval);
         countdownInterval = null;
+      }
+      if (heroWalkInterval) {
+        window.clearInterval(heroWalkInterval);
+        heroWalkInterval = null;
       }
     }
     function shuffleArray(arr) {
@@ -2933,13 +2943,45 @@
     function updateScore() {
       if (scoreEl) scoreEl.textContent = '';
     }
-    function setCountdownProgress(ratio) {
-      if (!countdownProgressEl) return;
-      const safe = Math.max(0, Math.min(1, ratio));
-      const radius = 27;
-      const circumference = 2 * Math.PI * radius;
-      countdownProgressEl.style.strokeDasharray = `${circumference}`;
-      countdownProgressEl.style.strokeDashoffset = `${circumference * (1 - safe)}`;
+    function setHeroSprite(src) {
+      if (hero) hero.src = src;
+    }
+    function setHeroPose(state = 'idle') {
+      if (!hero) return;
+      if (state === 'hurt') {
+        setHeroSprite(TOUCH4_HERO_HURT);
+        return;
+      }
+      if (state === 'run') {
+        setHeroSprite(heroFrame % 2 === 0 ? TOUCH4_HERO_IDLE : TOUCH4_HERO_RUN);
+        return;
+      }
+      setHeroSprite(TOUCH4_HERO_IDLE);
+    }
+    function startHeroWalkCycle() {
+      if (!hero) return;
+      if (heroWalkInterval) window.clearInterval(heroWalkInterval);
+      heroFrame = 0;
+      hero.classList.add('walking');
+      setHeroPose('run');
+      heroWalkInterval = window.setInterval(() => {
+        heroFrame += 1;
+        setHeroPose('run');
+      }, 400);
+    }
+    function stopHeroWalkCycle(endPose = 'idle') {
+      if (heroWalkInterval) {
+        window.clearInterval(heroWalkInterval);
+        heroWalkInterval = null;
+      }
+      if (hero) hero.classList.remove('walking');
+      setHeroPose(endPose);
+    }
+    function setCountdownSegments(activeCount) {
+      const safe = Math.max(0, Math.min(5, activeCount));
+      countdownSegmentEls().forEach((segment, idx) => {
+        segment.classList.toggle('off', idx >= safe);
+      });
     }
     function hideCountdown() {
       if (!countdownEl) return;
@@ -2949,7 +2991,7 @@
       }
       countdownEl.classList.add('hidden');
       if (countdownNumEl) countdownNumEl.textContent = '';
-      setCountdownProgress(0);
+      setCountdownSegments(0);
     }
     function startCountdown(seconds = 5) {
       if (!countdownEl) return;
@@ -2957,20 +2999,22 @@
         window.clearInterval(countdownInterval);
         countdownInterval = null;
       }
-      const start = Date.now();
-      const totalMs = seconds * 1000;
+      let remaining = seconds;
       countdownEl.classList.remove('hidden');
       const tick = () => {
-        const elapsed = Date.now() - start;
-        const remainingMs = Math.max(0, totalMs - elapsed);
-        const remaining = Math.max(0, Math.ceil(remainingMs / 1000));
-        if (countdownNumEl) countdownNumEl.textContent = String(remaining);
-        setCountdownProgress(remainingMs / totalMs);
-        if (remainingMs <= 0) hideCountdown();
+        const safe = Math.max(0, remaining);
+        if (countdownNumEl) countdownNumEl.textContent = String(safe);
+        setCountdownSegments(safe);
+        if (safe <= 0) {
+          hideCountdown();
+          return;
+        }
+        remaining -= 1;
       };
       tick();
-      countdownInterval = window.setInterval(tick, 100);
+      countdownInterval = window.setInterval(tick, 1000);
     }
+
     function buildCardsForRound() {
       const soft = { ...softRounds[roundIndex], id:`soft-${roundIndex}-${Date.now()}` };
       const sharp = sharpCards.map((item, i) => ({ ...item, id:`sharp-${roundIndex}-${i}-${Date.now()}` }));
@@ -3164,14 +3208,14 @@
         }
       });
     }
-    function heroMoveTo(targetX, done) {
+    function heroMoveTo(targetX, done, duration = 740) {
       if (!hero) { done(); return; }
-      hero.classList.add('walking');
+      startHeroWalkCycle();
       hero.style.left = `${targetX}px`;
       schedule(() => {
-        hero.classList.remove('walking');
+        stopHeroWalkCycle('idle');
         done();
-      }, 740);
+      }, duration);
     }
     function continuePath() {
       if (finished || phase === 'walking') return;
@@ -3208,7 +3252,8 @@
           if (card.type === 'sharp') {
             setMessage('', 'bad');
             playSound('hurt');
-            schedule(() => showResult(false), 650);
+            stopHeroWalkCycle('hurt');
+            schedule(() => showResult(false), 2000);
           } else {
             i += 1;
             schedule(() => walkAcross(i), 220);
@@ -3224,14 +3269,14 @@
       clearTimers();
       stopSound('minigame_background');
       if (resultImage) {
-        resultImage.src = won ? ASSETS.text.gewonnen : ASSETS.text.verloren;
-        resultImage.alt = won ? 'Gewonnen' : 'Verloren';
+        resultImage.src = won ? ASSETS.text.gewonnen : TOUCH4_GAMEOVER_ART;
+        resultImage.alt = won ? 'Gewonnen' : 'Sir Nervus wurde von spitzen Gegenständen gepikst';
         show(resultImage);
       }
       resultTitle.textContent = won ? 'Gewonnen' : 'Verloren';
       resultText.textContent = won
         ? 'Alle drei Brückenkarten waren weich. Sir Nervus konnte sicher über die Grube laufen.'
-        : 'Mindestens eine Brückenkarte war spitz. Die Haut meldet: Das ist gefährlich.';
+        : 'Mindestens eine Brückenkarte war spitz. Sir Nervus wurde gepikst – das ist für die Haut ein Warnsignal.';
       playSound(won ? 'win' : 'lose');
       retryBtn.textContent = won ? 'Zurück zum Spielfeld' : 'Neuer Versuch';
       retryBtn.onclick = () => {
@@ -3247,6 +3292,8 @@
       show(boardBtn);
       show(result);
     }
+
+    setHeroPose('idle');
 
     $('touch4StartBtn')?.addEventListener('click', () => { hide(intro); beginRound(); });
     $('touch4SettingsBtn')?.addEventListener('click', () => show(menu));

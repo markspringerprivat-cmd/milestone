@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Tastsinn · Fühlbrücke</title>
-  <link rel="stylesheet" href="./css/style.css?v=v4_66_touch_bridge_logic_20260528">
-  <link rel="stylesheet" href="./css/v4.css?v=v4_66_touch_bridge_logic_20260528">
-  <script src="./js/app-v4.js?v=v4_66_touch_bridge_logic_20260528" defer></script>
+  <link rel="stylesheet" href="./css/style.css?v=v4_69_touch_bridge_knight_anim_20260528">
+  <link rel="stylesheet" href="./css/v4.css?v=v4_69_touch_bridge_knight_anim_20260528">
+  <script src="./js/app-v4.js?v=v4_69_touch_bridge_knight_anim_20260528" defer></script>
 </head>
 <body data-page="minigame4">
   <main class="touch4-v60-page" aria-label="Tastsinn-Fühlbrücke">
@@ -14,8 +14,8 @@
       <button id="touch4SettingsBtn" class="mini-settings-btn" type="button" aria-label="Optionen">⚙</button>
 
       <header class="touch4-v60-header">
-        <div id="touch4Score" class="touch4-v60-score">Brücke: 0 / 3</div>
-        <div id="touch4Message" class="touch4-v60-message">Merke dir die weiche Karte.</div>
+        <div id="touch4Score" class="touch4-v60-score"></div>
+        <div id="touch4Message" class="touch4-v60-message"></div>
       </header>
 
       <section class="touch4-v60-board-wrap" aria-label="Kartenfeld">
@@ -23,15 +23,18 @@
       </section>
 
       <div id="touch4Countdown" class="touch4-v60-countdown hidden" aria-live="polite">
-        <svg class="touch4-v60-countdown-ring" viewBox="0 0 64 64" aria-hidden="true">
-          <circle class="touch4-v60-countdown-ring-bg" cx="32" cy="32" r="27"></circle>
-          <circle id="touch4CountdownProgress" class="touch4-v60-countdown-ring-fg" cx="32" cy="32" r="27"></circle>
-        </svg>
+        <div id="touch4CountdownSegments" class="touch4-v60-countdown-segments" aria-hidden="true">
+          <span class="touch4-v60-countdown-segment seg-1"></span>
+          <span class="touch4-v60-countdown-segment seg-2"></span>
+          <span class="touch4-v60-countdown-segment seg-3"></span>
+          <span class="touch4-v60-countdown-segment seg-4"></span>
+          <span class="touch4-v60-countdown-segment seg-5"></span>
+        </div>
         <span id="touch4CountdownNum" class="touch4-v60-countdown-num">5</span>
       </div>
 
       <section class="touch4-v60-pit-scene" aria-label="Fallgrube">
-        <img id="touch4Hero" class="touch4-v60-hero" src="./assets/images/minigame/mini_walk_right_1.png" alt="Sir Nervus">
+        <img id="touch4Hero" class="touch4-v60-hero" src="./assets/images/minigame4/knight_idle.png" alt="Sir Nervus">
         <div class="touch4-v60-left-ground" aria-hidden="true"></div>
         <div class="touch4-v60-gap" aria-hidden="true"></div>
         <div class="touch4-v60-right-ground" aria-hidden="true"></div>

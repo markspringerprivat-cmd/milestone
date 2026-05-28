@@ -4867,3 +4867,69 @@ body[data-page="board"] .node-locked .level-circle{
     min-height:74px;
   }
 }
+
+
+/* === v69 Ritter-Frames, 5er-Countdown und Verlustbild === */
+.touch4-v60-result .mini-result-img,
+.mini-result-card .mini-result-img{
+  max-width:min(72vw, 320px);
+  width:100%;
+  height:auto;
+}
+.touch4-v60-countdown-ring,
+.touch4-v60-countdown-ring-bg,
+.touch4-v60-countdown-ring-fg{
+  display:none !important;
+}
+.touch4-v60-countdown-segments{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+}
+.touch4-v60-countdown-segment{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:16px;
+  height:10px;
+  margin-left:-8px;
+  margin-top:-5px;
+  border-radius:999px;
+  background:linear-gradient(180deg, #ffe89b 0%, #ffbf28 100%);
+  box-shadow:0 0 8px rgba(255,191,40,.65);
+  transform-origin:0 0;
+  opacity:1;
+  transition:opacity .18s ease, filter .18s ease;
+}
+.touch4-v60-countdown-segment.off{
+  opacity:.15;
+  filter:grayscale(1);
+}
+.touch4-v60-countdown-segment.seg-1{transform:rotate(-90deg) translateY(-31px);}
+.touch4-v60-countdown-segment.seg-2{transform:rotate(-18deg) translateY(-31px);}
+.touch4-v60-countdown-segment.seg-3{transform:rotate(54deg) translateY(-31px);}
+.touch4-v60-countdown-segment.seg-4{transform:rotate(126deg) translateY(-31px);}
+.touch4-v60-countdown-segment.seg-5{transform:rotate(198deg) translateY(-31px);}
+.touch4-v60-hero{
+  image-rendering:auto;
+}
+.touch4-v60-hero.walking{
+  animation:touch4V60Walk .22s ease-in-out infinite alternate;
+}
+@media(max-width:560px){
+  .touch4-v60-countdown-segment.seg-1{transform:rotate(-90deg) translateY(-28px);}
+  .touch4-v60-countdown-segment.seg-2{transform:rotate(-18deg) translateY(-28px);}
+  .touch4-v60-countdown-segment.seg-3{transform:rotate(54deg) translateY(-28px);}
+  .touch4-v60-countdown-segment.seg-4{transform:rotate(126deg) translateY(-28px);}
+  .touch4-v60-countdown-segment.seg-5{transform:rotate(198deg) translateY(-28px);}
+}
+.touch4-v60-score:empty,
+.touch4-v60-message:empty{
+  min-width:0 !important;
+  min-height:0 !important;
+  padding:0 !important;
+  border:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  opacity:0 !important;
+}

@@ -412,3 +412,9 @@ Test: `minigame4.html?slot=7&v=66`
 - Platz für den Button "Weg fortsetzen" bleibt immer reserviert.
 - Dadurch bleiben Ritter und Brückentruhen in allen Phasen auf derselben Höhe.
 
+
+## v69
+- Ritter nutzt jetzt Bild 1 als Standardpose und wechselt beim Laufen alle 0,4 Sekunden zwischen Bild 1 und Bild 2.
+- Beim Schaden wird Bild 3 zwei Sekunden lang angezeigt, bevor die Niederlage erscheint.
+- Countdown wurde auf einen 5-teiligen Ring umgestellt.
+- Neues kindgerechtes Verlustbild mit Ritter und spitzen Gegenständen hinzugefügt.
