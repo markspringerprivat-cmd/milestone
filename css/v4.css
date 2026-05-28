@@ -4847,3 +4847,23 @@ body[data-page="board"] .node-locked .level-circle{
     bottom:138px!important;
   }
 }
+
+/* === v68 Stabilisierung: Ritter und Brückentruhen immer auf gleicher Höhe === */
+.touch4-v60-continue{
+  display:block;
+  min-height:76px;
+  opacity:1;
+  visibility:visible;
+  transition:opacity .22s ease, visibility .22s ease;
+}
+.touch4-v60-continue.hidden{
+  display:block !important;
+  opacity:0 !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
+}
+@media(max-width:560px){
+  .touch4-v60-continue{
+    min-height:74px;
+  }
+}

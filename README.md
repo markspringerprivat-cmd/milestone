@@ -407,3 +407,8 @@ Test: `minigame4.html?slot=7&v=66`
 - Countdown zwischen Kartenfeld und Grube platziert.
 - Neuer kreisförmiger Countdown mit visuellem Ablauf im Uhrzeigersinn.
 
+
+## v68
+- Platz für den Button "Weg fortsetzen" bleibt immer reserviert.
+- Dadurch bleiben Ritter und Brückentruhen in allen Phasen auf derselben Höhe.
+
