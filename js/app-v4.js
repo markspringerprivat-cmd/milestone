@@ -103,7 +103,7 @@
     { x: 31.0, y: 90.2 },
     { x: 66.8, y: 84.6 },
     { x: 70.5, y: 67.2 },
-    { x: 31.5, y: 63.8 },
+    { x: 31.5, y: 66.8 },
     { x: 22.8, y: 51.8 },
     { x: 62.2, y: 47.6 },
     { x: 66.4, y: 36.2 },
@@ -499,7 +499,7 @@
       const isActive = index === active;
       const isLocked = index > state.revealedMax;
       const isUnlockTarget = pendingUnlockAnimation?.to === index;
-      btn.className = `map-token v4-node level-circle-node ${isPlaceholderSlot(index) ? 'placeholder-node' : 'quiz-node'} ${done ? 'node-done' : isActive ? 'node-active' : 'node-locked'} ${isUnlockTarget ? 'unlock-incoming' : ''}`;
+      btn.className = `map-token v4-node level-circle-node biome-${stageIndexForSlot(index)} ${isPlaceholderSlot(index) ? 'placeholder-node' : 'quiz-node'} ${done ? 'node-done' : isActive ? 'node-active' : 'node-locked'} ${isUnlockTarget ? 'unlock-incoming' : ''}`;
       btn.style.left = `${pos.x}%`;
       btn.style.top = `${pos.y}%`;
       btn.setAttribute('aria-label', `Level ${index + 1}${done ? ', abgeschlossen' : isActive ? ', verfügbar' : ', gesperrt'}`);
@@ -1261,7 +1261,7 @@
     });
 
     const tutorial = document.createElement('div');
-    tutorial.className = 'mini-tutorial-modal hidden';
+    tutorial.className = 'mini-tutorial-modal stage-popup hidden';
     tutorial.setAttribute('role', 'dialog');
     tutorial.setAttribute('aria-modal', 'true');
     tutorial.setAttribute('aria-labelledby', 'miniTutorialTitle');
@@ -1277,6 +1277,9 @@
         </div>
       </div>`;
     stage.appendChild(tutorial);
+    tutorial.style.setProperty('--popup-bg', `url("${popupBgForMeta(miniMeta)}")`);
+    applyStagePopup(resultModal, miniMeta);
+    applyStagePopup(menu, miniMeta);
     const tutorialStartBtn = tutorial.querySelector('#miniTutorialStartBtn');
     const tutorialBackBtn = tutorial.querySelector('#miniTutorialBackBtn');
 
@@ -1756,10 +1759,17 @@
     const menu = $('memory2Menu');
     const menuBoardBtn = $('memory2MenuBoardBtn');
     const closeMenuBtn = $('memory2CloseMenuBtn');
+    const introModal = $('memory2Intro');
+    const introStartBtn = $('memory2IntroStartBtn');
+    const introBoardBtn = $('memory2IntroBoardBtn');
     if (!stage || !grid || !hero || !jumpBtn || !projectile) return;
 
     const slot = Number(qs('slot')) || 3;
-    stage.style.setProperty('--memory2-bg', `url("${assetUrl('assets/images/popups/popup_sand.webp')}")`);
+    const memory2Meta = { slot, isBoss:false };
+    stage.style.setProperty('--memory2-bg', `url("${popupBgForMeta(memory2Meta)}")`);
+    applyStagePopup(introModal, memory2Meta);
+    applyStagePopup(resultModal, memory2Meta);
+    applyStagePopup(menu, memory2Meta);
 
     const CARD_BACK = assetUrl('assets/images/minigame2/karte.png');
     const MEMORY_SYMBOLS = [
@@ -2126,10 +2136,17 @@
     updateMetrics();
     setHero(HERO.stand);
     hero.style.visibility = 'hidden';
-    loopActive = true;
-    last = performance.now();
-    scheduleNextProjectile(last + 900);
-    requestTick();
+    function startMemory2Game() {
+      hide(introModal);
+      loopActive = true;
+      last = performance.now();
+      scheduleNextProjectile(last + 900);
+      requestTick();
+    }
+    introStartBtn?.addEventListener('click', startMemory2Game);
+    introBoardBtn?.addEventListener('click', () => { stopLoop(); stopSound('minigame_background'); location.href = pageUrl('index.html'); });
+    show(introModal);
+    introStartBtn?.focus?.();
   }
 
 
@@ -2160,6 +2177,7 @@
     const topConnector = $('pipe3TopConnector');
     const introModal = $('pipe3Intro');
     const introStartBtn = $('pipe3IntroStartBtn');
+    const introBoardBtn = $('pipe3IntroBoardBtn');
     const resultModal = $('pipe3Result');
     const resultImage = $('pipe3ResultImage');
     const resultExtraImage = $('pipe3ResultExtraImage');
@@ -2174,7 +2192,11 @@
     if (!stage || !board || !valveBtn || !hero || !ogreZone || !ogre || !banana) return;
 
     const slot = Number(qs('slot')) || 5;
-    stage.style.setProperty('--pipe3-bg', `url("${popupBgForMeta({ slot, isBoss:false })}")`);
+    const pipe3Meta = { slot, isBoss:false };
+    stage.style.setProperty('--pipe3-bg', `url("${popupBgForMeta(pipe3Meta)}")`);
+    applyStagePopup(introModal, pipe3Meta);
+    applyStagePopup(resultModal, pipe3Meta);
+    applyStagePopup(menu, pipe3Meta);
 
     const IMG = {
       V: assetUrl('assets/images/minigame3/pipe_V.png'),
@@ -2859,6 +2881,7 @@
     const countdownEl = $('touch4Countdown');
     const countdownNumEl = $('touch4CountdownNum');
     const intro = $('touch4Intro');
+    const introBoardBtn = $('touch4BoardIntroBtn');
     const result = $('touch4Result');
     const resultImage = $('touch4ResultImage');
     const resultTitle = $('touch4ResultTitle');
@@ -2877,6 +2900,10 @@
     const TOUCH4_HERO_HURT = assetUrl('assets/images/minigame4/knight_hurt.png');
     const TOUCH4_GAMEOVER_ART = assetUrl('assets/images/minigame4/gameover_screen.png');
     stage.style.setProperty('--touch4-bg', `url("${TOUCH4_BG}")`);
+    const touch4Meta = { slot, isBoss:false };
+    applyStagePopup(intro, touch4Meta);
+    applyStagePopup(result, touch4Meta);
+    applyStagePopup(menu, touch4Meta);
 
     const TOTAL_ROUNDS = 3;
     const SHOW_MS = 5000;
@@ -3300,6 +3327,7 @@
     setHeroPose('idle');
 
     $('touch4StartBtn')?.addEventListener('click', () => { hide(intro); beginRound(); });
+    introBoardBtn?.addEventListener('click', () => { stopSound('minigame_background'); location.href = pageUrl('index.html'); });
     $('touch4SettingsBtn')?.addEventListener('click', () => show(menu));
     $('touch4CloseMenuBtn')?.addEventListener('click', () => hide(menu));
     $('touch4MenuBoardBtn')?.addEventListener('click', () => { stopSound('minigame_background'); location.href = pageUrl('index.html'); });

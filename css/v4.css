@@ -5042,3 +5042,71 @@ body[data-page="board"] .node-locked .level-circle{
     min-height:238px!important;
   }
 }
+
+/* === v71 Biomefarben für Levelkreise und einheitliche Tutorial-Popups === */
+body[data-page="board"] .level-circle-node.biome-0 .level-circle{
+  background:radial-gradient(circle at 30% 25%, #a8f5ad 0%, #42ba58 46%, #17833b 100%)!important;
+}
+body[data-page="board"] .level-circle-node.biome-1 .level-circle{
+  background:radial-gradient(circle at 30% 25%, #ffe7a7 0%, #d9a445 48%, #9b6a1f 100%)!important;
+}
+body[data-page="board"] .level-circle-node.biome-2 .level-circle{
+  background:radial-gradient(circle at 30% 25%, #a9ecff 0%, #51aef5 48%, #2162d6 100%)!important;
+}
+body[data-page="board"] .level-circle-node.biome-3 .level-circle{
+  background:radial-gradient(circle at 30% 25%, #ffb28f 0%, #ef4d35 48%, #9e1515 100%)!important;
+}
+body[data-page="board"] .level-circle-node.biome-4 .level-circle{
+  background:radial-gradient(circle at 30% 25%, #ffffff 0%, #eef7ff 52%, #bfd9f3 100%)!important;
+}
+body[data-page="board"] .level-circle-node.biome-4 .level-circle-number{
+  color:#36506f!important;
+  text-shadow:0 1px 0 rgba(255,255,255,.65)!important;
+}
+body[data-page="board"] .level-circle-node.biome-5 .level-circle{
+  background:radial-gradient(circle at 30% 25%, #e0b7ff 0%, #9f63ff 48%, #5932b8 100%)!important;
+}
+body[data-page="board"] .level-circle-node.node-active .level-circle{
+  box-shadow:0 0 0 5px rgba(255,215,79,.62), 0 14px 30px rgba(6,19,58,.5), inset 0 3px 8px rgba(255,255,255,.28)!important;
+}
+body[data-page="board"] .level-circle-node.node-locked .level-circle{
+  opacity:.92!important;
+}
+.mini-tutorial-modal.stage-popup{
+  background:rgba(4,7,14,.52)!important;
+}
+.mini-tutorial-modal.stage-popup .mini-tutorial-card{
+  position:relative!important;
+  isolation:isolate!important;
+  overflow:hidden!important;
+  background:rgba(255,250,240,.78)!important;
+  border-color:rgba(255,255,255,.78)!important;
+}
+.mini-tutorial-modal.stage-popup .mini-tutorial-card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-2;
+  background:var(--popup-bg) center/cover no-repeat;
+  opacity:.95;
+}
+.mini-tutorial-modal.stage-popup .mini-tutorial-card::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  background:rgba(255,250,240,.72);
+  backdrop-filter:blur(1px);
+}
+.modal.stage-popup .mini-tutorial-card{
+  text-align:left!important;
+}
+.modal.stage-popup .mini-tutorial-kicker,
+.mini-tutorial-modal.stage-popup .mini-tutorial-kicker{
+  display:inline-block!important;
+  padding:6px 12px!important;
+  border-radius:999px!important;
+  background:rgba(255,244,184,.9)!important;
+  color:#745200!important;
+  font-weight:950!important;
+}

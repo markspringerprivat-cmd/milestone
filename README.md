@@ -424,3 +424,10 @@ Test: `minigame4.html?slot=7&v=66`
 - Rittergrafiken und Game-Over-Bild wurden von hellem Schachbrett-Hintergrund befreit.
 - Countdown zeigt wieder nur Zahl mit orangem Rahmen, ohne Segment-/Ring-Animation.
 - Countdown bleibt platzstabil, damit Ritter und Truhen unten nicht mitspringen.
+
+## v71 – Biome-Popups und Levelkreis-Farben
+
+- Levelkreise nach Biomen eingefärbt: Grünland grün, Wüste sandfarben, Eiswelt blau, Lava rot, Himmel weiß, Weltall/Krone lila.
+- Level 4 wurde auf der Wüstenebene etwas weiter nach unten gesetzt.
+- Minigame-Popups werden jetzt an das Biom des jeweiligen Level-Slots angepasst.
+- Die Minigame-Anleitungen wurden auf denselben Aufbau gebracht: Sinn, kurze Spielanleitung, Lernhinweis, Spiel starten / Zurück zum Spielfeld.
