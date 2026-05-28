@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Riechen · Duftrohre</title>
+  <link rel="stylesheet" href="./css/style.css?v=v4_62_board_unlock_20260528">
+  <link rel="stylesheet" href="./css/v4.css?v=v4_62_board_unlock_20260528">
+  <script src="./js/app-v4.js?v=v4_62_board_unlock_20260528" defer></script>
+</head>
+<body data-page="minigame3">
+  <main class="pipe3-page" aria-label="Riechsinn-Rohrsystem">
+    <section class="pipe3-stage" aria-label="Duftrohr-Spielfeld">
+      <button id="pipe3SettingsBtn" class="mini-settings-btn" type="button" aria-label="Optionen">⚙</button>
+
+      <div class="pipe3-topbar pipe3-topbar-lite">
+        <div id="pipe3Hud" class="memory2-hud pipe3-hidden-utility" aria-live="polite"></div>
+        <div id="pipe3Lives" class="memory2-lives" aria-label="Lebensanzeige"></div>
+      </div>
+
+      <div class="pipe3-source pipe3-source-hidden" aria-hidden="true"></div>
+
+      <div id="pipe3OgreZone" class="pipe3-ogre-zone" aria-label="Oger-Angriff">
+        <img id="pipe3Ogre" class="pipe3-ogre" src="./assets/images/minigame3/ogre_idle.png" alt="Oger">
+        <img id="pipe3SprayOverlay" class="pipe3-spray-overlay hidden" src="./assets/images/minigame3/spray_overlay.png" alt="" aria-hidden="true">
+        <img id="pipe3Banana" class="pipe3-banana hidden" src="./assets/images/minigame3/banana_peel.png" alt="" aria-hidden="true">
+      </div>
+
+      <div id="pipe3BoardShell" class="pipe3-board-shell" aria-label="Rohrsystem">
+        <img id="pipe3TopConnector" class="pipe3-connector top pipe3-flakon-top" src="./assets/images/minigame3/flakon_tile.png" alt="Flakon-Endstück" aria-hidden="true">
+        <div id="pipe3Board" class="pipe3-board" aria-label="Rohrkacheln"></div>
+        <div class="pipe3-valve-pad pipe3-valve-cell" aria-label="Ventilfeld">
+          <img class="pipe3-no-pipe" src="./assets/images/minigame3/no_pipe.png" alt="">
+          <button id="pipe3ValveBtn" class="pipe3-valve-btn" type="button" aria-label="Ventil drehen und Duftleitung prüfen">
+            <img id="pipe3ValveImg" src="./assets/images/minigame3/ventil.png" alt="">
+          </button>
+        </div>
+      </div>
+
+      <button id="pipe3HintBtn" class="pipe3-hint-btn" type="button" aria-label="Tipp anzeigen">Tipp</button>
+
+      <div class="pipe3-bottom-zone" aria-label="Sir Nervus">
+        <div class="pipe3-hero-wrap">
+          <img id="pipe3Hero" class="pipe3-hero" src="./assets/images/minigame/mini_walk_right_1.png" alt="Sir Nervus">
+          <div class="pipe3-guard-ui" aria-label="Schutzsteuerung">
+            <button id="pipe3GuardBtn" class="pipe3-guard-btn pipe3-guard-btn-bar" type="button" aria-label="Schutz aktivieren">
+              <span id="pipe3GuardBarFill" class="pipe3-guard-bar-fill" aria-hidden="true"></span>
+              <span class="pipe3-guard-btn-label">Schutz</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="pipe3Intro" class="modal">
+        <div class="modal-card pipe3-intro-card">
+          <h2>Duftrohre & Duftschutz</h2>
+          <p>Geruch entsteht, wenn Duftmoleküle durch die Luft wandern und in deine Nase gelangen. Manche Düfte sind angenehm, andere warnen uns vor Verdorbenem oder Gefahren.</p>
+          <p>Im Spiel leitest du die Duftmoleküle durch alle vier Filter bis zum Flakon. Gleichzeitig wirft der Oger stinkende Bananenschalen. Schütze Sir Nervus im richtigen Moment mit dem Schild!</p>
+          <div class="modal-actions">
+            <button id="pipe3IntroStartBtn" class="game-btn" type="button">Spiel starten</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="pipe3Menu" class="modal hidden">
+        <div class="modal-card">
+          <h2>Pause</h2>
+          <p>Ordne die Rohre so, dass der Duft vom Ventil durch alle vier Luftreinigungsfilter bis zum Flakon gelangt. Nutze den Schutz-Button, um Sir Nervus vor Bananenschalen zu schützen.</p>
+          <div class="modal-actions">
+            <button id="pipe3CloseMenuBtn" class="game-btn" type="button">Weiter</button>
+            <button id="pipe3MenuBoardBtn" class="game-btn muted" type="button">Zurück zum Spielfeld</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="pipe3Result" class="modal hidden">
+        <div class="modal-card mini-result-card">
+          <img id="pipe3ResultImage" class="mini-result-img hidden" alt="">
+          <h2 id="pipe3ResultTitle">Ergebnis</h2>
+          <p id="pipe3ResultText"></p>
+          <img id="pipe3ResultExtraImage" class="mini-result-img hidden pipe3-result-extra" alt="">
+          <div class="modal-actions">
+            <button id="pipe3RetryBtn" class="game-btn" type="button">Nochmal versuchen</button>
+            <button id="pipe3BoardBtn" class="game-btn muted" type="button">Zurück zum Spielfeld</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
