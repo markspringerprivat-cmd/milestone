@@ -4759,3 +4759,91 @@ body[data-page="board"] .node-locked .level-circle{
 .touch4-v60-bridge-slot.revealed.soft .touch4-v60-card-img{
   filter:drop-shadow(0 0 12px rgba(89,255,115,.82)) drop-shadow(0 7px 8px rgba(0,0,0,.25));
 }
+
+/* === v67 Tastsinn-Brücke: Countdown mittig unter dem Raster, Brücke/Helden höher === */
+.touch4-v60-countdown{
+  position:relative!important;
+  justify-self:center;
+  align-self:center;
+  left:auto!important;
+  bottom:auto!important;
+  transform:none!important;
+  margin-top:-6px;
+  margin-bottom:-4px;
+  width:74px;
+  min-width:74px;
+  height:74px;
+  padding:0;
+  border:0!important;
+  border-radius:50%;
+  background:transparent!important;
+  box-shadow:none!important;
+  display:grid;
+  place-items:center;
+}
+.touch4-v60-countdown.hidden{display:none!important;}
+.touch4-v60-countdown-ring{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  transform:rotate(-90deg);
+}
+.touch4-v60-countdown-ring-bg{
+  fill:rgba(12,18,34,.72);
+  stroke:rgba(255,236,179,.22);
+  stroke-width:6;
+}
+.touch4-v60-countdown-ring-fg{
+  fill:none;
+  stroke:#ffd54a;
+  stroke-width:6;
+  stroke-linecap:round;
+  filter:drop-shadow(0 0 8px rgba(255,193,7,.7));
+}
+.touch4-v60-countdown-num{
+  position:relative;
+  z-index:1;
+  display:grid;
+  place-items:center;
+  width:56px;
+  height:56px;
+  border-radius:50%;
+  background:rgba(14,20,36,.9);
+  color:#ffe082;
+  font-size:31px;
+  font-weight:950;
+  box-shadow:inset 0 2px 4px rgba(255,255,255,.08), 0 10px 20px rgba(0,0,0,.28);
+}
+.touch4-v60-pit-scene{
+  margin-top:-4px;
+}
+.touch4-v60-bridge{
+  top:30px!important;
+  height:90px!important;
+}
+.touch4-v60-hero{
+  bottom:146px!important;
+}
+@media(max-width:560px){
+  .touch4-v60-countdown{
+    margin-top:-8px;
+    margin-bottom:-2px;
+    width:68px;
+    min-width:68px;
+    height:68px;
+  }
+  .touch4-v60-countdown-num{
+    width:52px;
+    height:52px;
+    font-size:28px;
+  }
+  .touch4-v60-bridge{
+    top:34px!important;
+    height:86px!important;
+  }
+  .touch4-v60-hero{
+    width:min(23vw, 76px)!important;
+    bottom:138px!important;
+  }
+}

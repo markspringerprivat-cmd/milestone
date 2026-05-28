@@ -401,3 +401,9 @@ Test: `minigame3.html?v=51`
 - Wenn alle Gegenstände weich sind, läuft Sir Nervus rechts aus dem Bildschirm.
 
 Test: `minigame4.html?slot=7&v=66`
+
+## v67
+- Ritter und Brückentruhen im Fallgrubenbereich nach oben verschoben.
+- Countdown zwischen Kartenfeld und Grube platziert.
+- Neuer kreisförmiger Countdown mit visuellem Ablauf im Uhrzeigersinn.
+

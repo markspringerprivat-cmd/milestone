@@ -22,6 +22,14 @@
         <div id="touch4Grid" class="touch4-v60-grid" aria-label="3 mal 3 Kartenfeld"></div>
       </section>
 
+      <div id="touch4Countdown" class="touch4-v60-countdown hidden" aria-live="polite">
+        <svg class="touch4-v60-countdown-ring" viewBox="0 0 64 64" aria-hidden="true">
+          <circle class="touch4-v60-countdown-ring-bg" cx="32" cy="32" r="27"></circle>
+          <circle id="touch4CountdownProgress" class="touch4-v60-countdown-ring-fg" cx="32" cy="32" r="27"></circle>
+        </svg>
+        <span id="touch4CountdownNum" class="touch4-v60-countdown-num">5</span>
+      </div>
+
       <section class="touch4-v60-pit-scene" aria-label="Fallgrube">
         <img id="touch4Hero" class="touch4-v60-hero" src="./assets/images/minigame/mini_walk_right_1.png" alt="Sir Nervus">
         <div class="touch4-v60-left-ground" aria-hidden="true"></div>
@@ -30,7 +38,6 @@
         <div id="touch4Bridge" class="touch4-v60-bridge" aria-label="Gewählte Brückenkarten"></div>
       </section>
 
-      <div id="touch4Countdown" class="touch4-v60-countdown hidden" aria-live="polite">5</div>
       <button id="touch4ContinueBtn" class="game-btn touch4-v60-continue hidden" type="button">Weg fortsetzen</button>
 
       <div id="touch4Intro" class="modal">

@@ -2857,6 +2857,8 @@
     const messageEl = $('touch4Message');
     const continueBtn = $('touch4ContinueBtn');
     const countdownEl = $('touch4Countdown');
+    const countdownNumEl = $('touch4CountdownNum');
+    const countdownProgressEl = $('touch4CountdownProgress');
     const intro = $('touch4Intro');
     const result = $('touch4Result');
     const resultImage = $('touch4ResultImage');
@@ -2899,6 +2901,7 @@
     let phase = 'intro';
     let face = 'front';
     let timers = [];
+    let countdownInterval = null;
     let finished = false;
     let selected = false;
 
@@ -2910,6 +2913,10 @@
     function clearTimers() {
       timers.forEach(id => window.clearTimeout(id));
       timers = [];
+      if (countdownInterval) {
+        window.clearInterval(countdownInterval);
+        countdownInterval = null;
+      }
     }
     function shuffleArray(arr) {
       for (let i = arr.length - 1; i > 0; i -= 1) {
@@ -2926,23 +2933,43 @@
     function updateScore() {
       if (scoreEl) scoreEl.textContent = '';
     }
+    function setCountdownProgress(ratio) {
+      if (!countdownProgressEl) return;
+      const safe = Math.max(0, Math.min(1, ratio));
+      const radius = 27;
+      const circumference = 2 * Math.PI * radius;
+      countdownProgressEl.style.strokeDasharray = `${circumference}`;
+      countdownProgressEl.style.strokeDashoffset = `${circumference * (1 - safe)}`;
+    }
     function hideCountdown() {
       if (!countdownEl) return;
+      if (countdownInterval) {
+        window.clearInterval(countdownInterval);
+        countdownInterval = null;
+      }
       countdownEl.classList.add('hidden');
-      countdownEl.textContent = '';
+      if (countdownNumEl) countdownNumEl.textContent = '';
+      setCountdownProgress(0);
     }
     function startCountdown(seconds = 5) {
       if (!countdownEl) return;
-      let remaining = seconds;
-      countdownEl.textContent = String(remaining);
-      countdownEl.classList.remove('hidden');
-      for (let i = 1; i <= seconds; i += 1) {
-        schedule(() => {
-          remaining = Math.max(0, seconds - i);
-          countdownEl.textContent = String(remaining);
-          if (remaining <= 0) hideCountdown();
-        }, i * 1000);
+      if (countdownInterval) {
+        window.clearInterval(countdownInterval);
+        countdownInterval = null;
       }
+      const start = Date.now();
+      const totalMs = seconds * 1000;
+      countdownEl.classList.remove('hidden');
+      const tick = () => {
+        const elapsed = Date.now() - start;
+        const remainingMs = Math.max(0, totalMs - elapsed);
+        const remaining = Math.max(0, Math.ceil(remainingMs / 1000));
+        if (countdownNumEl) countdownNumEl.textContent = String(remaining);
+        setCountdownProgress(remainingMs / totalMs);
+        if (remainingMs <= 0) hideCountdown();
+      };
+      tick();
+      countdownInterval = window.setInterval(tick, 100);
     }
     function buildCardsForRound() {
       const soft = { ...softRounds[roundIndex], id:`soft-${roundIndex}-${Date.now()}` };
