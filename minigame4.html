@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Tastsinn · Fühlbrücke</title>
+  <link rel="stylesheet" href="./css/style.css?v=v4_60_touch_bridge_rewrite_20260527">
+  <link rel="stylesheet" href="./css/v4.css?v=v4_60_touch_bridge_rewrite_20260527">
+  <script src="./js/app-v4.js?v=v4_60_touch_bridge_rewrite_20260527" defer></script>
+</head>
+<body data-page="minigame4">
+  <main class="touch4-v60-page" aria-label="Tastsinn-Fühlbrücke">
+    <section class="touch4-v60-stage" aria-label="Tastsinn-Merkspiel">
+      <button id="touch4SettingsBtn" class="mini-settings-btn" type="button" aria-label="Optionen">⚙</button>
+
+      <header class="touch4-v60-header">
+        <div id="touch4Score" class="touch4-v60-score">Brücke: 0 / 3</div>
+        <div id="touch4Message" class="touch4-v60-message">Merke dir die weiche Karte.</div>
+      </header>
+
+      <section class="touch4-v60-board-wrap" aria-label="Kartenfeld">
+        <div id="touch4Grid" class="touch4-v60-grid" aria-label="3 mal 3 Kartenfeld"></div>
+      </section>
+
+      <section class="touch4-v60-pit-scene" aria-label="Fallgrube">
+        <img id="touch4Hero" class="touch4-v60-hero" src="./assets/images/minigame/mini_walk_right_1.png" alt="Sir Nervus">
+        <div class="touch4-v60-left-ground" aria-hidden="true"></div>
+        <div class="touch4-v60-gap" aria-hidden="true"></div>
+        <div class="touch4-v60-right-ground" aria-hidden="true"></div>
+        <div id="touch4Bridge" class="touch4-v60-bridge" aria-label="Gewählte Brückenkarten"></div>
+      </section>
+
+      <button id="touch4ContinueBtn" class="game-btn touch4-v60-continue hidden" type="button">Weg fortsetzen</button>
+
+      <div id="touch4Intro" class="modal">
+        <div class="modal-card touch4-intro-card">
+          <h2>Tastsinn: Fühlbrücke</h2>
+          <p>Merke dir die weiche Karte. Nach dem Verdecken werden die Karten gemischt. Wähle dann eine Karte aus, um die Brücke über die Grube zu bauen.</p>
+          <p>Runde 1: Kissen, Runde 2: Wolke, Runde 3: Teddy. Liegt am Ende ein spitzer Gegenstand in der Brücke, verliert Sir Nervus.</p>
+          <div class="modal-actions">
+            <button id="touch4StartBtn" class="game-btn" type="button">Spiel starten</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="touch4Menu" class="modal hidden">
+        <div class="modal-card">
+          <h2>Pause</h2>
+          <p>Wähle nach jedem Mischen eine verdeckte Karte. Drei Karten bilden die Brücke. Nur weiche Gegenstände sind sicher.</p>
+          <div class="modal-actions">
+            <button id="touch4CloseMenuBtn" class="game-btn" type="button">Weiter</button>
+            <button id="touch4MenuBoardBtn" class="game-btn muted" type="button">Zurück zum Spielfeld</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="touch4Result" class="modal hidden">
+        <div class="modal-card mini-result-card">
+          <img id="touch4ResultImage" class="mini-result-img hidden" alt="">
+          <h2 id="touch4ResultTitle">Ergebnis</h2>
+          <p id="touch4ResultText"></p>
+          <div class="modal-actions">
+            <button id="touch4RetryBtn" class="game-btn" type="button">Nochmal versuchen</button>
+            <button id="touch4BoardBtn" class="game-btn muted" type="button">Zurück zum Spielfeld</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
