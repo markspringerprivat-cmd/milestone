@@ -2866,7 +2866,9 @@
     const menu = $('touch4Menu');
     if (!stage || !grid || !bridge) return;
 
-    stage.style.setProperty('--touch4-bg', `url("${popupBgForMeta({ slot, isBoss:false })}")`);
+    const TOUCH4_BG = assetUrl('assets/images/minigame4/lava_bg.png');
+    const TOUCH4_CARD_BACK = assetUrl('assets/images/minigame4/card_back.png');
+    stage.style.setProperty('--touch4-bg', `url("${TOUCH4_BG}")`);
 
     const TOTAL_ROUNDS = 3;
     const SHOW_MS = 5000;
@@ -2931,7 +2933,7 @@
       selected = false;
     }
     function cardInner(card, showFront=true) {
-      if (!showFront) return '<span class="touch4-v60-card-back">?</span>';
+      if (!showFront) return `<img class="touch4-v60-card-back-img" src="${TOUCH4_CARD_BACK}" alt="Kartenrückseite">`;
       return `<img class="touch4-v60-card-img" src="${card.img}" alt="${card.label}">`;
     }
     function renderGrid() {

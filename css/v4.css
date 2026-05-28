@@ -4181,7 +4181,7 @@ body[data-page="minigame"]{
   display:grid;
   grid-template-rows:auto auto auto 1fr auto;
   gap:8px;
-  background-image:linear-gradient(rgba(255,255,255,.18),rgba(255,255,255,.10)), var(--touch4-bg);
+  background-image:linear-gradient(rgba(12,9,8,.14),rgba(12,9,8,.06)), var(--touch4-bg);
   background-size:cover;
   background-position:center;
   box-shadow:0 0 0 1px rgba(0,0,0,.08) inset;
@@ -4231,14 +4231,13 @@ body[data-page="minigame"]{
   align-items:center;
 }
 .touch4-v60-grid{
-  width:min(80vw, 390px, 58svh);
+  width:min(76vw, 360px, 54svh);
   aspect-ratio:1/1;
   display:grid;
   grid-template-columns:repeat(3, 1fr);
   grid-template-rows:repeat(3, 1fr);
-  border:4px solid #111;
-  background:rgba(255,255,255,.78);
-  box-shadow:0 8px 20px rgba(0,0,0,.18);
+  gap:6px;
+  background:transparent;
 }
 .touch4-v60-card{
   position:relative;
@@ -4247,60 +4246,49 @@ body[data-page="minigame"]{
   display:flex;
   align-items:center;
   justify-content:center;
-  border:2px solid #111;
-  background:rgba(250,250,244,.92);
+  border:none;
+  background:transparent;
   cursor:pointer;
-  padding:6px;
+  padding:2px;
   appearance:none;
   -webkit-appearance:none;
   touch-action:manipulation;
   transition:transform .55s ease, filter .25s ease, opacity .25s ease, box-shadow .25s ease;
-  overflow:hidden;
+  overflow:visible;
 }
 .touch4-v60-card:disabled{
   cursor:default;
 }
 .touch4-v60-card.front{
-  background:linear-gradient(145deg, rgba(255,255,255,.96), rgba(240,236,222,.92));
+  background:transparent;
 }
 .touch4-v60-card.back{
-  background:linear-gradient(135deg, #bfc8d4, #eef3f8 46%, #9faabc);
-  box-shadow:inset 0 0 0 5px rgba(52,73,94,.28), inset 0 0 18px rgba(20,33,45,.18);
+  background:transparent;
+  box-shadow:none;
 }
 .touch4-v60-card.back::before{
-  content:'';
-  position:absolute;
-  inset:12%;
-  border:3px solid rgba(255,255,255,.62);
-  border-radius:14px;
+  content:none;
 }
 .touch4-v60-card-img{
-  max-width:86%;
-  max-height:86%;
+  max-width:92%;
+  max-height:92%;
   object-fit:contain;
   pointer-events:none;
-  filter:drop-shadow(0 4px 5px rgba(0,0,0,.18));
+  filter:drop-shadow(0 6px 8px rgba(0,0,0,.24));
 }
-.touch4-v60-card-back{
-  position:relative;
-  z-index:2;
-  width:42%;
-  aspect-ratio:1/1;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  border-radius:50%;
-  background:rgba(255,255,255,.78);
-  border:3px solid rgba(43,62,80,.34);
-  color:#40546a;
-  font-weight:900;
-  font-size:28px;
-  text-shadow:0 1px 0 #fff;
+.touch4-v60-card-back-img{
+  max-width:92%;
+  max-height:92%;
+  object-fit:cover;
+  border-radius:16px;
+  pointer-events:none;
+  filter:drop-shadow(0 6px 8px rgba(0,0,0,.26));
 }
 .touch4-v60-card.swap-highlight{
   z-index:20;
   filter:brightness(1.08);
-  box-shadow:0 0 0 5px rgba(255,211,55,.92), 0 12px 26px rgba(0,0,0,.24);
+  box-shadow:0 0 0 4px rgba(255,211,55,.92), 0 12px 26px rgba(0,0,0,.24);
+  border-radius:18px;
 }
 .touch4-v60-card.swap-move{
   transform:translate(var(--swap-x), var(--swap-y)) scale(1.08);
@@ -4420,11 +4408,10 @@ body[data-page="minigame"]{
     gap:6px;
   }
   .touch4-v60-grid{
-    width:min(86vw, 360px, 52svh);
-    border-width:3px;
+    width:min(82vw, 334px, 50svh);
+    gap:5px;
   }
-  .touch4-v60-card{border-width:1.5px;padding:4px}
-  .touch4-v60-card-back{font-size:22px;border-width:2px}
+  .touch4-v60-card{padding:2px}
   .touch4-v60-pit-scene{min-height:190px}
   .touch4-v60-left-ground,
   .touch4-v60-right-ground{top:50px;border-top-width:4px}
