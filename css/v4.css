@@ -4734,3 +4734,28 @@ body[data-page="board"] .node-locked .level-circle{
     bottom:106px!important;
   }
 }
+
+/* === v66 Tastsinn-Brücke: keine Kopfbeschriftung, neue Lauf- und Mischlogik === */
+.touch4-v60-header{
+  display:none!important;
+}
+.touch4-v60-stage{
+  grid-template-rows:auto 1fr auto auto!important;
+}
+.touch4-v60-message,
+.touch4-v60-score{
+  display:none!important;
+}
+.touch4-v60-hero{
+  transition:left .62s cubic-bezier(.22,.75,.22,1), transform .2s ease!important;
+}
+.touch4-v60-bridge-slot.revealed.soft,
+.touch4-v60-bridge-slot.revealed.sharp{
+  box-shadow:none!important;
+}
+.touch4-v60-bridge-slot.revealed.sharp .touch4-v60-card-img{
+  filter:drop-shadow(0 0 12px rgba(255,47,47,.88)) drop-shadow(0 7px 8px rgba(0,0,0,.25));
+}
+.touch4-v60-bridge-slot.revealed.soft .touch4-v60-card-img{
+  filter:drop-shadow(0 0 12px rgba(89,255,115,.82)) drop-shadow(0 7px 8px rgba(0,0,0,.25));
+}

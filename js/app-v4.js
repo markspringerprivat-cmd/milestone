@@ -2873,8 +2873,8 @@
 
     const TOTAL_ROUNDS = 3;
     const SHOW_MS = 5000;
-    const SWAPS = 5;
-    const SWAP_MS = 920;
+    const SWAP_COUNTS = [5, 6, 7];
+    const BASE_SWAP_MS = 920;
     const FLY_MS = 680;
 
     const softRounds = [
@@ -2924,7 +2924,7 @@
       messageEl.className = `touch4-v60-message ${kind}`;
     }
     function updateScore() {
-      if (scoreEl) scoreEl.textContent = `Brücke: ${bridgeCards.length} / ${TOTAL_ROUNDS}`;
+      if (scoreEl) scoreEl.textContent = '';
     }
     function hideCountdown() {
       if (!countdownEl) return;
@@ -2988,8 +2988,7 @@
         bridge.appendChild(slotEl);
       }
     }
-    function adjacentPair() {
-      const i = Math.floor(Math.random() * 9);
+    function neighborsOf(i) {
       const row = Math.floor(i / 3);
       const col = i % 3;
       const neighbors = [];
@@ -2997,7 +2996,35 @@
       if (col < 2) neighbors.push(i + 1);
       if (row > 0) neighbors.push(i - 3);
       if (row < 2) neighbors.push(i + 3);
-      return [i, neighbors[Math.floor(Math.random() * neighbors.length)]];
+      return neighbors;
+    }
+    function adjacentPairFor(kind = 'any') {
+      const all = Array.from({ length: 9 }, (_, i) => i);
+      const candidates = [];
+      all.forEach(i => {
+        neighborsOf(i).forEach(j => {
+          if (j < i) return;
+          const a = cards[i];
+          const b = cards[j];
+          if (!a || !b) return;
+          if (kind === 'soft' && a.type !== 'soft' && b.type !== 'soft') return;
+          if (kind === 'sharp' && (a.type !== 'sharp' || b.type !== 'sharp')) return;
+          candidates.push([i, j]);
+        });
+      });
+      if (!candidates.length && kind !== 'any') return adjacentPairFor('any');
+      return candidates[Math.floor(Math.random() * candidates.length)] || [0, 1];
+    }
+    function makeMixPlan() {
+      const total = SWAP_COUNTS[roundIndex] || 5;
+      const plan = [
+        ...Array(Math.min(3, total)).fill('soft'),
+        ...Array(Math.max(0, total - 3)).fill('sharp')
+      ];
+      return shuffleArray(plan);
+    }
+    function currentSwapMs() {
+      return Math.round(BASE_SWAP_MS * Math.pow(0.9, roundIndex));
     }
     function animateSwap(i, j, done) {
       const cells = grid.querySelectorAll('.touch4-v60-card');
@@ -3021,18 +3048,19 @@
         done();
       }, 620);
     }
-    function mixCards(step = 0) {
+    function mixCards(step = 0, plan = makeMixPlan()) {
       if (finished || phase !== 'mix') return;
-      if (step >= SWAPS) {
+      if (step >= plan.length) {
         phase = 'choice';
         face = 'back';
         renderGrid();
-        setMessage('Wähle eine Karte.', 'good');
+        setMessage('', 'good');
         return;
       }
-      setMessage(`Die Karten werden gemischt … ${step + 1} / ${SWAPS}`);
-      const [i, j] = adjacentPair();
-      animateSwap(i, j, () => schedule(() => mixCards(step + 1), Math.max(180, SWAP_MS - 620)));
+      setMessage('');
+      const [i, j] = adjacentPairFor(plan[step]);
+      const swapMs = currentSwapMs();
+      animateSwap(i, j, () => schedule(() => mixCards(step + 1, plan), Math.max(120, swapMs - 620)));
     }
     function beginRound() {
       if (finished || roundIndex >= TOTAL_ROUNDS) return;
@@ -3044,7 +3072,7 @@
       updateScore();
       startCountdown(5);
       const softName = ['Kissen', 'Wolke', 'Teddy'][roundIndex];
-      setMessage(`Runde ${roundIndex + 1}: Merke dir den weichen Gegenstand (${softName}).`);
+      setMessage('');
       schedule(() => {
         if (finished) return;
         hideCountdown();
@@ -3092,7 +3120,7 @@
       selected = true;
       hideCountdown();
       phase = 'selected';
-      setMessage('Die Karte wird verdeckt in die Brücke gelegt.');
+      setMessage('');
       playSound('collect');
       const cell = grid.querySelector(`.touch4-v60-card[data-index="${index}"]`);
       animateToBridge(cell, card, () => {
@@ -3101,10 +3129,10 @@
         renderBridge();
         roundIndex += 1;
         if (bridgeCards.length >= TOTAL_ROUNDS) {
-          setMessage('Die Brücke ist voll. Drücke „Weg fortsetzen“ und Sir Nervus prüft die Karten.');
+          setMessage('');
           show(continueBtn);
         } else {
-          setMessage('Nächste Runde. Es wird wieder neu gemischt.');
+          setMessage('');
           schedule(beginRound, 900);
         }
       });
@@ -3122,37 +3150,46 @@
       if (finished || phase === 'walking') return;
       phase = 'walking';
       hide(continueBtn);
-      setMessage('Sir Nervus läuft über die Brücke und prüft jede Karte.');
+      setMessage('');
       const pitScene = document.querySelector('.touch4-v60-pit-scene');
-      const slots = Array.from(bridge.querySelectorAll('.touch4-v60-bridge-slot'));
-      if (!pitScene || !slots.length) return;
+      if (!pitScene) return;
       const sceneRect = pitScene.getBoundingClientRect();
-      let i = 0;
-      function step() {
-        if (i >= bridgeCards.length) {
-          const right = document.querySelector('.touch4-v60-right-ground')?.getBoundingClientRect();
-          const x = right ? (right.left - sceneRect.left + 8) : sceneRect.width - 70;
-          heroMoveTo(x, () => showResult(true));
+      const gapRect = document.querySelector('.touch4-v60-gap')?.getBoundingClientRect();
+      const edgeX = gapRect ? Math.max(0, gapRect.left - sceneRect.left - 42) : sceneRect.width * 0.24;
+
+      function revealAll(index = 0) {
+        if (index >= bridgeCards.length) {
+          schedule(() => walkAcross(0), 360);
           return;
         }
-        const slotRect = slots[i].getBoundingClientRect();
-        const x = slotRect.left - sceneRect.left + slotRect.width * 0.5 - 30;
+        renderBridge(index);
+        playSound('flip');
+        schedule(() => revealAll(index + 1), 520);
+      }
+
+      function walkAcross(i = 0) {
+        const currentSlots = Array.from(bridge.querySelectorAll('.touch4-v60-bridge-slot'));
+        if (i >= bridgeCards.length) {
+          const exitX = sceneRect.width + 28;
+          heroMoveTo(exitX, () => showResult(true));
+          return;
+        }
+        const slotRect = currentSlots[i]?.getBoundingClientRect();
+        const x = slotRect ? (slotRect.left - sceneRect.left + slotRect.width * 0.5 - 30) : sceneRect.width * 0.5;
         heroMoveTo(x, () => {
-          renderBridge(i);
-          playSound('flip');
           const card = bridgeCards[i];
           if (card.type === 'sharp') {
-            setMessage('Autsch! Dieser Gegenstand ist spitz. Der Weg ist nicht sicher.', 'bad');
+            setMessage('', 'bad');
             playSound('hurt');
-            schedule(() => showResult(false), 850);
+            schedule(() => showResult(false), 650);
           } else {
-            setMessage('Weich. Sir Nervus kann weitergehen.', 'good');
             i += 1;
-            schedule(step, 620);
+            schedule(() => walkAcross(i), 220);
           }
         });
       }
-      step();
+
+      heroMoveTo(edgeX, () => schedule(() => revealAll(0), 260));
     }
     function showResult(won) {
       if (finished) return;

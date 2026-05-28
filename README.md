@@ -388,3 +388,16 @@ Test: `minigame3.html?v=51`
 - Weicher Gegenstand blinkt während der Merken-Phase mit goldenem Rahmen.
 - Countdown von 5 Sekunden während der Merken-Phase ergänzt.
 - Übergang von Gegenständen zu Truhen geglättet.
+
+
+## v66 – Tastsinn-Brücke: Mischlogik und Ritterlauf
+
+- Runde 1 mischt 5-mal, Runde 2 6-mal, Runde 3 7-mal.
+- Pro Runde werden 3 Mischvorgänge sicher mit der weichen Karte ausgeführt; die übrigen Mischvorgänge tauschen spitze Karten.
+- Mischgeschwindigkeit: Runde 1 normal, Runde 2 10% schneller, Runde 3 nochmal 10% schneller.
+- Kopftexte „Brücke 0/3“ und „Wähle eine Karte“ werden optisch ausgeblendet.
+- Beim Fortsetzen läuft Sir Nervus erst an die Grubenkante, danach werden alle Truhen nacheinander aufgedeckt.
+- Anschließend läuft Sir Nervus über die Brücke und verliert erst beim Betreten eines spitzen Gegenstands.
+- Wenn alle Gegenstände weich sind, läuft Sir Nervus rechts aus dem Bildschirm.
+
+Test: `minigame4.html?slot=7&v=66`
