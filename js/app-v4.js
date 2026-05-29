@@ -5,7 +5,7 @@
   const BATTLE_STORE = 'koenigreichSinneV4Battle';
   const RETURN_STORE = 'koenigreichSinneV4BoardReturn';
   const SOUND_STORE = 'koenigreichSinneV4Muted';
-  const STATE_VERSION = 'v4_72_space_board_market_locks_keys';
+  const STATE_VERSION = 'v4_73_space_board_biome_levels';
   const APP_ROOT = new URL('./', document.baseURI);
   const pageUrl = target => new URL(target, APP_ROOT).href;
   const assetUrl = target => new URL(target, APP_ROOT).href;
@@ -130,6 +130,14 @@
     boss:      { id:'boss', label:'Kronenwelt', stageIndex:5, board:{ x:50.0, y:18.0 }, lock:'assets/images/ui/lock.png', key:'' }
   };
   const LOCK_RENDER_ORDER = ['riechen', 'hoeren', 'sehen', 'schmecken', 'fuehlen', 'boss'];
+  const BIOME_LEVEL_PLAN = {
+    riechen: [5, 4],
+    hoeren: [9, 2],
+    sehen: [3, 0],
+    schmecken: [1, 6],
+    fuehlen: [7, 8],
+    boss: [10, 11]
+  };
   const stageIndexForSlot = slot => { const senseId = SLOT_SENSE_MAP[Number(slot)] || 'boss'; return BIOME_BY_SENSE[senseId]?.stageIndex ?? 5; };
   const slotSenseId = slot => SLOT_SENSE_MAP[Number(slot)] || 'boss';
   const biomeForSenseId = senseId => BIOME_BY_SENSE[senseId] || BIOME_BY_SENSE.boss;
@@ -278,7 +286,7 @@
   }
 
   function blankFlags() { return { sehen:false, hoeren:false, riechen:false, schmecken:false, fuehlen:false, boss:false }; }
-  function defaultState() { return { stateVersion:STATE_VERSION, started:false, slots:Array(LEVEL_COUNT).fill(null), completed:Array(LEVEL_COUNT).fill(false), bossCompleted:false, heroIndex:null, introUsed:false, revealedMax:0, keysFound:blankFlags(), removedLocks:blankFlags() }; }
+  function defaultState() { return { stateVersion:STATE_VERSION, started:false, slots:Array(LEVEL_COUNT).fill(null), completed:Array(LEVEL_COUNT).fill(false), bossCompleted:false, heroIndex:null, introUsed:false, revealedMax:0, keysFound:blankFlags(), removedLocks:blankFlags(), activeBiome:null }; }
   function normalizeState(raw) {
     const base = defaultState();
     if (!raw || raw.stateVersion !== STATE_VERSION) return base;
@@ -303,6 +311,7 @@
       if (state.completed[slot]) state.keysFound[id] = true;
     });
     if (Object.values(state.keysFound).slice(0, 5).every(Boolean)) state.keysFound.boss = true;
+    if (!state.activeBiome || !BIOME_LEVEL_PLAN[state.activeBiome] || BIOME_LEVEL_PLAN[state.activeBiome].every(slot => state.completed[slot])) state.activeBiome = null;
     return state;
   }
   function getState() {
@@ -310,8 +319,11 @@
   }
   function setState(state) { localStorage.setItem(STORE, JSON.stringify(normalizeState(state))); }
   function currentSlot(state = getState()) { const i = state.completed.findIndex(v => !v); return i < 0 ? LEVEL_COUNT : i; }
-  function activeBoardSlot(state = getState()) { const slot = currentSlot(state); return slot < LEVEL_COUNT && slot <= state.revealedMax ? slot : null; }
-  function allLevelsDone(state = getState()) { return state.completed.length === LEVEL_COUNT && state.completed.every(Boolean); }
+  function biomeLevelPlan(id) { return BIOME_LEVEL_PLAN[id] || []; }
+  function nextSlotForBiome(id, state = getState()) { return biomeLevelPlan(id).find(slot => !state.completed[slot]); }
+  function biomeIsComplete(id, state = getState()) { return biomeLevelPlan(id).length > 0 && biomeLevelPlan(id).every(slot => state.completed[slot]); }
+  function activeBoardSlot(state = getState()) { return state.activeBiome ? nextSlotForBiome(state.activeBiome, state) : null; }
+  function allLevelsDone(state = getState()) { return ['riechen','hoeren','sehen','schmecken','fuehlen'].every(id => biomeIsComplete(id, state)) && biomeIsComplete('boss', state); }
   function usedIds(state = getState()) { return state.slots.filter(Boolean); }
   function dataForMeta(meta) { return meta?.isBoss || meta?.senseId === 'boss' ? BOSS : SENSES[meta?.senseId]; }
   function getQuestionsForId(id) { return QUESTION_BANK[id] || QUESTION_BANK.sehen; }
@@ -327,9 +339,13 @@
     return { id, label: BIOME_BY_SENSE[id].label, image: assetUrl(BIOME_BY_SENSE[id].key) };
   }
   function currentBiomeLabel(state = getState()) {
-    const active = currentSlot(state);
-    const targetSlot = active >= LEVEL_COUNT ? (Number.isInteger(state.heroIndex) ? state.heroIndex : 10) : active;
-    return biomeForSlot(targetSlot).label;
+    if (state.activeBiome && BIOME_BY_SENSE[state.activeBiome]) return BIOME_BY_SENSE[state.activeBiome].label;
+    return 'Marktbrett auswählen';
+  }
+  function levelTypeLabel(slot) {
+    if (!Number.isInteger(slot)) return 'Level';
+    if (slotSenseId(slot) === 'boss') return slot === 10 ? 'Bosskampf' : 'Finale';
+    return isPlaceholderSlot(slot) ? 'Minispiel' : 'Fragen-Level';
   }
   function applyStagePopup(modal, meta) {
     if (!modal) return;
@@ -496,10 +512,8 @@
     market.setAttribute('aria-label', 'Marktbrett öffnen und QR-Code scannen');
     market.innerHTML = `<img src="${assetUrl('assets/images/ui/market_board.png')}" alt="Marktbrett">`;
     market.addEventListener('click', () => {
-      const slot = currentSlot(getState());
-      if (slot >= LEVEL_COUNT) { showOutro(); return; }
-      if (isPlaceholderSlot(slot)) { onLevelNode(slot); return; }
-      openScan(slot);
+      if (allLevelsDone(getState())) { showOutro(); return; }
+      openScan();
     });
     inner.appendChild(market);
 
@@ -550,8 +564,25 @@
 
     const status = document.createElement('div');
     status.className = 'board-biome-status';
-    status.innerHTML = `<strong>Aktives Ziel:</strong> ${esc(currentBiomeLabel(state))}`;
+    const activeSlot = activeBoardSlot(state);
+    status.innerHTML = state.activeBiome && Number.isInteger(activeSlot)
+      ? `<strong>Aktives Ziel:</strong> ${esc(BIOME_BY_SENSE[state.activeBiome].label)} · ${esc(levelTypeLabel(activeSlot))}`
+      : `<strong>Aktives Ziel:</strong> Wähle am Marktbrett ein Biom aus.`;
     inner.appendChild(status);
+
+    if (state.activeBiome && Number.isInteger(activeSlot)) {
+      const node = document.createElement('button');
+      node.type = 'button';
+      node.className = 'board-overlay-btn board-biome-level-btn';
+      node.style.left = `${boardPointForSlot(activeSlot, state).x}%`;
+      node.style.top = `${boardPointForSlot(activeSlot, state).y}%`;
+      node.setAttribute('aria-label', `${BIOME_BY_SENSE[state.activeBiome].label} ${levelTypeLabel(activeSlot)} öffnen`);
+      node.innerHTML = `
+        <span class="board-biome-level-chip">${esc(levelTypeLabel(activeSlot))}</span>
+        <span class="board-biome-level-name">${esc(BIOME_BY_SENSE[state.activeBiome].label)}</span>`;
+      node.addEventListener('click', () => onLevelNode(activeSlot));
+      inner.appendChild(node);
+    }
 
     const hero = document.createElement('button');
     hero.type = 'button';
@@ -579,8 +610,7 @@
     if (introHeroMoving) return;
     introHeroMoving = true;
     renderGuide();
-    const slot = currentSlot(getState());
-    if (slot < LEVEL_COUNT) openScan(slot);
+    openScan();
     introHeroMoving = false;
   }
 
@@ -605,39 +635,41 @@
   }
 
   let scanIndex = null, scanner = null;
-  function activeScanMeta() { return Number.isInteger(scanIndex) ? { slot: scanIndex, isBoss:false } : null; }
-  function openScan(index) {
+  function activeScanMeta() { return null; }
+  function openScan() {
     stopSound('background');
-    scanIndex = index;
+    scanIndex = null;
     $('manualCodeInput').value='';
-    $('scanHelp').textContent = index === BOSS_SLOT ? 'Scanne den Boss-Code, um zur Krone zu reisen.' : 'Scanne einen QR-Code. Sir Nervus reist danach in das passende Biom.';
+    $('scanHelp').textContent = 'Scanne einen QR-Code. Danach erscheint im passenden Biom ein Levelfeld auf der Karte.';
     setScanMessage('');
-    applyStagePopup($('scanModal'), { slot:index, isBoss:false });
+    applyStagePopup($('scanModal'), { slot:(Number.isInteger(getState().heroIndex) ? getState().heroIndex : 6), isBoss:false });
     show($('scanModal'));
     startScanner();
   }
   function closeScan() { stopScanner(); hide($('scanModal')); scanIndex = null; playSound('background', { loop:true, restart:true }); }
   function skipCurrentLevel() {
-    const index = Number.isInteger(scanIndex) ? scanIndex : currentSlot(getState());
-    if (!Number.isInteger(index) || index < 0 || index >= LEVEL_COUNT) return;
+    const state = getState();
+    const slot = state.activeBiome ? nextSlotForBiome(state.activeBiome, state) : null;
+    if (!Number.isInteger(slot)) return;
     stopScanner();
     hide($('scanModal'));
     scanIndex = null;
-    const state = getState();
-    state.completed[index] = true;
-    state.heroIndex = index;
+    state.completed[slot] = true;
+    state.heroIndex = null;
+    if (!nextSlotForBiome(state.activeBiome, state)) state.activeBiome = null;
     setState(state);
     renderBoard();
-    localStorage.setItem(RETURN_STORE, JSON.stringify({ type:'unlocked', meta:{ slot:index, skipped:true } }));
+    localStorage.setItem(RETURN_STORE, JSON.stringify({ type:'unlocked', meta:{ slot, skipped:true, returnHome:true } }));
     applyReturnModal();
   }
   function unlockAllLevels() {
     if (!confirm('Alle Level zum Testen freischalten?')) return;
     const state = getState();
     state.started = true;
-    state.slots = Array.from({ length: LEVEL_COUNT }, (_, i) => SLOT_SENSE_MAP[i] === 'boss' ? 'boss' : (isQrSlot(i) ? SLOT_SENSE_MAP[i] : null));
+    state.slots = Array.from({ length: LEVEL_COUNT }, (_, i) => SLOT_SENSE_MAP[i] === 'boss' ? 'boss' : SLOT_SENSE_MAP[i]);
     state.completed = Array.from({ length: LEVEL_COUNT }, () => true);
-    state.heroIndex = 10;
+    state.heroIndex = null;
+    state.activeBiome = null;
     state.introUsed = true;
     state.revealedMax = LEVEL_COUNT - 1;
     state.keysFound = { sehen:true, hoeren:true, riechen:true, schmecken:true, fuehlen:true, boss:true };
@@ -661,35 +693,49 @@
       scanner = new window.Html5Qrcode('qrReader');
       await scanner.start({ facingMode:'environment' }, { fps: 8, qrbox: { width: 220, height: 220 } }, txt => unlockByCode(txt));
       if (info) info.textContent='';
-    } catch (e) { if (info) info.textContent='Kamera nicht verfügbar. Code bitte manuell eingeben oder zufälligen Gegner wählen.'; }
+    } catch (e) { if (info) info.textContent='Kamera nicht verfügbar. Code bitte manuell eingeben.'; }
   }
   async function stopScanner() { try { if (scanner) await scanner.stop(); } catch (_) {} scanner = null; }
   function unlockByCode(raw) {
-    if (!Number.isInteger(scanIndex)) return;
     const code = String(raw || '').trim().toUpperCase();
-    const candidates = scanIndex === BOSS_SLOT ? [BOSS] : Object.values(SENSES);
+    const candidates = [...Object.values(SENSES), BOSS];
     const entry = candidates.find(s => s.code?.toUpperCase() === code || s.id.toUpperCase() === code.replace('SINNE-',''));
-    if (!entry) { setScanMessage(scanIndex === BOSS_SLOT ? 'Für dieses Feld brauchst du den Boss-Code.' : 'Code nicht erkannt.', true); return; }
-    if (usedIds().includes(entry.id)) { setScanMessage('Dieser Gegner wurde schon verwendet.', true); return; }
-    unlockSense(entry.id, scanIndex);
+    if (!entry) { setScanMessage('Code nicht erkannt.', true); return; }
+    if (entry.id === 'boss') {
+      const state = getState();
+      if (!KEY_ORDER.every(id => state.removedLocks?.[id])) {
+        setScanMessage('Öffne zuerst alle fünf Schlösser unter der Krone.', true);
+        return;
+      }
+    }
+    const state = getState();
+    const nextSlot = nextSlotForBiome(entry.id, state);
+    if (!Number.isInteger(nextSlot)) {
+      setScanMessage(entry.id === 'boss' ? 'Die Kronenwelt ist bereits abgeschlossen.' : 'Dieses Biom ist bereits abgeschlossen.', true);
+      return;
+    }
+    unlockSense(entry.id, nextSlot);
   }
   function unlockRandom() {
-    if (!Number.isInteger(scanIndex)) return;
-    if (scanIndex === BOSS_SLOT) { unlockSense('boss', scanIndex); return; }
-    const unused = Object.keys(SENSES).filter(id => !usedIds().includes(id));
-    if (!unused.length) { setScanMessage('Alle Sinnes-Gegner wurden bereits verwendet.', true); return; }
-    unlockSense(unused[Math.floor(Math.random()*unused.length)], scanIndex);
+    const state = getState();
+    const candidates = Object.keys(SENSES).filter(id => Number.isInteger(nextSlotForBiome(id, state)));
+    if (KEY_ORDER.every(id => state.removedLocks?.[id]) && Number.isInteger(nextSlotForBiome('boss', state))) candidates.push('boss');
+    if (!candidates.length) { setScanMessage('Es gibt kein freies Biom mehr.', true); return; }
+    const pick = candidates[Math.floor(Math.random()*candidates.length)];
+    unlockSense(pick, nextSlotForBiome(pick, state));
   }
   async function unlockSense(id, index) {
     await stopScanner();
     hide($('scanModal'));
     const state = getState();
+    state.started = true;
+    state.activeBiome = id;
+    state.heroIndex = null;
     state.slots[index] = id;
     setState(state);
     renderBoard();
-    await animateHeroTo(index);
     playSound('levelunlocked');
-    showEncounter(id, index);
+    playSound('background', { loop:true, restart:true });
   }
   function showEncounter(id,index) {
     const isBoss = id === 'boss';
@@ -767,13 +813,13 @@
     }
 
     window.pendingLaunch = { placeholder:true, slot:index, meta };
-    $('launchLevelBtn').textContent = index === LEVEL_COUNT - 1 ? 'Zum Finale' : 'Weiter';
+    $('launchLevelBtn').textContent = index === 9 ? 'Hör-Level freischalten' : (index === LEVEL_COUNT - 1 ? 'Zum Finale' : 'Weiter');
     $('encounterBackBtn').textContent = 'Wegrennen';
     $('encounterImage').src = ASSETS.winHero;
     $('encounterImage').alt = 'Sir Nervus macht weiter';
-    $('encounterKicker').textContent = 'Zwischenstation';
-    $('encounterTitle').textContent = `Level ${index + 1}`;
-    $('encounterSpeech').textContent = index === LEVEL_COUNT - 1 ? 'Das Königreich ist gerettet. Weiter zum Abschluss!' : 'Kurze Rast geschafft. Weiter zum nächsten Feld!';
+    $('encounterKicker').textContent = index === 9 ? 'Hör-Station' : 'Zwischenstation';
+    $('encounterTitle').textContent = index === 9 ? 'Lausch genau hin!' : `Level ${index + 1}`;
+    $('encounterSpeech').textContent = index === 9 ? 'Dieses Feld dient als Hör-Station. Nach dem Antippen wird das Fragen-Level im Wüstenland freigeschaltet.' : (index === LEVEL_COUNT - 1 ? 'Das Königreich ist gerettet. Weiter zum Abschluss!' : 'Kurze Rast geschafft. Weiter zum nächsten Feld!');
     show(modal);
   }
 
@@ -816,14 +862,14 @@
   async function completePlaceholder(index) {
     hide($('encounterModal'));
     const state = getState();
+    const senseId = slotSenseId(index);
     state.completed[index] = true;
     state.heroIndex = index;
+    state.activeBiome = nextSlotForBiome(senseId, state) != null ? senseId : null;
     setState(state);
     renderBoard();
     playSound('levelunlocked');
-    const next = currentSlot(getState());
-    if (next >= LEVEL_COUNT) { showOutro(); return; }
-    localStorage.setItem(RETURN_STORE, JSON.stringify({ type:'unlocked', meta:{ slot:index, placeholder:true } }));
+    localStorage.setItem(RETURN_STORE, JSON.stringify({ type:'unlocked', meta:{ slot:index, placeholder:true, senseId, returnHome:true } }));
     applyReturnModal();
   }
   function escapeToBoard(meta) {
@@ -856,12 +902,33 @@
     renderBoard();
   }
 
+  let pendingHomeFromSlot = null;
+  async function animateHeroHome(fromSlot) {
+    const state = getState();
+    state.heroIndex = fromSlot;
+    setState(state);
+    renderBoard();
+    const hero = $('movingHero'); if (!hero) return;
+    await sleep(80);
+    setHeroAt(fromSlot, true);
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      hero.style.transition = 'left 1.6s cubic-bezier(.22,1,.36,1), top 1.6s cubic-bezier(.22,1,.36,1), opacity .25s ease';
+      setHeroAt(null, false);
+      playSound('levelstart');
+    }));
+    await sleep(1650);
+    const latest = getState();
+    latest.heroIndex = null;
+    setState(latest);
+    renderBoard();
+  }
+
   async function handleLevelUnlockedContinue() {
     hide($('levelUnlockedModal'));
     playSound('background', { loop:true, restart:true });
-    const fromSlot = pendingUnlockedFromSlot;
-    pendingUnlockedFromSlot = null;
-    if (Number.isInteger(fromSlot)) await animateBoardUnlockPath(fromSlot);
+    const fromSlot = pendingHomeFromSlot;
+    pendingHomeFromSlot = null;
+    if (Number.isInteger(fromSlot)) await animateHeroHome(fromSlot);
   }
 
   function applyReturnModal() {
@@ -872,6 +939,7 @@
     const img = modal.querySelector('img'); const title=$('levelUnlockedTitle'); const kicker=$('levelUnlockedKicker'); const text=$('levelUnlockedText');
     stopSound('background');
     pendingUnlockedFromSlot = null;
+    pendingHomeFromSlot = data?.meta?.returnHome ? Number(data.meta.slot) : null;
     if (data.type === 'escape') {
       img.src=ASSETS.escapeHero; kicker.textContent=''; title.textContent='Du bist entkommen.'; text.textContent='Scanne am Marktbrett einen neuen QR-Code, um es erneut zu versuchen.';
     }
@@ -881,15 +949,20 @@
       title.textContent = `${data.meta.foundKey.label}-Schlüssel gefunden`;
       text.textContent = 'Tippe jetzt auf das passende Schloss unter der Krone, um es zu öffnen.';
       playSound('levelunlocked');
-      const completedSlot = Number(data?.meta?.slot);
-      const nextSlot = completedSlot + 1;
-      if (Number.isInteger(completedSlot) && nextSlot < LEVEL_COUNT) pendingUnlockedFromSlot = completedSlot;
     }
     else {
-      img.src=ASSETS.winHero; kicker.textContent='Erfolg'; title.textContent='Neues Level freigeschaltet'; text.textContent='Weiter zum Spielbrett.'; playSound('levelunlocked');
-      const completedSlot = Number(data?.meta?.slot);
-      const nextSlot = completedSlot + 1;
-      if (Number.isInteger(completedSlot) && nextSlot < LEVEL_COUNT) pendingUnlockedFromSlot = completedSlot;
+      const senseId = data?.meta?.senseId || slotSenseId(Number(data?.meta?.slot));
+      const nextSlot = nextSlotForBiome(senseId, getState());
+      img.src=ASSETS.winHero;
+      kicker.textContent='Erfolg';
+      if (Number.isInteger(nextSlot)) {
+        title.textContent = 'Nächstes Level sichtbar';
+        text.textContent = `${BIOME_BY_SENSE[senseId]?.label || 'Das Biom'} zeigt jetzt das ${levelTypeLabel(nextSlot)}. Tippe auf das Levelfeld auf der Karte.`;
+      } else {
+        title.textContent = 'Zurück ins Dorf';
+        text.textContent = 'Sir Nervus kehrt in die Dorfmitte zurück. Wähle danach am Marktbrett ein neues Biom aus.';
+      }
+      playSound('levelunlocked');
     }
     show(modal);
     renderBoard();
@@ -1097,10 +1170,12 @@
       state.bossCompleted = true;
       state.completed[meta.slot] = true;
       state.heroIndex = meta.slot;
+      state.activeBiome = nextSlotForBiome('boss', state) != null ? 'boss' : null;
     } else {
       state.completed[meta.slot] = true;
       state.heroIndex = meta.slot;
       const senseId = meta.senseId || slotSenseId(meta.slot);
+      state.activeBiome = nextSlotForBiome(senseId, state) != null ? senseId : null;
       if (KEY_ORDER.includes(senseId) && !state.keysFound[senseId]) {
         state.keysFound[senseId] = true;
         foundKey = keyInfoForSenseId(senseId);
@@ -1108,7 +1183,7 @@
       if (KEY_ORDER.every(id => state.keysFound[id])) state.keysFound.boss = true;
     }
     setState(state); sessionStorage.removeItem(BATTLE_STORE);
-    localStorage.setItem(RETURN_STORE, JSON.stringify({ type:'unlocked', meta: { ...meta, foundKey } }));
+    localStorage.setItem(RETURN_STORE, JSON.stringify({ type:'unlocked', meta: { ...meta, foundKey, returnHome:true } }));
     location.href = pageUrl('index.html');
   }
 
