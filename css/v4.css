@@ -5447,3 +5447,23 @@ body[data-page="board"] .board-biome-level-name{display:none !important;}
   body[data-page="board"] .board-biome-level-btn{width:clamp(38px,10vw,50px) !important;min-height:clamp(38px,10vw,50px) !important;}
   body[data-page="board"] .board-biome-key, body[data-page="board"] .board-key-flyer{width:clamp(38px,10vw,56px) !important;}
 }
+
+/* === v76 stabile Dorfposition + größere Biomschlüssel === */
+body[data-page="board"] .board-biome-key{
+  width:clamp(66px,8.5vw,96px) !important;
+  z-index:9;
+}
+body[data-page="board"] .board-key-flyer{
+  width:auto;
+  max-width:none;
+  transform-origin:center center;
+}
+body[data-page="board"] .board-biome-key img,
+body[data-page="board"] .board-key-flyer img{
+  width:100%;
+  height:auto;
+  display:block;
+}
+@media (max-width:640px){
+  body[data-page="board"] .board-biome-key{width:clamp(54px,12vw,78px) !important;}
+}

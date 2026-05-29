@@ -5,7 +5,7 @@
   const BATTLE_STORE = 'koenigreichSinneV4Battle';
   const RETURN_STORE = 'koenigreichSinneV4BoardReturn';
   const SOUND_STORE = 'koenigreichSinneV4Muted';
-  const STATE_VERSION = 'v4_75_board_key_flight';
+  const STATE_VERSION = 'v4_76_stable_village_layout';
   const APP_ROOT = new URL('./', document.baseURI);
   const pageUrl = target => new URL(target, APP_ROOT).href;
   const assetUrl = target => new URL(target, APP_ROOT).href;
@@ -119,14 +119,14 @@
   const isPlaceholderSlot = index => PLACEHOLDER_LEVELS.includes(Number(index));
   const isQrSlot = index => QR_LEVELS.includes(Number(index));
   const SLOT_SENSE_MAP = { 0:'sehen', 1:'sehen', 2:'hoeren', 3:'hoeren', 4:'riechen', 5:'riechen', 6:'schmecken', 7:'schmecken', 8:'fuehlen', 9:'fuehlen', 10:'boss', 11:'boss' };
-  const HERO_DEFAULT_POINT = { x: 50.1, y: 63.8 };
+  const HERO_DEFAULT_POINT = { x: 50.1, y: 62.3 };
   const KEY_ORDER = ['riechen', 'hoeren', 'sehen', 'schmecken', 'fuehlen'];
   const BIOME_BY_SENSE = {
-    riechen:   { id:'riechen', label:'Grasland', stageIndex:0, board:{ minigame:{ x:31.0, y:56.5 }, question:{ x:18.8, y:48.8 }, key:{ x:26.4, y:55.6 } }, lock:'assets/images/ui/lock_grass.png', key:'assets/images/ui/key_grass.png' },
-    hoeren:    { id:'hoeren', label:'Wüstenland', stageIndex:1, board:{ minigame:{ x:66.8, y:63.0 }, question:{ x:81.5, y:52.2 }, key:{ x:74.8, y:57.0 } }, lock:'assets/images/ui/lock_sand.png', key:'assets/images/ui/key_sand.png' },
-    fuehlen:   { id:'fuehlen', label:'Eisgebiet', stageIndex:2, board:{ minigame:{ x:33.0, y:79.0 }, question:{ x:17.6, y:87.0 }, key:{ x:26.0, y:84.2 } }, lock:'assets/images/ui/lock_ice.png', key:'assets/images/ui/key_ice.png' },
-    schmecken: { id:'schmecken', label:'Lavawelt', stageIndex:3, board:{ minigame:{ x:67.5, y:84.5 }, question:{ x:81.8, y:75.8 }, key:{ x:74.4, y:83.8 } }, lock:'assets/images/ui/lock_lava.png', key:'assets/images/ui/key_lava.png' },
-    sehen:     { id:'sehen', label:'Himmelswelt', stageIndex:4, board:{ minigame:{ x:44.2, y:39.8 }, question:{ x:57.4, y:35.2 }, key:{ x:50.0, y:40.4 } }, lock:'assets/images/ui/lock_cloud.png', key:'assets/images/ui/key_cloud.png' },
+    riechen:   { id:'riechen', label:'Grasland', stageIndex:0, board:{ minigame:{ x:31.0, y:54.2 }, question:{ x:18.8, y:46.8 }, key:{ x:27.4, y:58.0 } }, lock:'assets/images/ui/lock_grass.png', key:'assets/images/ui/key_grass.png' },
+    hoeren:    { id:'hoeren', label:'Wüstenland', stageIndex:1, board:{ minigame:{ x:66.8, y:60.6 }, question:{ x:81.5, y:50.3 }, key:{ x:73.6, y:57.2 } }, lock:'assets/images/ui/lock_sand.png', key:'assets/images/ui/key_sand.png' },
+    fuehlen:   { id:'fuehlen', label:'Eisgebiet', stageIndex:2, board:{ minigame:{ x:33.0, y:76.8 }, question:{ x:17.6, y:84.8 }, key:{ x:25.0, y:79.4 } }, lock:'assets/images/ui/lock_ice.png', key:'assets/images/ui/key_ice.png' },
+    schmecken: { id:'schmecken', label:'Lavawelt', stageIndex:3, board:{ minigame:{ x:67.5, y:82.0 }, question:{ x:81.8, y:73.8 }, key:{ x:74.8, y:79.7 } }, lock:'assets/images/ui/lock_lava.png', key:'assets/images/ui/key_lava.png' },
+    sehen:     { id:'sehen', label:'Himmelswelt', stageIndex:4, board:{ minigame:{ x:44.2, y:37.6 }, question:{ x:57.4, y:33.2 }, key:{ x:50.0, y:39.8 } }, lock:'assets/images/ui/lock_cloud.png', key:'assets/images/ui/key_cloud.png' },
     boss:      { id:'boss', label:'Kronenwelt', stageIndex:5, board:{ minigame:{ x:50.0, y:18.0 }, question:{ x:50.0, y:12.0 }, key:{ x:50.0, y:9.0 } }, lock:'assets/images/ui/lock.png', key:'' }
   };
   const LOCK_RENDER_ORDER = ['riechen', 'hoeren', 'sehen', 'schmecken', 'fuehlen'];
@@ -587,21 +587,24 @@
     flyer.innerHTML = `<img src="${assetUrl(BIOME_BY_SENSE[id].key)}" alt="">`;
     flyer.style.left = `${start.x}px`;
     flyer.style.top = `${start.y}px`;
+    flyer.style.width = `${keyRect.width}px`;
     inner.appendChild(flyer);
     keyEl.classList.add('is-launching');
     lockBtn.classList.add('is-targeted');
     const duration = 820;
     const startTime = performance.now();
     const ease = t => 1 - Math.pow(1 - t, 3);
+    const endScale = Math.max(0.46, Math.min(0.92, lockRect.width / Math.max(1, keyRect.width)));
     function tick(now) {
       const raw = Math.min(1, (now - startTime) / duration);
       const t = ease(raw);
       const omt = 1 - t;
       const x = (omt * omt * start.x) + (2 * omt * t * control.x) + (t * t * end.x);
       const y = (omt * omt * start.y) + (2 * omt * t * control.y) + (t * t * end.y);
+      const scale = 1 - ((1 - endScale) * t);
       flyer.style.left = `${x}px`;
       flyer.style.top = `${y}px`;
-      flyer.style.transform = `translate(-50%, -50%) rotate(${t * 540}deg) scale(${1 - t * 0.18})`;
+      flyer.style.transform = `translate(-50%, -50%) rotate(${t * 540}deg) scale(${scale})`;
       if (raw < 1) requestAnimationFrame(tick);
       else {
         flyer.classList.add('is-burst');
