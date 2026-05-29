@@ -5,7 +5,7 @@
   const BATTLE_STORE = 'koenigreichSinneV4Battle';
   const RETURN_STORE = 'koenigreichSinneV4BoardReturn';
   const SOUND_STORE = 'koenigreichSinneV4Muted';
-  const STATE_VERSION = 'v4_73_space_board_biome_levels';
+  const STATE_VERSION = 'v4_74_qr_biome_routes';
   const APP_ROOT = new URL('./', document.baseURI);
   const pageUrl = target => new URL(target, APP_ROOT).href;
   const assetUrl = target => new URL(target, APP_ROOT).href;
@@ -122,14 +122,14 @@
   const HERO_DEFAULT_POINT = { x: 50.0, y: 68.0 };
   const KEY_ORDER = ['riechen', 'hoeren', 'sehen', 'schmecken', 'fuehlen'];
   const BIOME_BY_SENSE = {
-    riechen:   { id:'riechen', label:'Grasland', stageIndex:0, board:{ x:26.0, y:57.0 }, lock:'assets/images/ui/lock_grass.png', key:'assets/images/ui/key_grass.png' },
-    hoeren:    { id:'hoeren', label:'Wüstenland', stageIndex:1, board:{ x:73.5, y:57.0 }, lock:'assets/images/ui/lock_sand.png', key:'assets/images/ui/key_sand.png' },
-    fuehlen:   { id:'fuehlen', label:'Eisgebiet', stageIndex:2, board:{ x:25.0, y:80.5 }, lock:'assets/images/ui/lock_ice.png', key:'assets/images/ui/key_ice.png' },
-    schmecken: { id:'schmecken', label:'Lavawelt', stageIndex:3, board:{ x:74.5, y:81.0 }, lock:'assets/images/ui/lock_lava.png', key:'assets/images/ui/key_lava.png' },
-    sehen:     { id:'sehen', label:'Himmelswelt', stageIndex:4, board:{ x:50.0, y:42.0 }, lock:'assets/images/ui/lock_cloud.png', key:'assets/images/ui/key_cloud.png' },
-    boss:      { id:'boss', label:'Kronenwelt', stageIndex:5, board:{ x:50.0, y:18.0 }, lock:'assets/images/ui/lock.png', key:'' }
+    riechen:   { id:'riechen', label:'Grasland', stageIndex:0, board:{ minigame:{ x:31.0, y:56.5 }, question:{ x:18.8, y:48.8 }, key:{ x:15.8, y:62.6 } }, lock:'assets/images/ui/lock_grass.png', key:'assets/images/ui/key_grass.png' },
+    hoeren:    { id:'hoeren', label:'Wüstenland', stageIndex:1, board:{ minigame:{ x:66.8, y:63.0 }, question:{ x:81.5, y:52.2 }, key:{ x:85.0, y:62.4 } }, lock:'assets/images/ui/lock_sand.png', key:'assets/images/ui/key_sand.png' },
+    fuehlen:   { id:'fuehlen', label:'Eisgebiet', stageIndex:2, board:{ minigame:{ x:33.0, y:79.0 }, question:{ x:17.6, y:87.0 }, key:{ x:14.2, y:72.8 } }, lock:'assets/images/ui/lock_ice.png', key:'assets/images/ui/key_ice.png' },
+    schmecken: { id:'schmecken', label:'Lavawelt', stageIndex:3, board:{ minigame:{ x:67.5, y:84.5 }, question:{ x:81.8, y:75.8 }, key:{ x:85.0, y:88.4 } }, lock:'assets/images/ui/lock_lava.png', key:'assets/images/ui/key_lava.png' },
+    sehen:     { id:'sehen', label:'Himmelswelt', stageIndex:4, board:{ minigame:{ x:44.2, y:39.8 }, question:{ x:57.4, y:35.2 }, key:{ x:49.8, y:26.4 } }, lock:'assets/images/ui/lock_cloud.png', key:'assets/images/ui/key_cloud.png' },
+    boss:      { id:'boss', label:'Kronenwelt', stageIndex:5, board:{ minigame:{ x:50.0, y:18.0 }, question:{ x:50.0, y:12.0 }, key:{ x:50.0, y:9.0 } }, lock:'assets/images/ui/lock.png', key:'' }
   };
-  const LOCK_RENDER_ORDER = ['riechen', 'hoeren', 'sehen', 'schmecken', 'fuehlen', 'boss'];
+  const LOCK_RENDER_ORDER = ['riechen', 'hoeren', 'sehen', 'schmecken', 'fuehlen'];
   const BIOME_LEVEL_PLAN = {
     riechen: [5, 4],
     hoeren: [9, 2],
@@ -310,8 +310,7 @@
     Object.entries(keySlots).forEach(([id, slot]) => {
       if (state.completed[slot]) state.keysFound[id] = true;
     });
-    if (Object.values(state.keysFound).slice(0, 5).every(Boolean)) state.keysFound.boss = true;
-    if (!state.activeBiome || !BIOME_LEVEL_PLAN[state.activeBiome] || BIOME_LEVEL_PLAN[state.activeBiome].every(slot => state.completed[slot])) state.activeBiome = null;
+    if (!state.activeBiome || !BIOME_LEVEL_PLAN[state.activeBiome] || state.activeBiome === 'boss' || BIOME_LEVEL_PLAN[state.activeBiome].every(slot => state.completed[slot])) state.activeBiome = null;
     return state;
   }
   function getState() {
@@ -322,8 +321,10 @@
   function biomeLevelPlan(id) { return BIOME_LEVEL_PLAN[id] || []; }
   function nextSlotForBiome(id, state = getState()) { return biomeLevelPlan(id).find(slot => !state.completed[slot]); }
   function biomeIsComplete(id, state = getState()) { return biomeLevelPlan(id).length > 0 && biomeLevelPlan(id).every(slot => state.completed[slot]); }
+  function firstSlotForBiome(id) { return biomeLevelPlan(id)[0] ?? null; }
+  function questionSlotForBiome(id) { return biomeLevelPlan(id)[1] ?? null; }
   function activeBoardSlot(state = getState()) { return state.activeBiome ? nextSlotForBiome(state.activeBiome, state) : null; }
-  function allLevelsDone(state = getState()) { return ['riechen','hoeren','sehen','schmecken','fuehlen'].every(id => biomeIsComplete(id, state)) && biomeIsComplete('boss', state); }
+  function allLevelsDone(state = getState()) { return KEY_ORDER.every(id => biomeIsComplete(id, state)); }
   function usedIds(state = getState()) { return state.slots.filter(Boolean); }
   function dataForMeta(meta) { return meta?.isBoss || meta?.senseId === 'boss' ? BOSS : SENSES[meta?.senseId]; }
   function getQuestionsForId(id) { return QUESTION_BANK[id] || QUESTION_BANK.sehen; }
@@ -331,8 +332,16 @@
   function popupBgForMeta(meta) { return POPUP_BACKGROUNDS[stageIndexForSlot(meta?.slot)]; }
   function boardPointForSlot(index, state = getState()) {
     if (!Number.isInteger(index)) return HERO_DEFAULT_POINT;
-    const assigned = state.slots[index];
-    return biomeForSenseId(assigned || slotSenseId(index)).board || HERO_DEFAULT_POINT;
+    const assigned = state.slots[index] || slotSenseId(index);
+    const biome = biomeForSenseId(assigned);
+    const first = firstSlotForBiome(assigned);
+    const second = questionSlotForBiome(assigned);
+    if (Number(index) === first) return biome.board?.minigame || HERO_DEFAULT_POINT;
+    if (Number(index) === second) return biome.board?.question || biome.board?.minigame || HERO_DEFAULT_POINT;
+    return biome.board?.minigame || HERO_DEFAULT_POINT;
+  }
+  function biomeKeyPoint(id) {
+    return BIOME_BY_SENSE[id]?.board?.key || BIOME_BY_SENSE[id]?.board?.question || HERO_DEFAULT_POINT;
   }
   function keyInfoForSenseId(id) {
     if (!id || !BIOME_BY_SENSE[id]?.key) return null;
@@ -500,19 +509,69 @@
     return svg;
   }
 
+  function createBiomeRouteSvg(senseId, activeSlot, state = getState()) {
+    const svgNS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(svgNS, 'svg');
+    svg.setAttribute('viewBox', '0 0 100 100');
+    svg.setAttribute('preserveAspectRatio', 'none');
+    svg.classList.add('board-biome-routes');
+    const first = firstSlotForBiome(senseId);
+    const second = questionSlotForBiome(senseId);
+    const start = HERO_DEFAULT_POINT;
+    const mid = boardPointForSlot(first, state);
+    const end = activeSlot === second ? boardPointForSlot(second, state) : null;
+    const addLine = (from, to) => {
+      const line = document.createElementNS(svgNS, 'line');
+      line.setAttribute('x1', from.x);
+      line.setAttribute('y1', from.y);
+      line.setAttribute('x2', to.x);
+      line.setAttribute('y2', to.y);
+      line.setAttribute('class', 'board-biome-route');
+      svg.appendChild(line);
+    };
+    addLine(start, mid);
+    if (end) addLine(mid, end);
+    return svg;
+  }
+
+  function createLevelNode(slot, state, { active=false, passive=false } = {}) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'board-overlay-btn board-biome-level-btn';
+    if (active) btn.classList.add('is-active');
+    if (passive) btn.classList.add('is-passive');
+    const pos = boardPointForSlot(slot, state);
+    btn.style.left = `${pos.x}%`;
+    btn.style.top = `${pos.y}%`;
+    const senseId = state.slots[slot] || slotSenseId(slot);
+    const title = isPlaceholderSlot(slot) ? 'Minispiel' : 'Fragen';
+    btn.setAttribute('aria-label', `${BIOME_BY_SENSE[senseId]?.label || 'Biom'} ${title}`);
+    btn.innerHTML = `<span class="board-biome-level-chip">${esc(title)}</span><span class="board-biome-level-name">${esc(BIOME_BY_SENSE[senseId]?.label || '')}</span>`;
+    if (!passive) btn.addEventListener('click', () => onLevelNode(slot));
+    return btn;
+  }
+
   function renderBoard() {
     const inner = $('mapInner'); if (!inner) return;
     const state = getState();
     inner.innerHTML = '';
+
+    if (state.activeBiome) {
+      const activeSlot = activeBoardSlot(state);
+      if (Number.isInteger(activeSlot)) inner.appendChild(createBiomeRouteSvg(state.activeBiome, activeSlot, state));
+    }
 
     const market = document.createElement('button');
     market.type = 'button';
     market.id = 'marketScanBtn';
     market.className = 'board-overlay-btn market-board-btn';
     market.setAttribute('aria-label', 'Marktbrett öffnen und QR-Code scannen');
+    if (state.activeBiome && Number.isInteger(activeBoardSlot(state))) market.classList.add('is-disabled');
     market.innerHTML = `<img src="${assetUrl('assets/images/ui/market_board.png')}" alt="Marktbrett">`;
     market.addEventListener('click', () => {
-      if (allLevelsDone(getState())) { showOutro(); return; }
+      const live = getState();
+      if (allLevelsDone(live)) { showOutro(); return; }
+      if (live.activeBiome && Number.isInteger(activeBoardSlot(live))) return;
       openScan();
     });
     inner.appendChild(market);
@@ -526,16 +585,14 @@
       lockBtn.dataset.lockId = id;
       const stateNow = getState();
       const hidden = Boolean(stateNow.removedLocks?.[id]);
-      const unlockable = id === 'boss'
-        ? KEY_ORDER.every(keyId => stateNow.removedLocks?.[keyId])
-        : Boolean(stateNow.keysFound?.[id]);
+      const unlockable = Boolean(stateNow.keysFound?.[id]);
       if (hidden) lockBtn.classList.add('is-hidden');
       if (unlockable && !hidden) lockBtn.classList.add('is-unlockable');
-      const src = id === 'boss' ? assetUrl('assets/images/ui/lock.png') : assetUrl(BIOME_BY_SENSE[id].lock);
-      lockBtn.innerHTML = `<img src="${src}" alt="${esc((BIOME_BY_SENSE[id]?.label || 'Kronenwelt') + '-Schloss')}">`;
+      const src = assetUrl(BIOME_BY_SENSE[id].lock);
+      lockBtn.innerHTML = `<img src="${src}" alt="${esc(BIOME_BY_SENSE[id].label + '-Schloss')}">`;
       lockBtn.addEventListener('click', () => {
         const live = getState();
-        const canUnlock = id === 'boss' ? KEY_ORDER.every(keyId => live.removedLocks?.[keyId]) : Boolean(live.keysFound?.[id]);
+        const canUnlock = Boolean(live.keysFound?.[id]);
         if (!canUnlock || live.removedLocks?.[id]) {
           lockBtn.classList.remove('shake-once');
           void lockBtn.offsetWidth;
@@ -550,38 +607,30 @@
     });
     inner.appendChild(lockRow);
 
-    const keyRow = document.createElement('div');
-    keyRow.className = 'board-key-row';
     KEY_ORDER.forEach(id => {
-      const card = document.createElement('div');
-      card.className = `board-key-chip ${state.keysFound?.[id] ? 'is-found' : 'is-missing'}`;
-      card.innerHTML = `
-        <img src="${assetUrl(BIOME_BY_SENSE[id].key)}" alt="${esc(BIOME_BY_SENSE[id].label + '-Schlüssel')}">
-        <span>${esc(BIOME_BY_SENSE[id].label)}</span>`;
-      keyRow.appendChild(card);
+      if (!state.keysFound?.[id]) return;
+      const key = document.createElement('div');
+      key.className = 'board-biome-key';
+      const pos = biomeKeyPoint(id);
+      key.style.left = `${pos.x}%`;
+      key.style.top = `${pos.y}%`;
+      key.innerHTML = `<img src="${assetUrl(BIOME_BY_SENSE[id].key)}" alt="${esc(BIOME_BY_SENSE[id].label + '-Schlüssel')}">`;
+      inner.appendChild(key);
     });
-    inner.appendChild(keyRow);
 
     const status = document.createElement('div');
     status.className = 'board-biome-status';
     const activeSlot = activeBoardSlot(state);
     status.innerHTML = state.activeBiome && Number.isInteger(activeSlot)
       ? `<strong>Aktives Ziel:</strong> ${esc(BIOME_BY_SENSE[state.activeBiome].label)} · ${esc(levelTypeLabel(activeSlot))}`
-      : `<strong>Aktives Ziel:</strong> Wähle am Marktbrett ein Biom aus.`;
+      : `<strong>Aktives Ziel:</strong> Scanne am Marktbrett ein Biom.`;
     inner.appendChild(status);
 
     if (state.activeBiome && Number.isInteger(activeSlot)) {
-      const node = document.createElement('button');
-      node.type = 'button';
-      node.className = 'board-overlay-btn board-biome-level-btn';
-      node.style.left = `${boardPointForSlot(activeSlot, state).x}%`;
-      node.style.top = `${boardPointForSlot(activeSlot, state).y}%`;
-      node.setAttribute('aria-label', `${BIOME_BY_SENSE[state.activeBiome].label} ${levelTypeLabel(activeSlot)} öffnen`);
-      node.innerHTML = `
-        <span class="board-biome-level-chip">${esc(levelTypeLabel(activeSlot))}</span>
-        <span class="board-biome-level-name">${esc(BIOME_BY_SENSE[state.activeBiome].label)}</span>`;
-      node.addEventListener('click', () => onLevelNode(activeSlot));
-      inner.appendChild(node);
+      const first = firstSlotForBiome(state.activeBiome);
+      const second = questionSlotForBiome(state.activeBiome);
+      if (activeSlot === second && state.completed[first]) inner.appendChild(createLevelNode(first, state, { passive:true }));
+      inner.appendChild(createLevelNode(activeSlot, state, { active:true }));
     }
 
     const hero = document.createElement('button');
@@ -631,7 +680,7 @@
       return;
     }
     if (assigned) { showEncounter(assigned, index); return; }
-    openScan(index);
+    return;
   }
 
   let scanIndex = null, scanner = null;
@@ -672,8 +721,8 @@
     state.activeBiome = null;
     state.introUsed = true;
     state.revealedMax = LEVEL_COUNT - 1;
-    state.keysFound = { sehen:true, hoeren:true, riechen:true, schmecken:true, fuehlen:true, boss:true };
-    state.removedLocks = { sehen:true, hoeren:true, riechen:true, schmecken:true, fuehlen:true, boss:true };
+    state.keysFound = { sehen:true, hoeren:true, riechen:true, schmecken:true, fuehlen:true, boss:false };
+    state.removedLocks = { sehen:true, hoeren:true, riechen:true, schmecken:true, fuehlen:true, boss:false };
     setState(state);
     localStorage.removeItem(RETURN_STORE);
     document.body.classList.remove('board-menu-open');
@@ -698,28 +747,25 @@
   async function stopScanner() { try { if (scanner) await scanner.stop(); } catch (_) {} scanner = null; }
   function unlockByCode(raw) {
     const code = String(raw || '').trim().toUpperCase();
-    const candidates = [...Object.values(SENSES), BOSS];
+    const candidates = [...Object.values(SENSES)];
     const entry = candidates.find(s => s.code?.toUpperCase() === code || s.id.toUpperCase() === code.replace('SINNE-',''));
     if (!entry) { setScanMessage('Code nicht erkannt.', true); return; }
-    if (entry.id === 'boss') {
-      const state = getState();
-      if (!KEY_ORDER.every(id => state.removedLocks?.[id])) {
-        setScanMessage('Öffne zuerst alle fünf Schlösser unter der Krone.', true);
-        return;
-      }
-    }
     const state = getState();
+    if (state.activeBiome && Number.isInteger(activeBoardSlot(state))) {
+      setScanMessage('Schließe zuerst das bereits geöffnete Biom ab.', true);
+      return;
+    }
     const nextSlot = nextSlotForBiome(entry.id, state);
     if (!Number.isInteger(nextSlot)) {
-      setScanMessage(entry.id === 'boss' ? 'Die Kronenwelt ist bereits abgeschlossen.' : 'Dieses Biom ist bereits abgeschlossen.', true);
+      setScanMessage('Dieses Biom ist bereits abgeschlossen.', true);
       return;
     }
     unlockSense(entry.id, nextSlot);
   }
   function unlockRandom() {
+
     const state = getState();
     const candidates = Object.keys(SENSES).filter(id => Number.isInteger(nextSlotForBiome(id, state)));
-    if (KEY_ORDER.every(id => state.removedLocks?.[id]) && Number.isInteger(nextSlotForBiome('boss', state))) candidates.push('boss');
     if (!candidates.length) { setScanMessage('Es gibt kein freies Biom mehr.', true); return; }
     const pick = candidates[Math.floor(Math.random()*candidates.length)];
     unlockSense(pick, nextSlotForBiome(pick, state));
@@ -862,14 +908,20 @@
   async function completePlaceholder(index) {
     hide($('encounterModal'));
     const state = getState();
-    const senseId = slotSenseId(index);
+    const senseId = state.slots[index] || slotSenseId(index);
     state.completed[index] = true;
     state.heroIndex = index;
-    state.activeBiome = nextSlotForBiome(senseId, state) != null ? senseId : null;
+    const nextSlot = nextSlotForBiome(senseId, state);
+    if (Number.isInteger(nextSlot)) {
+      state.activeBiome = senseId;
+      state.slots[nextSlot] = senseId;
+    } else {
+      state.activeBiome = null;
+    }
     setState(state);
     renderBoard();
     playSound('levelunlocked');
-    localStorage.setItem(RETURN_STORE, JSON.stringify({ type:'unlocked', meta:{ slot:index, placeholder:true, senseId, returnHome:true } }));
+    localStorage.setItem(RETURN_STORE, JSON.stringify({ type:'unlocked', meta:{ slot:index, placeholder:true, senseId, returnHome:false } }));
     applyReturnModal();
   }
   function escapeToBoard(meta) {
@@ -903,20 +955,34 @@
   }
 
   let pendingHomeFromSlot = null;
-  async function animateHeroHome(fromSlot) {
+  let pendingHomeViaSlot = null;
+
+  async function animateHeroStep(fromIndex, toIndex) {
+    const hero = $('movingHero'); if (!hero) return;
+    setHeroAt(fromIndex, true);
+    await sleep(80);
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      hero.style.transition = 'left 1.45s cubic-bezier(.22,1,.36,1), top 1.45s cubic-bezier(.22,1,.36,1), opacity .25s ease';
+      setHeroAt(toIndex, false);
+      playSound('levelstart');
+    }));
+    await sleep(1500);
+  }
+
+  async function animateHeroHome(fromSlot, viaSlot = null) {
     const state = getState();
     state.heroIndex = fromSlot;
     setState(state);
     renderBoard();
-    const hero = $('movingHero'); if (!hero) return;
-    await sleep(80);
-    setHeroAt(fromSlot, true);
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      hero.style.transition = 'left 1.6s cubic-bezier(.22,1,.36,1), top 1.6s cubic-bezier(.22,1,.36,1), opacity .25s ease';
-      setHeroAt(null, false);
-      playSound('levelstart');
-    }));
-    await sleep(1650);
+    if (Number.isInteger(viaSlot) && viaSlot !== fromSlot) {
+      await animateHeroStep(fromSlot, viaSlot);
+      const mid = getState();
+      mid.heroIndex = viaSlot;
+      setState(mid);
+      renderBoard();
+      fromSlot = viaSlot;
+    }
+    await animateHeroStep(fromSlot, null);
     const latest = getState();
     latest.heroIndex = null;
     setState(latest);
@@ -927,8 +993,10 @@
     hide($('levelUnlockedModal'));
     playSound('background', { loop:true, restart:true });
     const fromSlot = pendingHomeFromSlot;
+    const viaSlot = pendingHomeViaSlot;
     pendingHomeFromSlot = null;
-    if (Number.isInteger(fromSlot)) await animateHeroHome(fromSlot);
+    pendingHomeViaSlot = null;
+    if (Number.isInteger(fromSlot)) await animateHeroHome(fromSlot, viaSlot);
   }
 
   function applyReturnModal() {
@@ -940,6 +1008,7 @@
     stopSound('background');
     pendingUnlockedFromSlot = null;
     pendingHomeFromSlot = data?.meta?.returnHome ? Number(data.meta.slot) : null;
+    pendingHomeViaSlot = Number.isInteger(data?.meta?.returnVia) ? Number(data.meta.returnVia) : null;
     if (data.type === 'escape') {
       img.src=ASSETS.escapeHero; kicker.textContent=''; title.textContent='Du bist entkommen.'; text.textContent='Scanne am Marktbrett einen neuen QR-Code, um es erneut zu versuchen.';
     }
@@ -947,7 +1016,7 @@
       img.src = data.meta.foundKey.image;
       kicker.textContent = 'Belohnung';
       title.textContent = `${data.meta.foundKey.label}-Schlüssel gefunden`;
-      text.textContent = 'Tippe jetzt auf das passende Schloss unter der Krone, um es zu öffnen.';
+      text.textContent = 'Der Schlüssel erscheint jetzt im Biom. Tippe danach oben auf das passende Schloss.';
       playSound('levelunlocked');
     }
     else {
@@ -956,11 +1025,11 @@
       img.src=ASSETS.winHero;
       kicker.textContent='Erfolg';
       if (Number.isInteger(nextSlot)) {
-        title.textContent = 'Nächstes Level sichtbar';
-        text.textContent = `${BIOME_BY_SENSE[senseId]?.label || 'Das Biom'} zeigt jetzt das ${levelTypeLabel(nextSlot)}. Tippe auf das Levelfeld auf der Karte.`;
+        title.textContent = 'Fragen-Level sichtbar';
+        text.textContent = `${BIOME_BY_SENSE[senseId]?.label || 'Das Biom'} zeigt jetzt das Fragen-Level. Tippe auf das neue runde Feld im selben Biom.`;
       } else {
         title.textContent = 'Zurück ins Dorf';
-        text.textContent = 'Sir Nervus kehrt in die Dorfmitte zurück. Wähle danach am Marktbrett ein neues Biom aus.';
+        text.textContent = 'Sir Nervus läuft jetzt erst zum Minispiel-Feld zurück und dann ins Dorf.';
       }
       playSound('levelunlocked');
     }
@@ -1170,20 +1239,23 @@
       state.bossCompleted = true;
       state.completed[meta.slot] = true;
       state.heroIndex = meta.slot;
-      state.activeBiome = nextSlotForBiome('boss', state) != null ? 'boss' : null;
+      state.activeBiome = null;
     } else {
       state.completed[meta.slot] = true;
       state.heroIndex = meta.slot;
       const senseId = meta.senseId || slotSenseId(meta.slot);
-      state.activeBiome = nextSlotForBiome(senseId, state) != null ? senseId : null;
-      if (KEY_ORDER.includes(senseId) && !state.keysFound[senseId]) {
+      const nextSlot = nextSlotForBiome(senseId, state);
+      state.activeBiome = Number.isInteger(nextSlot) ? senseId : null;
+      if (biomeIsComplete(senseId, state) && KEY_ORDER.includes(senseId) && !state.keysFound[senseId]) {
         state.keysFound[senseId] = true;
         foundKey = keyInfoForSenseId(senseId);
       }
-      if (KEY_ORDER.every(id => state.keysFound[id])) state.keysFound.boss = true;
     }
     setState(state); sessionStorage.removeItem(BATTLE_STORE);
-    localStorage.setItem(RETURN_STORE, JSON.stringify({ type:'unlocked', meta: { ...meta, foundKey, returnHome:true } }));
+    const senseId = meta.senseId || slotSenseId(meta.slot);
+    const firstSlot = firstSlotForBiome(senseId);
+    const shouldReturn = !meta.isBoss && !Number.isInteger(nextSlotForBiome(senseId, state));
+    localStorage.setItem(RETURN_STORE, JSON.stringify({ type:'unlocked', meta: { ...meta, foundKey, returnHome:shouldReturn, returnVia: shouldReturn ? firstSlot : null } }));
     location.href = pageUrl('index.html');
   }
 

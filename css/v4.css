@@ -5285,3 +5285,101 @@ body[data-page="board"] .board-lock-btn.shake-once{animation:v72Shake .36s ease;
   body[data-page="board"] .board-key-chip{width:clamp(54px,16vw,74px);}
   body[data-page="board"] .board-biome-status{top:55%;font-size:.68rem;max-width:78%;text-align:center;}
 }
+
+/* === v74 QR-Biome-Routen und Karten-Schlüssel === */
+body[data-page="board"] .market-board-btn{
+  left:1.8% !important;
+  bottom:1.6% !important;
+  width:clamp(108px,15vw,178px) !important;
+}
+body[data-page="board"] .market-board-btn.is-disabled{
+  opacity:.72;
+  filter:grayscale(.18) drop-shadow(0 0 10px rgba(255,220,140,.28)) drop-shadow(0 6px 14px rgba(0,0,0,.30));
+}
+body[data-page="board"] .board-lock-row{
+  top:11.1% !important;
+  width:min(58%, 620px) !important;
+}
+body[data-page="board"] .board-key-row{display:none !important;}
+body[data-page="board"] .board-biome-status{
+  top:60.4% !important;
+  max-width:min(72%, 620px);
+  text-align:center;
+}
+body[data-page="board"] .board-biome-routes{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  z-index:4;
+  pointer-events:none;
+  overflow:visible;
+}
+body[data-page="board"] .board-biome-route{
+  stroke:rgba(255,248,199,.96);
+  stroke-width:1.05;
+  stroke-linecap:round;
+  stroke-dasharray:1.2 1.55;
+  filter:drop-shadow(0 0 4px rgba(255,235,150,.7));
+  animation:v74RouteDash 3.3s linear infinite;
+}
+body[data-page="board"] .board-biome-key{
+  position:absolute;
+  transform:translate(-50%,-50%);
+  width:clamp(52px,7.2vw,88px);
+  z-index:7;
+  pointer-events:none;
+  animation:v74KeyFloat 2.3s ease-in-out infinite;
+  filter:drop-shadow(0 10px 16px rgba(0,0,0,.36)) drop-shadow(0 0 12px rgba(255,225,120,.42));
+}
+body[data-page="board"] .board-biome-key img{
+  width:100%;
+  height:auto;
+  display:block;
+}
+body[data-page="board"] .board-biome-level-btn{
+  width:clamp(86px,11.5vw,132px) !important;
+  min-width:unset !important;
+  min-height:clamp(86px,11.5vw,132px);
+  padding:0 !important;
+  border-radius:50% !important;
+  justify-content:center;
+  gap:1px !important;
+  background:radial-gradient(circle at 35% 30%, rgba(255,255,255,.98), rgba(238,245,255,.96) 60%, rgba(196,218,255,.95));
+  box-shadow:0 10px 20px rgba(0,0,0,.34), 0 0 0 4px rgba(255,255,255,.58), 0 0 18px rgba(255,234,160,.58) !important;
+}
+body[data-page="board"] .board-biome-level-btn::after{display:none !important;}
+body[data-page="board"] .board-biome-level-btn.is-passive{
+  opacity:.84;
+  transform:translate(-50%,-50%) scale(.88);
+  box-shadow:0 8px 15px rgba(0,0,0,.26), 0 0 0 3px rgba(255,255,255,.4) !important;
+}
+body[data-page="board"] .board-biome-level-btn.is-passive .board-biome-level-chip{opacity:.78;}
+body[data-page="board"] .board-biome-level-btn.is-active{animation:v74NodePulse 1.9s ease-in-out infinite;}
+body[data-page="board"] .board-biome-level-chip{
+  font-size:clamp(.88rem,1.05vw,1.02rem) !important;
+  line-height:1.02;
+}
+body[data-page="board"] .board-biome-level-name{
+  font-size:clamp(.58rem,.82vw,.8rem) !important;
+  max-width:82%;
+  text-align:center;
+  line-height:1.05;
+}
+@keyframes v74NodePulse{
+  0%,100%{transform:translate(-50%,-50%) scale(1);box-shadow:0 10px 20px rgba(0,0,0,.34), 0 0 0 4px rgba(255,255,255,.58), 0 0 18px rgba(255,234,160,.58)}
+  50%{transform:translate(-50%,-50%) scale(1.06);box-shadow:0 14px 24px rgba(0,0,0,.38), 0 0 0 7px rgba(255,255,255,.7), 0 0 26px rgba(255,234,160,.86)}
+}
+@keyframes v74KeyFloat{0%,100%{transform:translate(-50%,-50%) translateY(0)}50%{transform:translate(-50%,-50%) translateY(-5px)}}
+@keyframes v74RouteDash{from{stroke-dashoffset:0}to{stroke-dashoffset:-8}}
+@media (max-width: 900px){
+  body[data-page="board"] .market-board-btn{left:1.4% !important;bottom:1.2% !important;width:clamp(96px,18vw,146px) !important;}
+  body[data-page="board"] .board-lock-row{width:min(68%, 500px) !important;top:11.8% !important;}
+}
+@media (max-width: 640px){
+  body[data-page="board"] .market-board-btn{left:1% !important;bottom:1% !important;width:clamp(86px,24vw,120px) !important;}
+  body[data-page="board"] .board-biome-status{top:58.8% !important;max-width:78%;font-size:.66rem;}
+  body[data-page="board"] .board-lock-row{width:min(78%, 420px) !important;gap:3px;}
+  body[data-page="board"] .board-biome-level-btn{width:clamp(72px,16vw,96px) !important;min-height:clamp(72px,16vw,96px);} 
+  body[data-page="board"] .board-biome-key{width:clamp(42px,12vw,62px);} 
+}
