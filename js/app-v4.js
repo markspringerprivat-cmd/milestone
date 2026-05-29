@@ -5,7 +5,7 @@
   const BATTLE_STORE = 'koenigreichSinneV4Battle';
   const RETURN_STORE = 'koenigreichSinneV4BoardReturn';
   const SOUND_STORE = 'koenigreichSinneV4Muted';
-  const STATE_VERSION = 'v4_74_qr_biome_routes';
+  const STATE_VERSION = 'v4_75_board_key_flight';
   const APP_ROOT = new URL('./', document.baseURI);
   const pageUrl = target => new URL(target, APP_ROOT).href;
   const assetUrl = target => new URL(target, APP_ROOT).href;
@@ -119,14 +119,14 @@
   const isPlaceholderSlot = index => PLACEHOLDER_LEVELS.includes(Number(index));
   const isQrSlot = index => QR_LEVELS.includes(Number(index));
   const SLOT_SENSE_MAP = { 0:'sehen', 1:'sehen', 2:'hoeren', 3:'hoeren', 4:'riechen', 5:'riechen', 6:'schmecken', 7:'schmecken', 8:'fuehlen', 9:'fuehlen', 10:'boss', 11:'boss' };
-  const HERO_DEFAULT_POINT = { x: 50.0, y: 68.0 };
+  const HERO_DEFAULT_POINT = { x: 50.1, y: 63.8 };
   const KEY_ORDER = ['riechen', 'hoeren', 'sehen', 'schmecken', 'fuehlen'];
   const BIOME_BY_SENSE = {
-    riechen:   { id:'riechen', label:'Grasland', stageIndex:0, board:{ minigame:{ x:31.0, y:56.5 }, question:{ x:18.8, y:48.8 }, key:{ x:15.8, y:62.6 } }, lock:'assets/images/ui/lock_grass.png', key:'assets/images/ui/key_grass.png' },
-    hoeren:    { id:'hoeren', label:'Wüstenland', stageIndex:1, board:{ minigame:{ x:66.8, y:63.0 }, question:{ x:81.5, y:52.2 }, key:{ x:85.0, y:62.4 } }, lock:'assets/images/ui/lock_sand.png', key:'assets/images/ui/key_sand.png' },
-    fuehlen:   { id:'fuehlen', label:'Eisgebiet', stageIndex:2, board:{ minigame:{ x:33.0, y:79.0 }, question:{ x:17.6, y:87.0 }, key:{ x:14.2, y:72.8 } }, lock:'assets/images/ui/lock_ice.png', key:'assets/images/ui/key_ice.png' },
-    schmecken: { id:'schmecken', label:'Lavawelt', stageIndex:3, board:{ minigame:{ x:67.5, y:84.5 }, question:{ x:81.8, y:75.8 }, key:{ x:85.0, y:88.4 } }, lock:'assets/images/ui/lock_lava.png', key:'assets/images/ui/key_lava.png' },
-    sehen:     { id:'sehen', label:'Himmelswelt', stageIndex:4, board:{ minigame:{ x:44.2, y:39.8 }, question:{ x:57.4, y:35.2 }, key:{ x:49.8, y:26.4 } }, lock:'assets/images/ui/lock_cloud.png', key:'assets/images/ui/key_cloud.png' },
+    riechen:   { id:'riechen', label:'Grasland', stageIndex:0, board:{ minigame:{ x:31.0, y:56.5 }, question:{ x:18.8, y:48.8 }, key:{ x:26.4, y:55.6 } }, lock:'assets/images/ui/lock_grass.png', key:'assets/images/ui/key_grass.png' },
+    hoeren:    { id:'hoeren', label:'Wüstenland', stageIndex:1, board:{ minigame:{ x:66.8, y:63.0 }, question:{ x:81.5, y:52.2 }, key:{ x:74.8, y:57.0 } }, lock:'assets/images/ui/lock_sand.png', key:'assets/images/ui/key_sand.png' },
+    fuehlen:   { id:'fuehlen', label:'Eisgebiet', stageIndex:2, board:{ minigame:{ x:33.0, y:79.0 }, question:{ x:17.6, y:87.0 }, key:{ x:26.0, y:84.2 } }, lock:'assets/images/ui/lock_ice.png', key:'assets/images/ui/key_ice.png' },
+    schmecken: { id:'schmecken', label:'Lavawelt', stageIndex:3, board:{ minigame:{ x:67.5, y:84.5 }, question:{ x:81.8, y:75.8 }, key:{ x:74.4, y:83.8 } }, lock:'assets/images/ui/lock_lava.png', key:'assets/images/ui/key_lava.png' },
+    sehen:     { id:'sehen', label:'Himmelswelt', stageIndex:4, board:{ minigame:{ x:44.2, y:39.8 }, question:{ x:57.4, y:35.2 }, key:{ x:50.0, y:40.4 } }, lock:'assets/images/ui/lock_cloud.png', key:'assets/images/ui/key_cloud.png' },
     boss:      { id:'boss', label:'Kronenwelt', stageIndex:5, board:{ minigame:{ x:50.0, y:18.0 }, question:{ x:50.0, y:12.0 }, key:{ x:50.0, y:9.0 } }, lock:'assets/images/ui/lock.png', key:'' }
   };
   const LOCK_RENDER_ORDER = ['riechen', 'hoeren', 'sehen', 'schmecken', 'fuehlen'];
@@ -545,10 +545,81 @@
     btn.style.top = `${pos.y}%`;
     const senseId = state.slots[slot] || slotSenseId(slot);
     const title = isPlaceholderSlot(slot) ? 'Minispiel' : 'Fragen';
+    btn.dataset.kind = isPlaceholderSlot(slot) ? 'minigame' : 'question';
     btn.setAttribute('aria-label', `${BIOME_BY_SENSE[senseId]?.label || 'Biom'} ${title}`);
-    btn.innerHTML = `<span class="board-biome-level-chip">${esc(title)}</span><span class="board-biome-level-name">${esc(BIOME_BY_SENSE[senseId]?.label || '')}</span>`;
+    btn.innerHTML = '<span class="board-biome-level-core" aria-hidden="true"></span>';
     if (!passive) btn.addEventListener('click', () => onLevelNode(slot));
     return btn;
+  }
+
+  let unlockingBiomeId = null;
+
+  function triggerLockShake(lockBtn) {
+    if (!lockBtn) return;
+    lockBtn.classList.remove('shake-once');
+    void lockBtn.offsetWidth;
+    lockBtn.classList.add('shake-once');
+  }
+
+  function unlockBiomeLockAnimated(id) {
+    if (unlockingBiomeId) return;
+    const live = getState();
+    if (!live.keysFound?.[id] || live.removedLocks?.[id]) return;
+    const inner = $('mapInner');
+    const lockBtn = inner?.querySelector(`.board-lock-btn[data-lock-id="${id}"]`);
+    const keyEl = inner?.querySelector(`.board-biome-key[data-key-id="${id}"]`);
+    if (!inner || !lockBtn || !keyEl) {
+      live.removedLocks[id] = true;
+      setState(live);
+      renderBoard();
+      return;
+    }
+    unlockingBiomeId = id;
+    inner.classList.add('is-unlocking-key');
+    const innerRect = inner.getBoundingClientRect();
+    const keyRect = keyEl.getBoundingClientRect();
+    const lockRect = lockBtn.getBoundingClientRect();
+    const start = { x:(keyRect.left - innerRect.left) + keyRect.width / 2, y:(keyRect.top - innerRect.top) + keyRect.height / 2 };
+    const end = { x:(lockRect.left - innerRect.left) + lockRect.width / 2, y:(lockRect.top - innerRect.top) + lockRect.height / 2 };
+    const control = { x:(start.x + end.x) / 2, y: Math.min(start.y, end.y) - Math.max(54, Math.abs(start.x - end.x) * 0.12) };
+    const flyer = document.createElement('div');
+    flyer.className = 'board-key-flyer';
+    flyer.innerHTML = `<img src="${assetUrl(BIOME_BY_SENSE[id].key)}" alt="">`;
+    flyer.style.left = `${start.x}px`;
+    flyer.style.top = `${start.y}px`;
+    inner.appendChild(flyer);
+    keyEl.classList.add('is-launching');
+    lockBtn.classList.add('is-targeted');
+    const duration = 820;
+    const startTime = performance.now();
+    const ease = t => 1 - Math.pow(1 - t, 3);
+    function tick(now) {
+      const raw = Math.min(1, (now - startTime) / duration);
+      const t = ease(raw);
+      const omt = 1 - t;
+      const x = (omt * omt * start.x) + (2 * omt * t * control.x) + (t * t * end.x);
+      const y = (omt * omt * start.y) + (2 * omt * t * control.y) + (t * t * end.y);
+      flyer.style.left = `${x}px`;
+      flyer.style.top = `${y}px`;
+      flyer.style.transform = `translate(-50%, -50%) rotate(${t * 540}deg) scale(${1 - t * 0.18})`;
+      if (raw < 1) requestAnimationFrame(tick);
+      else {
+        flyer.classList.add('is-burst');
+        keyEl.classList.add('is-fading-out');
+        lockBtn.classList.add('is-fading-out');
+        playSound('levelunlocked');
+        setTimeout(() => {
+          flyer.remove();
+          const state = getState();
+          state.removedLocks[id] = true;
+          setState(state);
+          unlockingBiomeId = null;
+          inner.classList.remove('is-unlocking-key');
+          renderBoard();
+        }, 280);
+      }
+    }
+    requestAnimationFrame(tick);
   }
 
   function renderBoard() {
@@ -594,27 +665,27 @@
         const live = getState();
         const canUnlock = Boolean(live.keysFound?.[id]);
         if (!canUnlock || live.removedLocks?.[id]) {
-          lockBtn.classList.remove('shake-once');
-          void lockBtn.offsetWidth;
-          lockBtn.classList.add('shake-once');
+          triggerLockShake(lockBtn);
           return;
         }
-        live.removedLocks[id] = true;
-        setState(live);
-        renderBoard();
+        unlockBiomeLockAnimated(id);
       });
       lockRow.appendChild(lockBtn);
     });
     inner.appendChild(lockRow);
 
     KEY_ORDER.forEach(id => {
-      if (!state.keysFound?.[id]) return;
-      const key = document.createElement('div');
+      if (!state.keysFound?.[id] || state.removedLocks?.[id]) return;
+      const key = document.createElement('button');
+      key.type = 'button';
       key.className = 'board-biome-key';
+      key.dataset.keyId = id;
+      key.setAttribute('aria-label', `${BIOME_BY_SENSE[id].label}-Schlüssel zum Schloss schicken`);
       const pos = biomeKeyPoint(id);
       key.style.left = `${pos.x}%`;
       key.style.top = `${pos.y}%`;
       key.innerHTML = `<img src="${assetUrl(BIOME_BY_SENSE[id].key)}" alt="${esc(BIOME_BY_SENSE[id].label + '-Schlüssel')}">`;
+      key.addEventListener('click', () => unlockBiomeLockAnimated(id));
       inner.appendChild(key);
     });
 

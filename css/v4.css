@@ -5383,3 +5383,67 @@ body[data-page="board"] .board-biome-level-name{
   body[data-page="board"] .board-biome-level-btn{width:clamp(72px,16vw,96px) !important;min-height:clamp(72px,16vw,96px);} 
   body[data-page="board"] .board-biome-key{width:clamp(42px,12vw,62px);} 
 }
+
+/* === v75 kleinere Levelpunkte + Schlüssel-Flug === */
+body[data-page="board"] .board-biome-key{
+  width:clamp(48px,6.2vw,72px) !important;
+  padding:0;
+  border:0;
+  background:transparent;
+  pointer-events:auto !important;
+  cursor:pointer;
+  z-index:8;
+}
+body[data-page="board"] .board-biome-key:hover{transform:translate(-50%,-50%) scale(1.06);}
+body[data-page="board"] .board-biome-key.is-launching,
+body[data-page="board"] .board-biome-key.is-fading-out{pointer-events:none;}
+body[data-page="board"] .board-biome-key.is-launching{opacity:.18;transform:translate(-50%,-50%) scale(.88);}
+body[data-page="board"] .board-biome-key.is-fading-out{opacity:0;transform:translate(-50%,-50%) scale(.4);transition:opacity .22s ease, transform .22s ease;}
+body[data-page="board"] .board-lock-btn.is-targeted{filter:drop-shadow(0 0 16px rgba(255,233,150,.92));}
+body[data-page="board"] .board-lock-btn.is-fading-out{opacity:0;transform:scale(.35) rotate(12deg);transition:opacity .22s ease, transform .22s ease, filter .22s ease;}
+body[data-page="board"] .board-key-flyer{
+  position:absolute;
+  width:clamp(48px,6.2vw,72px);
+  z-index:12;
+  pointer-events:none;
+  transform:translate(-50%,-50%);
+  filter:drop-shadow(0 10px 18px rgba(0,0,0,.36)) drop-shadow(0 0 14px rgba(255,228,132,.55));
+}
+body[data-page="board"] .board-key-flyer img{width:100%;height:auto;display:block;}
+body[data-page="board"] .board-key-flyer.is-burst{opacity:0;transform:translate(-50%,-50%) scale(.2) rotate(540deg);transition:opacity .22s ease, transform .22s ease;}
+body[data-page="board"] .map-inner.is-unlocking-key .board-lock-btn:not(.is-targeted),
+body[data-page="board"] .map-inner.is-unlocking-key .market-board-btn,
+body[data-page="board"] .map-inner.is-unlocking-key .board-biome-level-btn{pointer-events:none !important;}
+
+body[data-page="board"] .board-biome-level-btn{
+  width:clamp(46px,6vw,60px) !important;
+  min-height:clamp(46px,6vw,60px) !important;
+  padding:0 !important;
+  border-radius:50% !important;
+  background:radial-gradient(circle at 50% 50%, rgba(255,255,255,.22) 0%, rgba(255,255,255,.08) 38%, rgba(255,236,176,.24) 72%, rgba(255,236,176,.46) 100%) !important;
+  box-shadow:0 6px 14px rgba(0,0,0,.28), 0 0 0 2px rgba(255,255,255,.86), 0 0 14px rgba(255,234,160,.75) !important;
+}
+body[data-page="board"] .board-biome-level-btn:hover{transform:translate(-50%,-50%) scale(1.03);}
+body[data-page="board"] .board-biome-level-btn.is-passive{opacity:.74;transform:translate(-50%,-50%) scale(.92);}
+body[data-page="board"] .board-biome-level-btn.is-active{animation:v75NodePulse 1.7s ease-in-out infinite;}
+body[data-page="board"] .board-biome-level-core{
+  width:34%;
+  height:34%;
+  border-radius:50%;
+  background:radial-gradient(circle at 50% 45%, #fff 0%, rgba(255,255,255,.92) 48%, rgba(255,240,192,.5) 100%);
+  box-shadow:0 0 10px rgba(255,255,255,.92), 0 0 18px rgba(255,229,134,.8);
+}
+body[data-page="board"] .board-biome-level-btn[data-kind="question"] .board-biome-level-core{
+  background:radial-gradient(circle at 50% 45%, #fff 0%, rgba(227,244,255,.95) 48%, rgba(183,229,255,.65) 100%);
+  box-shadow:0 0 10px rgba(255,255,255,.92), 0 0 18px rgba(148,218,255,.82);
+}
+body[data-page="board"] .board-biome-level-chip,
+body[data-page="board"] .board-biome-level-name{display:none !important;}
+@keyframes v75NodePulse{
+  0%,100%{transform:translate(-50%,-50%) scale(1);box-shadow:0 6px 14px rgba(0,0,0,.28), 0 0 0 2px rgba(255,255,255,.86), 0 0 14px rgba(255,234,160,.75)}
+  50%{transform:translate(-50%,-50%) scale(1.12);box-shadow:0 10px 18px rgba(0,0,0,.32), 0 0 0 4px rgba(255,255,255,.94), 0 0 22px rgba(255,234,160,.95)}
+}
+@media (max-width: 640px){
+  body[data-page="board"] .board-biome-level-btn{width:clamp(38px,10vw,50px) !important;min-height:clamp(38px,10vw,50px) !important;}
+  body[data-page="board"] .board-biome-key, body[data-page="board"] .board-key-flyer{width:clamp(38px,10vw,56px) !important;}
+}
