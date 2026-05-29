@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Level · Königreich der Sinne</title>
+  <link rel="stylesheet" href="./css/style.css?v=v4_71_biome_popups_intro_20260528">
+  <link rel="stylesheet" href="./css/v4.css?v=v4_71_biome_popups_intro_20260528">
+  <script src="./js/app-v4.js?v=v4_71_biome_popups_intro_20260528" defer></script>
+</head>
+<body data-page="level">
+  <main class="level-shell">
+    <header class="level-header">
+      <span id="levelBadge" class="badge"></span>
+    </header>
+
+    <section class="level-grid">
+      <article class="panel light-panel">
+        <h2>Inhalt</h2>
+        <div class="content-card">
+          <div id="levelContent"></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="panel quiz-panel">
+      <h2>Quizfragen</h2>
+      <p id="quizQuestion">Beantworte alle fünf Fragen richtig, um das Level abzuschließen.</p>
+      <div id="quizOptions" class="quiz-options"></div>
+      <section class="level-figure-strip" aria-label="Gegner">
+        <img id="levelEnemy" class="hero-enemy top-enemy" alt="Gegnerbild">
+      </section>
+      <div class="button-line">
+        <button id="checkAnswerBtn" class="game-btn primary">Antworten überprüfen</button>
+        <button id="runAwayBtn" class="game-btn muted">Wegrennen</button>
+      </div>
+      <p id="quizFeedback" class="message hidden"></p>
+    </section>
+  </main>
+</body>
+</html>
