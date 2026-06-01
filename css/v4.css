@@ -5436,7 +5436,7 @@ body[data-page="board"] .map-inner.is-unlocking-key .board-biome-level-btn{point
 /* === Mobile board placement update: stable market/hero and adjusted realm nodes === */
 body[data-page="board"] .market-board-btn{
   left:5.2% !important;
-  bottom:1.4% !important;
+  bottom:-4.6% !important;
 }
 body[data-page="board"] .moving-hero-token .hero-token{
   animation:none !important;
@@ -5444,14 +5444,14 @@ body[data-page="board"] .moving-hero-token .hero-token{
 @media (max-width: 900px){
   body[data-page="board"] .market-board-btn{
     left:5.6% !important;
-    bottom:1.4% !important;
+    bottom:-4.6% !important;
     width:clamp(96px,18vw,146px) !important;
   }
 }
 @media (max-width: 640px){
   body[data-page="board"] .market-board-btn{
     left:6.2% !important;
-    bottom:1.2% !important;
+    bottom:-4.8% !important;
     width:clamp(86px,24vw,120px) !important;
   }
 }
