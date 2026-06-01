@@ -5445,35 +5445,35 @@ body[data-page="board"] .board-screen{
 }
 body[data-page="board"] .market-board-btn{
   position:fixed !important;
-  left:max(8px, env(safe-area-inset-left) + 8px) !important;
-  bottom:max(8px, env(safe-area-inset-bottom) + 8px) !important;
+  left:calc(env(safe-area-inset-left) - 1px) !important;
+  bottom:calc(env(safe-area-inset-bottom) - 2px) !important;
   width:clamp(94px,24vw,130px) !important;
   z-index:34 !important;
 }
 body[data-page="board"] .board-lock-row{
-  top:17.1% !important;
+  top:20.1% !important;
 }
 body[data-page="board"] .moving-hero-token .hero-token{
   animation:none !important;
 }
 @media (max-width: 900px){
   body[data-page="board"] .market-board-btn{
-    left:max(8px, env(safe-area-inset-left) + 8px) !important;
-    bottom:max(8px, env(safe-area-inset-bottom) + 8px) !important;
+    left:calc(env(safe-area-inset-left) - 1px) !important;
+    bottom:calc(env(safe-area-inset-bottom) - 2px) !important;
     width:clamp(92px,24vw,124px) !important;
   }
   body[data-page="board"] .board-lock-row{
-    top:17.8% !important;
+    top:20.8% !important;
   }
 }
 @media (max-width: 640px){
   body[data-page="board"] .market-board-btn{
-    left:max(7px, env(safe-area-inset-left) + 7px) !important;
-    bottom:max(7px, env(safe-area-inset-bottom) + 7px) !important;
+    left:calc(env(safe-area-inset-left) - 1px) !important;
+    bottom:calc(env(safe-area-inset-bottom) - 2px) !important;
     width:clamp(86px,25vw,116px) !important;
   }
   body[data-page="board"] .board-lock-row{
-    top:17.8% !important;
+    top:20.8% !important;
   }
 }
 
