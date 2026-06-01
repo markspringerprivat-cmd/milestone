@@ -5529,3 +5529,38 @@ body[data-page="board"] .board-key-flyer img{
 @media (max-width:640px){
   body[data-page="board"] .board-biome-key{width:clamp(54px,12vw,78px) !important;}
 }
+
+/* === v78 battle start/audio/final-cloud polish === */
+body[data-page="battle"] .battle-seq-img.final-idle{
+  opacity:1!important;
+  animation:battleFinalCloudSpinPulseV78 .68s ease-in-out infinite alternate!important;
+}
+body[data-page="battle"] .battle-seq-img.cloud-reveal{
+  animation:battleFinalCloudPuffV78 1.12s cubic-bezier(.18,.9,.28,1) forwards!important;
+}
+body[data-page="battle"] .battle-text-img.result-show{
+  width:min(145vw,1080px)!important;
+  height:min(33svh,258px)!important;
+  max-width:none!important;
+  animation:battleResultTextBigInV78 .44s cubic-bezier(.18,.9,.28,1) both!important;
+}
+@keyframes battleFinalCloudSpinPulseV78{
+  0%{opacity:1;transform:translate(-50%,-50%) scale(.88) rotate(-10deg);filter:drop-shadow(0 12px 22px rgba(0,0,0,.28))}
+  100%{opacity:1;transform:translate(-50%,-50%) scale(1.24) rotate(10deg);filter:drop-shadow(0 22px 40px rgba(255,224,120,.55))}
+}
+@keyframes battleFinalCloudPuffV78{
+  0%{opacity:1;transform:translate(-50%,-50%) scale(1.02) rotate(0deg);filter:drop-shadow(0 18px 30px rgba(0,0,0,.25)) blur(0)}
+  42%{opacity:1;transform:translate(-50%,-50%) scale(1.42) rotate(7deg);filter:drop-shadow(0 28px 46px rgba(255,230,145,.65)) blur(0)}
+  72%{opacity:.62;transform:translate(-50%,-50%) scale(1.82) rotate(-5deg);filter:drop-shadow(0 30px 58px rgba(255,255,255,.78)) blur(2px)}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(2.34) rotate(4deg);filter:drop-shadow(0 0 72px rgba(255,255,255,.9)) blur(9px)}
+}
+@keyframes battleResultTextBigInV78{
+  0%{opacity:0;transform:translateY(-22px) scale(.78)}
+  100%{opacity:1;transform:translateY(0) scale(1)}
+}
+@media(max-width:560px){
+  body[data-page="battle"] .battle-text-img.result-show{
+    width:min(150vw,645px)!important;
+    height:min(25svh,190px)!important;
+  }
+}

@@ -3,6 +3,7 @@
 
   const STORE = 'koenigreichSinneV4State';
   const BATTLE_STORE = 'koenigreichSinneV4Battle';
+  const BATTLE_BACKUP_STORE = 'koenigreichSinneV4BattleBackup';
   const RETURN_STORE = 'koenigreichSinneV4BoardReturn';
   const SOUND_STORE = 'koenigreichSinneV4Muted';
   const STATE_VERSION = 'v4_76_stable_village_layout';
@@ -1192,9 +1193,11 @@
     if (selected.some(x=>!x)) { const f=$('quizFeedback'); f.textContent='Bitte beantworte zuerst alle fünf Fragen.'; f.className='message bad'; return; }
     const answers = selected.map(x=>Number(x.value)); const results = answers.map((a,i)=>a===questions[i].correct);
     const payload = { senseId: data.id, meta, answers, results, time:Date.now() };
-    sessionStorage.setItem(BATTLE_STORE, JSON.stringify(payload));
+    const serialized = JSON.stringify(payload);
+    sessionStorage.setItem(BATTLE_STORE, serialized);
+    localStorage.setItem(BATTLE_BACKUP_STORE, serialized);
     showTransition('Kampf wird geladen …');
-    setTimeout(() => location.href = pageUrl('battle.html'), 420);
+    setTimeout(() => location.assign(pageUrl('battle.html')), 420);
   }
   function showTransition(text) {
     let overlay = document.createElement('div'); overlay.className='page-transition-overlay'; overlay.innerHTML=`<div>${esc(text)}</div>`; document.body.appendChild(overlay); requestAnimationFrame(()=>overlay.classList.add('active'));
@@ -1202,7 +1205,7 @@
 
   function initBattle() {
     addSpeaker(); stopSound('background');
-    let payload; try { payload = JSON.parse(sessionStorage.getItem(BATTLE_STORE) || ''); } catch (_) {}
+    let payload; try { payload = JSON.parse(sessionStorage.getItem(BATTLE_STORE) || localStorage.getItem(BATTLE_BACKUP_STORE) || ''); } catch (_) {}
     if (!payload || !payload.meta) { location.replace(pageUrl('index.html')); return; }
     const meta = payload.meta; const data = dataForMeta(meta); if (!data) { location.replace(pageUrl('index.html')); return; }
     document.body.style.setProperty('--battle-bg', `url("${popupBgForMeta(meta)}")`);
@@ -1210,7 +1213,20 @@
     if ($('battleKampfText')) $('battleKampfText').src = ASSETS.text.kampf;
     $('battleHero').src = ASSETS.hero; $('battleEnemy').src = data.enemy; $('battleEnemyName').textContent = data.enemyName;
     $('battleBackBtn')?.addEventListener('click', () => history.back());
-    $('battleStartBtn')?.addEventListener('click', () => runBattleSequence(payload, data, meta), { once:true });
+    let battleStarting = false;
+    $('battleStartBtn')?.addEventListener('click', async () => {
+      if (battleStarting) return;
+      battleStarting = true;
+      const btn = $('battleStartBtn');
+      if (btn) btn.disabled = true;
+      try {
+        await runBattleSequence(payload, data, meta);
+      } catch (err) {
+        console.error('Battle konnte nicht gestartet werden:', err);
+        battleStarting = false;
+        if (btn) btn.disabled = false;
+      }
+    });
   }
   function setBattleMode(mode) {
     document.body.dataset.battleMode = mode;
@@ -1222,11 +1238,18 @@
   function waitForRenderable(node) {
     if (!node) return Promise.resolve();
     return new Promise(resolve => {
+      let settled = false;
       const done = () => requestAnimationFrame(() => requestAnimationFrame(resolve));
-      const finish = () => { try { node.onload = null; } catch (_) {} done(); };
+      const finish = () => {
+        if (settled) return;
+        settled = true;
+        try { node.onload = null; node.onerror = null; } catch (_) {}
+        done();
+      };
       if (node.complete && node.naturalWidth > 0) { done(); return; }
       node.onload = finish;
       node.onerror = finish;
+      window.setTimeout(finish, 1400);
     });
   }
   function pickNoRepeat(list, prev) { const pool = list.filter(x=>x!==prev); return (pool.length?pool:list)[Math.floor(Math.random()*(pool.length?pool:list).length)]; }
@@ -1242,13 +1265,14 @@
     if (textImg) { textImg.className = 'battle-text-img hidden'; textImg.removeAttribute('src'); }
     label.textContent = ''; status.textContent = '';
     dots.innerHTML = '<span></span>'.repeat(6);
+    const soundCursor = { richtig:0, falsch:0 };
     for (let i=0;i<payload.results.length;i++) {
       const ok = payload.results[i];
       const list = ok ? ASSETS.correct : ASSETS.wrong;
       const src = ok ? (lastCorrect=pickNoRepeat(list,lastCorrect)) : (lastWrong=pickNoRepeat(list,lastWrong));
       const textSrc = ok ? ASSETS.text.richtig : ASSETS.text.falsch;
-      const soundMatch = src.match(/(?:richtig|falsch)_(\d)\.webp(?:$|[?#])/);
-      const soundKey = `${ok ? 'richtig' : 'falsch'}_${soundMatch ? soundMatch[1] : ((i % 3) + 1)}`;
+      const soundType = ok ? 'richtig' : 'falsch';
+      const soundKey = `${soundType}_${(soundCursor[soundType]++ % 3) + 1}`;
       label.textContent = `Frage ${i+1}`;
       status.textContent = ok ? 'Richtig' : 'Falsch';
       status.className = `battle-status sr-only ${ok?'ok':'bad'}`;
@@ -1268,21 +1292,19 @@
     img.onclick = async () => {
       img.onclick = null; hideFinalHint(); stopSound('final');
       stopSound('battle_background');
-      playSound(won ? 'win' : 'lose');
       if (textImg) {
         textImg.src = won ? ASSETS.text.gewonnen : ASSETS.text.verloren;
         textImg.alt = won ? 'Gewonnen' : 'Verloren';
         textImg.className = 'battle-text-img result-preload';
       }
       outcome.classList.add('pre-visible');
-      await sleep(180);
       img.classList.remove('final-idle'); img.classList.add('cloud-reveal');
-      outcome.classList.add('visible');
       await sleep(1120);
       img.className='battle-seq-img hidden';
       outcome.className='battle-outcome visible idle';
+      playSound(won ? 'win' : 'lose');
       if (textImg) {
-        await sleep(80);
+        await sleep(500);
         textImg.className = 'battle-text-img result-show';
       }
       showBattleResult(won, data, meta, action, label, status);
@@ -1303,7 +1325,7 @@
         img.alt = alt;
         if (textImg) { textImg.src = textSrc; textImg.alt = alt; }
         Promise.all([waitForRenderable(img), waitForRenderable(textImg)]).then(() => {
-          playSound(soundKey);
+          void playSound(soundKey, { restart:true });
           void img.offsetWidth;
           if (textImg) void textImg.offsetWidth;
           img.className = "battle-seq-img answer-cycle";
@@ -1371,7 +1393,7 @@
         foundKey = keyInfoForSenseId(senseId);
       }
     }
-    setState(state); sessionStorage.removeItem(BATTLE_STORE);
+    setState(state); sessionStorage.removeItem(BATTLE_STORE); localStorage.removeItem(BATTLE_BACKUP_STORE);
     const senseId = meta.senseId || slotSenseId(meta.slot);
     const firstSlot = firstSlotForBiome(senseId);
     const shouldReturn = !meta.isBoss && !Number.isInteger(nextSlotForBiome(senseId, state));
