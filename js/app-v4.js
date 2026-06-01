@@ -1025,10 +1025,17 @@
 
   async function completePlaceholder(index) {
     hide($('encounterModal'));
+    completeMinigameSlot(index);
+    applyReturnModal();
+  }
+
+  function completeMinigameSlot(index) {
     const state = getState();
     const senseId = state.slots[index] || slotSenseId(index);
+    state.started = true;
     state.completed[index] = true;
     state.heroIndex = index;
+    state.slots[index] = senseId;
     const nextSlot = nextSlotForBiome(senseId, state);
     if (Number.isInteger(nextSlot)) {
       state.activeBiome = senseId;
@@ -1037,10 +1044,8 @@
       state.activeBiome = null;
     }
     setState(state);
-    renderBoard();
     playSound('levelunlocked');
     localStorage.setItem(RETURN_STORE, JSON.stringify({ type:'unlocked', meta:{ slot:index, placeholder:true, senseId, returnHome:false } }));
-    applyReturnModal();
   }
   function escapeToBoard(meta) {
     closeScan(); hide($('encounterModal'));
@@ -1150,7 +1155,7 @@
         text.textContent = `${BIOME_BY_SENSE[senseId]?.label || 'Das Biom'} zeigt jetzt das Fragen-Level. Tippe auf das neue runde Feld im selben Biom.`;
       } else {
         title.textContent = 'Zurück ins Dorf';
-        text.textContent = 'Sir Nervus läuft jetzt erst zum Minispiel-Feld zurück und dann ins Dorf.';
+        text.textContent = 'Sir Nervus läuft jetzt direkt ins Dorf zurück.';
       }
       playSound('levelunlocked');
     }
@@ -1299,10 +1304,11 @@
       }
       outcome.classList.add('pre-visible');
       img.classList.remove('final-idle'); img.classList.add('cloud-reveal');
+      outcome.className='battle-outcome visible';
+      playSound(won ? 'win' : 'lose');
       await sleep(1120);
       img.className='battle-seq-img hidden';
       outcome.className='battle-outcome visible idle';
-      playSound(won ? 'win' : 'lose');
       if (textImg) {
         await sleep(500);
         textImg.className = 'battle-text-img result-show';
@@ -1395,9 +1401,8 @@
     }
     setState(state); sessionStorage.removeItem(BATTLE_STORE); localStorage.removeItem(BATTLE_BACKUP_STORE);
     const senseId = meta.senseId || slotSenseId(meta.slot);
-    const firstSlot = firstSlotForBiome(senseId);
     const shouldReturn = !meta.isBoss && !Number.isInteger(nextSlotForBiome(senseId, state));
-    localStorage.setItem(RETURN_STORE, JSON.stringify({ type:'unlocked', meta: { ...meta, foundKey, returnHome:shouldReturn, returnVia: shouldReturn ? firstSlot : null } }));
+    localStorage.setItem(RETURN_STORE, JSON.stringify({ type:'unlocked', meta: { ...meta, foundKey, returnHome:shouldReturn, returnVia:null } }));
     location.href = pageUrl('index.html');
   }
 
@@ -1948,13 +1953,7 @@
         if (resultBoardBtn) hide(resultBoardBtn);
         retryBtn.onclick = () => {
           const slot = Number(qs('slot'));
-          if (Number.isInteger(slot) && slot >= 0) {
-            const state = getState();
-            state.completed[slot] = true;
-            state.heroIndex = slot;
-            setState(state);
-            localStorage.setItem(RETURN_STORE, JSON.stringify({ type:'unlocked', meta:{ slot, placeholder:true } }));
-          }
+          if (Number.isInteger(slot) && slot >= 0) completeMinigameSlot(slot);
           location.href = pageUrl('index.html');
         };
       } else {
@@ -2427,11 +2426,7 @@
         retryBtn.textContent = 'Zurück zum Spielfeld';
         hide(boardBtn);
         retryBtn.onclick = () => {
-          const state = getState();
-          state.completed[slot] = true;
-          state.heroIndex = slot;
-          setState(state);
-          localStorage.setItem(RETURN_STORE, JSON.stringify({ type:'unlocked', meta:{ slot, placeholder:true } }));
+          completeMinigameSlot(slot);
           location.href = pageUrl('index.html');
         };
       } else {
@@ -3098,11 +3093,7 @@
         retryBtn.textContent = 'Zurück zum Spielfeld';
         hide(boardBtn);
         retryBtn.onclick = () => {
-          const state = getState();
-          state.completed[slot] = true;
-          state.heroIndex = slot;
-          setState(state);
-          localStorage.setItem(RETURN_STORE, JSON.stringify({ type:'unlocked', meta:{ slot, placeholder:true } }));
+          completeMinigameSlot(slot);
           location.href = pageUrl('index.html');
         };
       } else {
@@ -3656,11 +3647,7 @@
       retryBtn.textContent = won ? 'Zurück zum Spielfeld' : 'Neuer Versuch';
       retryBtn.onclick = () => {
         if (won) {
-          const state = getState();
-          state.completed[slot] = true;
-          state.heroIndex = slot;
-          setState(state);
-          localStorage.setItem(RETURN_STORE, JSON.stringify({ type:'unlocked', meta:{ slot, placeholder:true } }));
+          completeMinigameSlot(slot);
           location.href = pageUrl('index.html');
         } else location.reload();
       };

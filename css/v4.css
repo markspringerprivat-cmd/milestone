@@ -5564,3 +5564,42 @@ body[data-page="battle"] .battle-text-img.result-show{
     height:min(25svh,190px)!important;
   }
 }
+
+/* === v79 centered result text + simple final cloud fade === */
+body[data-page="battle"] .battle-seq-img.final-idle{
+  opacity:1!important;
+  animation:battleFinalCloudPulseV79 .76s ease-in-out infinite alternate!important;
+}
+body[data-page="battle"] .battle-seq-img.cloud-reveal{
+  animation:battleFinalCloudFadeV79 1.12s ease-in forwards!important;
+}
+body[data-page="battle"] .battle-text-img.result-show{
+  position:relative!important;
+  left:50%!important;
+  right:auto!important;
+  margin:34px 0 0!important;
+  width:min(145vw,1080px)!important;
+  height:min(33svh,258px)!important;
+  max-width:none!important;
+  transform-origin:center center!important;
+  animation:battleResultTextCenteredInV79 .44s cubic-bezier(.18,.9,.28,1) both!important;
+}
+@keyframes battleFinalCloudPulseV79{
+  0%{opacity:1;transform:translate(-50%,-50%) scale(.94) rotate(0deg);filter:drop-shadow(0 12px 22px rgba(0,0,0,.28))}
+  100%{opacity:1;transform:translate(-50%,-50%) scale(1.14) rotate(0deg);filter:drop-shadow(0 20px 34px rgba(255,224,120,.48))}
+}
+@keyframes battleFinalCloudFadeV79{
+  0%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0deg);filter:drop-shadow(0 18px 30px rgba(0,0,0,.25))}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(1.92) rotate(0deg);filter:drop-shadow(0 0 42px rgba(255,255,255,.72))}
+}
+@keyframes battleResultTextCenteredInV79{
+  0%{opacity:0;transform:translateX(-50%) translateY(-22px) scale(.78)}
+  100%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
+}
+@media(max-width:560px){
+  body[data-page="battle"] .battle-text-img.result-show{
+    width:min(150vw,645px)!important;
+    height:min(25svh,190px)!important;
+    margin-top:34px!important;
+  }
+}
