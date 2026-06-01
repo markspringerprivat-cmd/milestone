@@ -657,6 +657,15 @@ body[data-page="battle"] #battleSequenceScene .battle-action .game-btn{
 .intro-start-btn:active{
   transform:scale(.97);
 }
+.intro-screen.intro-leaving{
+  pointer-events:none;
+}
+.intro-screen.intro-leaving .intro-img{
+  animation:introBackdropFade .76s ease-in forwards;
+}
+.intro-screen.intro-leaving .intro-start-btn{
+  animation:introTextLaunch .76s cubic-bezier(.18,.9,.28,1) forwards!important;
+}
 .intro-text-img{
   width:100%;
   height:auto;
@@ -671,6 +680,15 @@ body[data-page="battle"] #battleSequenceScene .battle-action .game-btn{
 @keyframes introTextBreath{
   from{transform:scale(.985) rotate(-.35deg)}
   to{transform:scale(1.035) rotate(.35deg)}
+}
+@keyframes introTextLaunch{
+  0%{opacity:1;transform:scale(1) rotate(0)}
+  54%{opacity:1;transform:scale(1.18) rotate(.4deg)}
+  100%{opacity:0;transform:scale(1.62) rotate(.7deg)}
+}
+@keyframes introBackdropFade{
+  0%{opacity:1;transform:scale(1)}
+  100%{opacity:.36;transform:scale(1.025)}
 }
 
 .outro-screen{

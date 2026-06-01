@@ -386,8 +386,17 @@
     const state = getState();
     hide($('outroScreen'));
     if (state.started) { showBoard(false); } else { show($('introScreen')); hide($('boardScreen')); hide($('openBoardMenuBtn')); hide($('belowBoard')); }
+    let introTransitioning = false;
     const startGame = () => {
-      const s = getState(); s.started = true; setState(s); showBoard(true); playSound('background', { loop:true, restart:true });
+      if (introTransitioning) return;
+      introTransitioning = true;
+      const intro = $('introScreen');
+      const startBtn = $('startGameBtn');
+      intro?.classList.add('intro-leaving');
+      startBtn?.setAttribute('disabled', 'disabled');
+      window.setTimeout(() => {
+        const s = getState(); s.started = true; setState(s); showBoard(true); playSound('background', { loop:true, restart:true });
+      }, 760);
     };
     $('startGameBtn')?.addEventListener('click', startGame);
     $('introScreen')?.addEventListener('click', (ev) => { if (ev.target.closest('#startGameBtn')) return; startGame(); });
