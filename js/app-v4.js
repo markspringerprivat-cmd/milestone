@@ -119,7 +119,7 @@
   const isPlaceholderSlot = index => PLACEHOLDER_LEVELS.includes(Number(index));
   const isQrSlot = index => QR_LEVELS.includes(Number(index));
   const SLOT_SENSE_MAP = { 0:'sehen', 1:'sehen', 2:'hoeren', 3:'hoeren', 4:'riechen', 5:'riechen', 6:'schmecken', 7:'schmecken', 8:'fuehlen', 9:'fuehlen', 10:'boss', 11:'boss' };
-  const HERO_DEFAULT_POINT = { x: 50.1, y: 65.3 };
+  const HERO_DEFAULT_POINT = { x: 50.1, y: 66.8 };
   const KEY_ORDER = ['riechen', 'hoeren', 'sehen', 'schmecken', 'fuehlen'];
   const BIOME_BY_SENSE = {
     riechen:   { id:'riechen', label:'Grasland', stageIndex:0, board:{ minigame:{ x:31.0, y:54.2 }, question:{ x:18.8, y:46.8 }, key:{ x:27.4, y:58.0 } }, lock:'assets/images/ui/lock_grass.png', key:'assets/images/ui/key_grass.png' },
@@ -389,8 +389,17 @@
     document.head.appendChild(link);
   }
 
+  function resetBoardViewport() {
+    if (document.body.dataset.page !== 'board') return;
+    try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; } catch (_) {}
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    window.scrollTo(0, 0);
+  }
+
   function initBoard() {
     addSpeaker();
+    resetBoardViewport();
     const state = getState();
     hide($('outroScreen'));
     if (state.started) { showBoard(false); } else { show($('introScreen')); hide($('boardScreen')); hide($('openBoardMenuBtn')); hide($('belowBoard')); }
@@ -426,12 +435,15 @@
     $('levelUnlockedContinueBtn')?.addEventListener('click', handleLevelUnlockedContinue);
     $('boardGuide')?.addEventListener('click', startIntroHeroJourney);
     $('boardGuide')?.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); startIntroHeroJourney(); } });
-    window.addEventListener('resize', updateMapGeometry);
+    window.addEventListener('resize', () => { resetBoardViewport(); updateMapGeometry(); }, { passive:true });
+    window.visualViewport?.addEventListener?.('resize', () => { resetBoardViewport(); updateMapGeometry(); }, { passive:true });
+    window.addEventListener('pageshow', () => { resetBoardViewport(); updateMapGeometry(); renderBoard(); }, { passive:true });
     setTimeout(() => applyReturnModal(), 150);
   }
 
   function showBoard(firstStart=false) {
     hide($('introScreen')); show($('boardScreen')); show($('openBoardMenuBtn')); show($('belowBoard'));
+    resetBoardViewport();
     updateMapGeometry(); renderBoard();
     playSound('background', { loop:true, restart:!firstStart });
   }

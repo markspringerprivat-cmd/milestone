@@ -5434,25 +5434,46 @@ body[data-page="board"] .map-inner.is-unlocking-key .market-board-btn,
 body[data-page="board"] .map-inner.is-unlocking-key .board-biome-level-btn{pointer-events:none !important;}
 
 /* === Mobile board placement update: stable market/hero and adjusted realm nodes === */
+html:has(body[data-page="board"]),
+body[data-page="board"]{
+  overscroll-behavior:none !important;
+}
+body[data-page="board"] main,
+body[data-page="board"] .board-screen{
+  height:100dvh !important;
+  min-height:100svh !important;
+}
 body[data-page="board"] .market-board-btn{
-  left:5.2% !important;
-  bottom:-4.6% !important;
+  position:fixed !important;
+  left:max(8px, env(safe-area-inset-left) + 8px) !important;
+  bottom:max(8px, env(safe-area-inset-bottom) + 8px) !important;
+  width:clamp(94px,24vw,130px) !important;
+  z-index:34 !important;
+}
+body[data-page="board"] .board-lock-row{
+  top:17.1% !important;
 }
 body[data-page="board"] .moving-hero-token .hero-token{
   animation:none !important;
 }
 @media (max-width: 900px){
   body[data-page="board"] .market-board-btn{
-    left:5.6% !important;
-    bottom:-4.6% !important;
-    width:clamp(96px,18vw,146px) !important;
+    left:max(8px, env(safe-area-inset-left) + 8px) !important;
+    bottom:max(8px, env(safe-area-inset-bottom) + 8px) !important;
+    width:clamp(92px,24vw,124px) !important;
+  }
+  body[data-page="board"] .board-lock-row{
+    top:17.8% !important;
   }
 }
 @media (max-width: 640px){
   body[data-page="board"] .market-board-btn{
-    left:6.2% !important;
-    bottom:-4.8% !important;
-    width:clamp(86px,24vw,120px) !important;
+    left:max(7px, env(safe-area-inset-left) + 7px) !important;
+    bottom:max(7px, env(safe-area-inset-bottom) + 7px) !important;
+    width:clamp(86px,25vw,116px) !important;
+  }
+  body[data-page="board"] .board-lock-row{
+    top:17.8% !important;
   }
 }
 
