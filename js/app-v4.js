@@ -119,7 +119,7 @@
   const isPlaceholderSlot = index => PLACEHOLDER_LEVELS.includes(Number(index));
   const isQrSlot = index => QR_LEVELS.includes(Number(index));
   const SLOT_SENSE_MAP = { 0:'sehen', 1:'sehen', 2:'hoeren', 3:'hoeren', 4:'riechen', 5:'riechen', 6:'schmecken', 7:'schmecken', 8:'fuehlen', 9:'fuehlen', 10:'boss', 11:'boss' };
-  const HERO_DEFAULT_POINT = { x: 50.1, y: 59.8 };
+  const HERO_DEFAULT_POINT = { x: 50.1, y: 62.3 };
   const KEY_ORDER = ['riechen', 'hoeren', 'sehen', 'schmecken', 'fuehlen'];
   const BIOME_BY_SENSE = {
     riechen:   { id:'riechen', label:'Grasland', stageIndex:0, board:{ minigame:{ x:31.0, y:54.2 }, question:{ x:18.8, y:46.8 }, key:{ x:27.4, y:58.0 } }, lock:'assets/images/ui/lock_grass.png', key:'assets/images/ui/key_grass.png' },
@@ -449,7 +449,7 @@
     }
     inner.style.width = `${imgW}px`;
     inner.style.height = `${imgH}px`;
-    inner.style.top = `${imgH / 2}px`;
+    inner.style.top = '0px';
     inner.style.transform = 'translateX(-50%)';
   }
 
