@@ -5430,8 +5430,8 @@ body[data-page="board"] .board-key-flyer{
 body[data-page="board"] .board-key-flyer img{width:100%;height:auto;display:block;}
 body[data-page="board"] .board-key-flyer.is-burst{opacity:0;transform:translate(-50%,-50%) scale(.2) rotate(540deg);transition:opacity .22s ease, transform .22s ease;}
 body[data-page="board"] .map-inner.is-unlocking-key .board-lock-btn:not(.is-targeted),
-body[data-page="board"] .map-inner.is-unlocking-key .market-board-btn,
-body[data-page="board"] .map-inner.is-unlocking-key .board-biome-level-btn{pointer-events:none !important;}
+body[data-page="board"] .map-inner.is-unlocking-key .board-biome-level-btn,
+body[data-page="board"] .map-inner.is-unlocking-key ~ .market-board-btn{pointer-events:none !important;}
 
 /* === Mobile board placement update: stable market/hero and adjusted realm nodes === */
 html:has(body[data-page="board"]),
@@ -5444,14 +5444,14 @@ body[data-page="board"] .board-screen{
   min-height:100svh !important;
 }
 body[data-page="board"] .market-board-btn{
-  position:fixed !important;
+  position:absolute !important;
   left:calc(env(safe-area-inset-left) - 1px) !important;
   bottom:calc(env(safe-area-inset-bottom) - 2px) !important;
   width:clamp(94px,24vw,130px) !important;
   z-index:34 !important;
 }
 body[data-page="board"] .board-lock-row{
-  top:20.1% !important;
+  top:24.0% !important;
 }
 body[data-page="board"] .moving-hero-token .hero-token{
   animation:none !important;
@@ -5463,7 +5463,7 @@ body[data-page="board"] .moving-hero-token .hero-token{
     width:clamp(92px,24vw,124px) !important;
   }
   body[data-page="board"] .board-lock-row{
-    top:20.8% !important;
+    top:24.4% !important;
   }
 }
 @media (max-width: 640px){
@@ -5473,7 +5473,7 @@ body[data-page="board"] .moving-hero-token .hero-token{
     width:clamp(86px,25vw,116px) !important;
   }
   body[data-page="board"] .board-lock-row{
-    top:20.8% !important;
+    top:24.4% !important;
   }
 }
 

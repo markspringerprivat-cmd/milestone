@@ -658,8 +658,10 @@
 
   function renderBoard() {
     const inner = $('mapInner'); if (!inner) return;
+    const boardScreen = $('boardScreen');
     const state = getState();
     inner.innerHTML = '';
+    boardScreen?.querySelector('#marketScanBtn')?.remove();
 
     if (state.activeBiome) {
       const activeSlot = activeBoardSlot(state);
@@ -679,7 +681,7 @@
       if (live.activeBiome && Number.isInteger(activeBoardSlot(live))) return;
       openScan();
     });
-    inner.appendChild(market);
+    (boardScreen || inner).appendChild(market);
 
     const lockRow = document.createElement('div');
     lockRow.className = 'board-lock-row';
