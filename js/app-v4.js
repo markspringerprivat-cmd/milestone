@@ -119,15 +119,15 @@
   const isPlaceholderSlot = index => PLACEHOLDER_LEVELS.includes(Number(index));
   const isQrSlot = index => QR_LEVELS.includes(Number(index));
   const SLOT_SENSE_MAP = { 0:'sehen', 1:'sehen', 2:'hoeren', 3:'hoeren', 4:'riechen', 5:'riechen', 6:'schmecken', 7:'schmecken', 8:'fuehlen', 9:'fuehlen', 10:'boss', 11:'boss' };
-  const HERO_DEFAULT_POINT = { x: 50.1, y: 62.3 };
+  const HERO_DEFAULT_POINT = { x: 50.1, y: 59.8 };
   const KEY_ORDER = ['riechen', 'hoeren', 'sehen', 'schmecken', 'fuehlen'];
   const BIOME_BY_SENSE = {
     riechen:   { id:'riechen', label:'Grasland', stageIndex:0, board:{ minigame:{ x:31.0, y:54.2 }, question:{ x:18.8, y:46.8 }, key:{ x:27.4, y:58.0 } }, lock:'assets/images/ui/lock_grass.png', key:'assets/images/ui/key_grass.png' },
-    hoeren:    { id:'hoeren', label:'Wüstenland', stageIndex:1, board:{ minigame:{ x:66.8, y:60.6 }, question:{ x:81.5, y:50.3 }, key:{ x:73.6, y:57.2 } }, lock:'assets/images/ui/lock_sand.png', key:'assets/images/ui/key_sand.png' },
-    fuehlen:   { id:'fuehlen', label:'Eisgebiet', stageIndex:2, board:{ minigame:{ x:33.0, y:76.8 }, question:{ x:17.6, y:84.8 }, key:{ x:25.0, y:79.4 } }, lock:'assets/images/ui/lock_ice.png', key:'assets/images/ui/key_ice.png' },
+    hoeren:    { id:'hoeren', label:'Wüstenland', stageIndex:1, board:{ minigame:{ x:66.8, y:56.8 }, question:{ x:81.5, y:46.5 }, key:{ x:73.6, y:53.4 } }, lock:'assets/images/ui/lock_sand.png', key:'assets/images/ui/key_sand.png' },
+    fuehlen:   { id:'fuehlen', label:'Eisgebiet', stageIndex:2, board:{ minigame:{ x:33.0, y:76.8 }, question:{ x:24.8, y:83.6 }, key:{ x:25.0, y:79.4 } }, lock:'assets/images/ui/lock_ice.png', key:'assets/images/ui/key_ice.png' },
     schmecken: { id:'schmecken', label:'Lavawelt', stageIndex:3, board:{ minigame:{ x:67.5, y:82.0 }, question:{ x:81.8, y:73.8 }, key:{ x:74.8, y:79.7 } }, lock:'assets/images/ui/lock_lava.png', key:'assets/images/ui/key_lava.png' },
     sehen:     { id:'sehen', label:'Himmelswelt', stageIndex:4, board:{ minigame:{ x:44.2, y:37.6 }, question:{ x:57.4, y:33.2 }, key:{ x:50.0, y:39.8 } }, lock:'assets/images/ui/lock_cloud.png', key:'assets/images/ui/key_cloud.png' },
-    boss:      { id:'boss', label:'Kronenwelt', stageIndex:5, board:{ minigame:{ x:50.0, y:18.0 }, question:{ x:50.0, y:12.0 }, key:{ x:50.0, y:9.0 } }, lock:'assets/images/ui/lock.png', key:'' }
+    boss:      { id:'boss', label:'Kronenwelt', stageIndex:5, board:{ minigame:{ x:50.0, y:22.0 }, question:{ x:50.0, y:12.0 }, key:{ x:50.0, y:9.0 } }, lock:'assets/images/ui/lock.png', key:'' }
   };
   const LOCK_RENDER_ORDER = ['riechen', 'hoeren', 'sehen', 'schmecken', 'fuehlen'];
   const BIOME_LEVEL_PLAN = {
@@ -136,7 +136,7 @@
     sehen: [3, 0],
     schmecken: [1, 6],
     fuehlen: [7, 8],
-    boss: [10, 11]
+    boss: [11, 10]
   };
   const stageIndexForSlot = slot => { const senseId = SLOT_SENSE_MAP[Number(slot)] || 'boss'; return BIOME_BY_SENSE[senseId]?.stageIndex ?? 5; };
   const slotSenseId = slot => SLOT_SENSE_MAP[Number(slot)] || 'boss';
@@ -310,7 +310,14 @@
     Object.entries(keySlots).forEach(([id, slot]) => {
       if (state.completed[slot]) state.keysFound[id] = true;
     });
-    if (!state.activeBiome || !BIOME_LEVEL_PLAN[state.activeBiome] || state.activeBiome === 'boss' || BIOME_LEVEL_PLAN[state.activeBiome].every(slot => state.completed[slot])) state.activeBiome = null;
+    if (!state.activeBiome || !BIOME_LEVEL_PLAN[state.activeBiome] || BIOME_LEVEL_PLAN[state.activeBiome].every(slot => state.completed[slot])) state.activeBiome = null;
+    if (!state.activeBiome && KEY_ORDER.every(id => state.removedLocks?.[id]) && !state.bossCompleted && !biomeIsComplete('boss', state)) {
+      const bossSlot = nextSlotForBiome('boss', state);
+      if (Number.isInteger(bossSlot)) {
+        state.activeBiome = 'boss';
+        state.slots[bossSlot] = 'boss';
+      }
+    }
     return state;
   }
   function getState() {
@@ -324,7 +331,8 @@
   function firstSlotForBiome(id) { return biomeLevelPlan(id)[0] ?? null; }
   function questionSlotForBiome(id) { return biomeLevelPlan(id)[1] ?? null; }
   function activeBoardSlot(state = getState()) { return state.activeBiome ? nextSlotForBiome(state.activeBiome, state) : null; }
-  function allLevelsDone(state = getState()) { return KEY_ORDER.every(id => biomeIsComplete(id, state)); }
+  function allLocksOpened(state = getState()) { return KEY_ORDER.every(id => state.removedLocks?.[id]); }
+  function allLevelsDone(state = getState()) { return Boolean(state.bossCompleted); }
   function usedIds(state = getState()) { return state.slots.filter(Boolean); }
   function dataForMeta(meta) { return meta?.isBoss || meta?.senseId === 'boss' ? BOSS : SENSES[meta?.senseId]; }
   function getQuestionsForId(id) { return QUESTION_BANK[id] || QUESTION_BANK.sehen; }
@@ -433,14 +441,16 @@
     const w = screen.clientWidth, h = screen.clientHeight;
     let imgW, imgH;
     if (w / h > BOARD_RATIO) {
-      imgW = w;
-      imgH = w / BOARD_RATIO;
-    } else {
       imgH = h;
       imgW = h * BOARD_RATIO;
+    } else {
+      imgW = w;
+      imgH = w / BOARD_RATIO;
     }
     inner.style.width = `${imgW}px`;
     inner.style.height = `${imgH}px`;
+    inner.style.top = `${imgH / 2}px`;
+    inner.style.transform = 'translateX(-50%)';
   }
 
   function boardPos(index) { return boardPointForSlot(index); }
@@ -795,17 +805,14 @@
     applyReturnModal();
   }
   function unlockAllLevels() {
-    if (!confirm('Alle Level zum Testen freischalten?')) return;
+    if (!confirm('Alle Schluessel zum Testen bereitstellen?')) return;
     const state = getState();
     state.started = true;
-    state.slots = Array.from({ length: LEVEL_COUNT }, (_, i) => SLOT_SENSE_MAP[i] === 'boss' ? 'boss' : SLOT_SENSE_MAP[i]);
-    state.completed = Array.from({ length: LEVEL_COUNT }, () => true);
     state.heroIndex = null;
     state.activeBiome = null;
     state.introUsed = true;
-    state.revealedMax = LEVEL_COUNT - 1;
     state.keysFound = { sehen:true, hoeren:true, riechen:true, schmecken:true, fuehlen:true, boss:false };
-    state.removedLocks = { sehen:true, hoeren:true, riechen:true, schmecken:true, fuehlen:true, boss:false };
+    state.removedLocks = { ...state.removedLocks, boss:false };
     setState(state);
     localStorage.removeItem(RETURN_STORE);
     document.body.classList.remove('board-menu-open');
@@ -937,6 +944,19 @@
       $('encounterKicker').textContent = 'Tastsinn-Kran';
       $('encounterTitle').textContent = 'Weich oder spitz?';
       $('encounterSpeech').textContent = done ? 'Du kannst den Tastsinn-Kran erneut spielen.' : 'Steuere den Kran und sammle nur weiche Gegenstände. Spitze Dinge lösen Schmerz aus und kosten ein Herz.';
+      show(modal);
+      return;
+    }
+
+    if (index === 11) {
+      window.pendingLaunch = { placeholder:true, slot:index, meta };
+      $('launchLevelBtn').textContent = 'Platzhalter schaffen';
+      $('encounterBackBtn').textContent = 'Wegrennen';
+      $('encounterImage').src = ASSETS.winHero;
+      $('encounterImage').alt = 'Sir Nervus auf dem Weg zur Krone';
+      $('encounterKicker').textContent = 'Kronenpfad';
+      $('encounterTitle').textContent = 'Der Weg zur Krone';
+      $('encounterSpeech').textContent = 'Hier kommt spaeter ein neues Minispiel hin. Fuer jetzt zaehlt dieser Platzhalter als geschafft und schaltet danach die Krone mit dem Roboter frei.';
       show(modal);
       return;
     }
@@ -1107,7 +1127,10 @@
       const nextSlot = nextSlotForBiome(senseId, getState());
       img.src=ASSETS.winHero;
       kicker.textContent='Erfolg';
-      if (Number.isInteger(nextSlot)) {
+      if (senseId === 'boss' && Number.isInteger(nextSlot)) {
+        title.textContent = 'Krone freigeschaltet';
+        text.textContent = 'Der Weg zur Kronenplattform ist frei. Tippe auf die Krone, um den Roboter zu bekaempfen.';
+      } else if (Number.isInteger(nextSlot)) {
         title.textContent = 'Fragen-Level sichtbar';
         text.textContent = `${BIOME_BY_SENSE[senseId]?.label || 'Das Biom'} zeigt jetzt das Fragen-Level. Tippe auf das neue runde Feld im selben Biom.`;
       } else {

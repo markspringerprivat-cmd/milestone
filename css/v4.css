@@ -5433,6 +5433,29 @@ body[data-page="board"] .map-inner.is-unlocking-key .board-lock-btn:not(.is-targ
 body[data-page="board"] .map-inner.is-unlocking-key .market-board-btn,
 body[data-page="board"] .map-inner.is-unlocking-key .board-biome-level-btn{pointer-events:none !important;}
 
+/* === Mobile board placement update: stable market/hero and adjusted realm nodes === */
+body[data-page="board"] .market-board-btn{
+  left:5.2% !important;
+  bottom:1.4% !important;
+}
+body[data-page="board"] .moving-hero-token .hero-token{
+  animation:none !important;
+}
+@media (max-width: 900px){
+  body[data-page="board"] .market-board-btn{
+    left:5.6% !important;
+    bottom:1.4% !important;
+    width:clamp(96px,18vw,146px) !important;
+  }
+}
+@media (max-width: 640px){
+  body[data-page="board"] .market-board-btn{
+    left:6.2% !important;
+    bottom:1.2% !important;
+    width:clamp(86px,24vw,120px) !important;
+  }
+}
+
 body[data-page="board"] .board-biome-level-btn{
   width:clamp(46px,6vw,60px) !important;
   min-height:clamp(46px,6vw,60px) !important;
