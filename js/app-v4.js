@@ -208,10 +208,12 @@
   const oneShotPools = new Map();
   const activeOneShotAudio = new Set();
   const ONE_SHOT_SOUND_KEYS = ['richtig_1','richtig_2','richtig_3','falsch_1','falsch_2','falsch_3'];
-  let allowedBattleOneShotKey = null;
+  const BATTLE_CUE_KEYS = ['final','win','lose',...ONE_SHOT_SOUND_KEYS];
   let battleAudioContext = null;
   let battleWebBackground = null;
   const battleAudioBuffers = new Map();
+  const activeBattleCueAudio = new Set();
+  const activeBattleCueSources = new Set();
 
   function audioVolumeForKey(key) {
     if (key === 'background') return .045;
@@ -252,7 +254,6 @@
 
   function playBattleWebAudio(key, { loop = false } = {}) {
     if (muted) return false;
-    if (/^(richtig|falsch)_\d$/.test(key) && key !== allowedBattleOneShotKey) return false;
     const ctx = getBattleAudioContext();
     const buffer = battleAudioBuffers.get(key);
     if (!ctx || !buffer) return false;
@@ -268,6 +269,11 @@
       gain.connect(ctx.destination);
       source.start(0);
       if (loop && key === 'battle_background') battleWebBackground = { source, gain };
+      else {
+        const item = { key, source, gain };
+        activeBattleCueSources.add(item);
+        source.onended = () => activeBattleCueSources.delete(item);
+      }
       return true;
     } catch (_) {
       return false;
@@ -281,6 +287,69 @@
     await Promise.allSettled(keys.map(key => loadBattleAudioBuffer(key)));
     const bg = audio.get('battle_background');
     if (!bg || bg.paused) playBattleWebAudio('battle_background', { loop:true });
+  }
+
+  function stopBattleCues(key) {
+    activeBattleCueAudio.forEach(a => {
+      if (key && a._battleCueKey !== key) return;
+      try { a.pause(); a.currentTime = 0; } catch (_) {}
+      activeBattleCueAudio.delete(a);
+    });
+    activeBattleCueSources.forEach(item => {
+      if (key && item.key !== key) return;
+      try { item.source.stop(0); } catch (_) {}
+      try { item.source.disconnect(); item.gain.disconnect(); } catch (_) {}
+      activeBattleCueSources.delete(item);
+    });
+  }
+
+  async function startBattleAudioFromButton() {
+    muted = false;
+    localStorage.setItem(SOUND_STORE, '0');
+    const speaker = $('globalSpeakerBtn');
+    if (speaker) speaker.textContent = String.fromCodePoint(0x1f50a);
+
+    const ctx = getBattleAudioContext();
+    try { await ctx?.resume?.(); } catch (_) {}
+    const preload = Promise.allSettled(['battle_background', ...BATTLE_CUE_KEYS].map(key => loadBattleAudioBuffer(key)));
+
+    const bg = getAudio('battle_background');
+    if (bg) {
+      try {
+        bg.pause();
+        bg.loop = true;
+        bg.muted = false;
+        bg.volume = audioVolumeForKey('battle_background');
+        bg.currentTime = 0;
+        await bg.play();
+      } catch (_) {
+        void loadBattleAudioBuffer('battle_background').then(() => playBattleWebAudio('battle_background', { loop:true }));
+      }
+    } else {
+      void loadBattleAudioBuffer('battle_background').then(() => playBattleWebAudio('battle_background', { loop:true }));
+    }
+    return preload;
+  }
+
+  async function playBattleCue(key, { stopSame = false } = {}) {
+    if (muted || !AUDIO_FILES[key]) return;
+    if (stopSame) stopBattleCues(key);
+    if (/^(richtig|falsch)_\d$/.test(key)) stopBattleCues();
+    const cue = new Audio(AUDIO_FILES[key]);
+    cue.preload = 'auto';
+    cue.volume = audioVolumeForKey(key);
+    cue._battleCueKey = key;
+    activeBattleCueAudio.add(cue);
+    cue.addEventListener('ended', () => activeBattleCueAudio.delete(cue), { once:true });
+    cue.addEventListener('error', () => activeBattleCueAudio.delete(cue), { once:true });
+    try {
+      cue.currentTime = 0;
+      await cue.play();
+    } catch (_) {
+      activeBattleCueAudio.delete(cue);
+      const buffer = battleAudioBuffers.get(key) || await loadBattleAudioBuffer(key);
+      if (buffer) playBattleWebAudio(key);
+    }
   }
 
   function getAudio(key) {
@@ -312,7 +381,6 @@
   }
 
   async function playPooledOneShot(key) {
-    if (key !== allowedBattleOneShotKey) return;
     if (!oneShotPools.has(key)) warmOneShotPools([key]);
     stopActiveOneShots(/^(richtig|falsch)_/);
     const base = getAudio(key);
@@ -371,7 +439,6 @@
 
   async function playSound(key, { loop = false, restart = true } = {}) {
     if (muted) return;
-    if (/^(richtig|falsch)_\d$/.test(key) && key !== allowedBattleOneShotKey) return;
     const a = getAudio(key); if (!a) return;
     try {
       a.loop = loop;
@@ -390,6 +457,7 @@
     const a = audio.get(key);
     if (a) { a.pause(); try { a.currentTime = 0; } catch (_) {} }
     if (key === 'battle_background') stopBattleWebBackground();
+    stopBattleCues(key);
   }
   function stopAllBattleAudio() { stopActiveOneShots(); ['battle_background','final','win','lose','fight','richtig_1','richtig_2','richtig_3','falsch_1','falsch_2','falsch_3'].forEach(stopSound); }
   function ensureBattleBackgroundMusic({ restart = false } = {}) {
@@ -399,26 +467,6 @@
     if (!bg) return;
     if (!restart && !bg.paused) return;
     void playSound('battle_background', { loop:true, restart });
-  }
-  function enableBattleAudioFromStartButton() {
-    muted = false;
-    localStorage.setItem(SOUND_STORE, '0');
-    const speaker = $('globalSpeakerBtn');
-    if (speaker) speaker.textContent = String.fromCodePoint(0x1f50a);
-    const webAudioReady = primeBattleWebAudioFromGesture(['battle_background']);
-
-    const bg = getAudio('battle_background');
-    if (!bg) return webAudioReady;
-    try {
-      bg.loop = true;
-      bg.muted = false;
-      bg.volume = audioVolumeForKey('battle_background');
-      bg.load();
-      bg.currentTime = 0;
-      const started = bg.play();
-      if (started && typeof started.catch === 'function') started.catch(() => {});
-    } catch (_) {}
-    return webAudioReady;
   }
   function startFinalCloudPulse(node) {
     if (!node) return;
@@ -1411,7 +1459,7 @@
       battleStarting = true;
       els.start.disabled = true;
       stopAllBattleAudio();
-      const audioReady = enableBattleAudioFromStartButton();
+      const audioReady = startBattleAudioFromButton();
       setBattleMode('loading');
       try {
         const rounds = await prepared;
@@ -1552,7 +1600,6 @@
     const els = battleElements();
     resetBattleStage(els);
     setBattleMode('sequence');
-    ensureBattleBackgroundMusic();
 
     const totalSteps = rounds.length + 1;
     if (els.dots) els.dots.innerHTML = '<span></span>'.repeat(totalSteps);
@@ -1596,14 +1643,7 @@
     els.roundText.className = 'battle-v84-hit-text is-in';
     els.roundActor.className = 'battle-v84-answer-actor is-in';
     await new Promise(resolve => requestAnimationFrame(resolve));
-    allowedBattleOneShotKey = round.soundKey;
-    try {
-      void playSound(round.soundKey, { restart:true });
-    } finally {
-      window.setTimeout(() => {
-        if (allowedBattleOneShotKey === round.soundKey) allowedBattleOneShotKey = null;
-      }, 650);
-    }
+    void playBattleCue(round.soundKey);
     await sleep(2150);
     els.roundText.className = 'battle-v84-hit-text hidden';
     els.roundActor.className = 'battle-v84-answer-actor hidden';
@@ -1630,7 +1670,7 @@
     els.finalCloud.className = 'battle-v84-final-cloud is-idle is-pulsing';
     startFinalCloudPulse(els.finalCloud);
     showFinalHint('Tippe auf die Wolke');
-    void playSound('final', { restart:true });
+    void playBattleCue('final', { stopSame:true });
 
     await new Promise(resolve => {
       const finish = () => {
@@ -1651,7 +1691,7 @@
     void els.resultStage?.offsetWidth;
     els.resultStage.classList.add('is-visible', won ? 'is-win' : 'is-loss');
     els.finalCloud.className = 'battle-v84-final-cloud is-reveal';
-    void playSound(won ? 'win' : 'lose', { restart:true });
+    void playBattleCue(won ? 'win' : 'lose', { stopSame:true });
     await sleep(980);
     els.finalCloud.className = 'battle-v84-final-cloud hidden';
     renderBattleActions(won, meta, els.action);
