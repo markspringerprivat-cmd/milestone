@@ -6020,7 +6020,7 @@ body[data-page="battle"] .battle-v84-final-cloud{
   object-position:center center!important;
   transform:translate(-50%,-50%)!important;
   filter:drop-shadow(0 20px 34px rgba(0,0,0,.25))!important;
-  z-index:6!important;
+  z-index:10!important;
   cursor:pointer!important;
   will-change:transform,opacity!important;
 }
@@ -6036,7 +6036,7 @@ body[data-page="battle"] .battle-v84-final-cloud.is-pulsing{
   animation:battleV84CloudPulse .72s ease-in-out infinite!important;
 }
 body[data-page="battle"] .battle-v84-final-cloud.is-reveal{
-  animation:battleV84CloudReveal 1.05s ease-out forwards!important;
+  animation:battleV84CloudReveal 1.35s ease-out forwards!important;
 }
 body[data-page="battle"] .battle-v84-result-stage{
   position:absolute!important;
@@ -6044,7 +6044,7 @@ body[data-page="battle"] .battle-v84-result-stage{
   z-index:7!important;
   opacity:0!important;
   pointer-events:none!important;
-  transition:opacity .82s ease!important;
+  transition:opacity 1.05s ease!important;
 }
 body[data-page="battle"] .battle-v84-result-stage.is-visible{
   opacity:1!important;
@@ -6123,13 +6123,14 @@ body[data-page="battle"] .battle-v84-bottom-actions{
   100%{opacity:0;transform:translateX(76vw) scale(.96)}
 }
 @keyframes battleV84CloudPulse{
-  0%,100%{opacity:1;transform:translate(-50%,-50%) scale(.94);filter:drop-shadow(0 18px 30px rgba(0,0,0,.25))}
-  50%{opacity:1;transform:translate(-50%,-50%) scale(1.08);filter:drop-shadow(0 26px 42px rgba(255,255,255,.34))}
+  0%,100%{opacity:1;transform:translate(-50%,-50%) translateX(-10px) scale(.86) rotate(-1.5deg);filter:drop-shadow(0 18px 30px rgba(0,0,0,.25))}
+  50%{opacity:1;transform:translate(-50%,-50%) translateX(10px) scale(1.18) rotate(1.5deg);filter:drop-shadow(0 30px 48px rgba(255,255,255,.42))}
 }
 @keyframes battleV84CloudReveal{
   0%{opacity:1;transform:translate(-50%,-50%) scale(1)}
-  48%{opacity:.92;transform:translate(-50%,-50%) scale(1.22)}
-  100%{opacity:0;transform:translate(-50%,-50%) scale(1.62)}
+  34%{opacity:.96;transform:translate(-50%,-50%) scale(1.18)}
+  68%{opacity:.55;transform:translate(-50%,-50%) scale(1.42)}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(1.72)}
 }
 @keyframes battleV84TitlePulse{
   from{transform:scale(.97)}

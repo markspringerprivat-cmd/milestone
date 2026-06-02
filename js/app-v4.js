@@ -473,9 +473,9 @@
     stopFinalCloudPulse(node);
     try {
       node._battlePulseAnimation = node.animate([
-        { transform:'translate(-50%,-50%) scale(.94)', opacity:1 },
-        { transform:'translate(-50%,-50%) scale(1.08)', opacity:1 },
-        { transform:'translate(-50%,-50%) scale(.94)', opacity:1 }
+        { transform:'translate(-50%,-50%) translateX(-10px) scale(.86) rotate(-1.5deg)', opacity:1 },
+        { transform:'translate(-50%,-50%) translateX(10px) scale(1.18) rotate(1.5deg)', opacity:1 },
+        { transform:'translate(-50%,-50%) translateX(-10px) scale(.86) rotate(-1.5deg)', opacity:1 }
       ], {
         duration:720,
         iterations:Infinity,
@@ -1689,10 +1689,11 @@
     configureBattleResult(els, won, data);
     show(els.resultStage);
     void els.resultStage?.offsetWidth;
-    els.resultStage.classList.add('is-visible', won ? 'is-win' : 'is-loss');
     els.finalCloud.className = 'battle-v84-final-cloud is-reveal';
+    await sleep(360);
+    els.resultStage.classList.add('is-visible', won ? 'is-win' : 'is-loss');
     void playBattleCue(won ? 'win' : 'lose', { stopSame:true });
-    await sleep(980);
+    await sleep(1050);
     els.finalCloud.className = 'battle-v84-final-cloud hidden';
     renderBattleActions(won, meta, els.action);
   }
