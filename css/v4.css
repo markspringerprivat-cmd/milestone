@@ -6013,9 +6013,9 @@ body[data-page="battle"] .battle-v84-final-hint{
 body[data-page="battle"] .battle-v84-final-cloud{
   position:absolute!important;
   left:50%!important;
-  top:52%!important;
-  width:min(88vw,420px)!important;
-  height:min(40svh,360px)!important;
+  top:59%!important;
+  width:min(118vw,720px)!important;
+  height:min(62svh,560px)!important;
   object-fit:contain!important;
   object-position:center center!important;
   transform:translate(-50%,-50%)!important;
@@ -6029,14 +6029,14 @@ body[data-page="battle"] .battle-v84-final-cloud.is-preparing{
 }
 body[data-page="battle"] .battle-v84-final-cloud.is-idle{
   opacity:1!important;
-  animation:battleV84CloudPulse .52s ease-in-out infinite alternate!important;
+  animation:battleV84CloudPulse .72s ease-in-out infinite!important;
 }
 body[data-page="battle"] .battle-v84-final-cloud.is-pulsing{
   opacity:1!important;
-  animation:battleV84CloudPulse .48s ease-in-out infinite alternate!important;
+  animation:battleV84CloudPulse .72s ease-in-out infinite!important;
 }
 body[data-page="battle"] .battle-v84-final-cloud.is-reveal{
-  animation:battleV84CloudReveal .98s ease-out forwards!important;
+  animation:battleV84CloudReveal 1.05s ease-out forwards!important;
 }
 body[data-page="battle"] .battle-v84-result-stage{
   position:absolute!important;
@@ -6123,13 +6123,13 @@ body[data-page="battle"] .battle-v84-bottom-actions{
   100%{opacity:0;transform:translateX(76vw) scale(.96)}
 }
 @keyframes battleV84CloudPulse{
-  0%{transform:translate(-50%,-50%) scale(.76)}
-  50%{transform:translate(-50%,-50%) scale(1.28)}
-  100%{transform:translate(-50%,-50%) scale(.76)}
+  0%,100%{opacity:1;transform:translate(-50%,-50%) scale(.94);filter:drop-shadow(0 18px 30px rgba(0,0,0,.25))}
+  50%{opacity:1;transform:translate(-50%,-50%) scale(1.08);filter:drop-shadow(0 26px 42px rgba(255,255,255,.34))}
 }
 @keyframes battleV84CloudReveal{
   0%{opacity:1;transform:translate(-50%,-50%) scale(1)}
-  100%{opacity:0;transform:translate(-50%,-50%) scale(1.85)}
+  48%{opacity:.92;transform:translate(-50%,-50%) scale(1.22)}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(1.62)}
 }
 @keyframes battleV84TitlePulse{
   from{transform:scale(.97)}
@@ -6185,9 +6185,9 @@ body[data-page="battle"] .battle-v84-bottom-actions{
     object-position:center bottom!important;
   }
   body[data-page="battle"] .battle-v84-final-cloud{
-    top:52%!important;
-    width:min(92vw,340px)!important;
-    height:min(34svh,290px)!important;
+    top:59%!important;
+    width:min(126vw,520px)!important;
+    height:min(55svh,430px)!important;
   }
   body[data-page="battle"] .battle-v84-result-title{
     top:10%!important;

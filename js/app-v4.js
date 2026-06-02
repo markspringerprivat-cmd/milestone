@@ -473,9 +473,9 @@
     stopFinalCloudPulse(node);
     try {
       node._battlePulseAnimation = node.animate([
-        { transform:'translate(-50%,-50%) scale(.76)', opacity:1 },
-        { transform:'translate(-50%,-50%) scale(1.3)', opacity:1 },
-        { transform:'translate(-50%,-50%) scale(.76)', opacity:1 }
+        { transform:'translate(-50%,-50%) scale(.94)', opacity:1 },
+        { transform:'translate(-50%,-50%) scale(1.08)', opacity:1 },
+        { transform:'translate(-50%,-50%) scale(.94)', opacity:1 }
       ], {
         duration:720,
         iterations:Infinity,
