@@ -1240,37 +1240,98 @@
   }
 
   function initBattle() {
-    addSpeaker(); stopSound('background');
-    let payload; try { payload = JSON.parse(sessionStorage.getItem(BATTLE_STORE) || localStorage.getItem(BATTLE_BACKUP_STORE) || ''); } catch (_) {}
+    addSpeaker();
+    stopSound('background');
+    stopAllBattleAudio();
+
+    let payload;
+    try { payload = JSON.parse(sessionStorage.getItem(BATTLE_STORE) || localStorage.getItem(BATTLE_BACKUP_STORE) || ''); } catch (_) {}
     if (!payload || !payload.meta) { location.replace(pageUrl('index.html')); return; }
-    const meta = payload.meta; const data = dataForMeta(meta); if (!data) { location.replace(pageUrl('index.html')); return; }
+
+    const meta = payload.meta;
+    const data = dataForMeta(meta);
+    if (!data) { location.replace(pageUrl('index.html')); return; }
+
+    const els = battleElements();
     document.body.style.setProperty('--battle-bg', `url("${popupBgForMeta(meta)}")`);
-    preloadBattleAssets(data, meta);
-    if ($('battleKampfText')) $('battleKampfText').src = ASSETS.text.kampf;
-    $('battleHero').src = ASSETS.hero; $('battleEnemy').src = data.enemy; $('battleEnemyName').textContent = data.enemyName;
-    $('battleBackBtn')?.addEventListener('click', () => history.back());
+    if (els.kampfTitle) els.kampfTitle.src = ASSETS.text.kampf;
+    if (els.introHero) els.introHero.src = ASSETS.hero;
+    if (els.introEnemy) { els.introEnemy.src = data.enemy; els.introEnemy.alt = data.enemyName; }
+    if (els.introEnemyName) els.introEnemyName.textContent = data.enemyName;
+    if (els.preloadStatus) els.preloadStatus.textContent = 'Kampf wird vorbereitet ...';
+
+    const prepared = prepareBattle(data, payload).then(rounds => {
+      if (els.preloadStatus) els.preloadStatus.textContent = 'Alles bereit.';
+      return rounds;
+    });
+
+    els.back?.addEventListener('click', () => history.back());
     let battleStarting = false;
-    $('battleStartBtn')?.addEventListener('click', async () => {
+    els.start?.addEventListener('click', async () => {
       if (battleStarting) return;
       battleStarting = true;
-      const btn = $('battleStartBtn');
-      if (btn) btn.disabled = true;
+      els.start.disabled = true;
+      setBattleMode('loading');
       try {
-        await runBattleSequence(payload, data, meta);
+        const rounds = await prepared;
+        await sleep(180);
+        await runBattleSequence(payload, data, meta, rounds);
       } catch (err) {
         console.error('Battle konnte nicht gestartet werden:', err);
         battleStarting = false;
-        if (btn) btn.disabled = false;
+        els.start.disabled = false;
+        setBattleMode('intro');
+        if (els.preloadStatus) els.preloadStatus.textContent = 'Bitte noch einmal starten.';
       }
     });
   }
+
+  function battleElements() {
+    return {
+      intro: $('battleIntroScene'),
+      loading: $('battleLoadingScene'),
+      sequence: $('battleSequenceScene'),
+      start: $('battleStartBtn'),
+      back: $('battleBackBtn'),
+      preloadStatus: $('battlePreloadStatus'),
+      kampfTitle: $('battleKampfText'),
+      introHero: $('battleHero'),
+      introEnemy: $('battleEnemy'),
+      introEnemyName: $('battleEnemyName'),
+      dots: $('sequenceDots'),
+      label: $('sequenceLabel'),
+      status: $('sequenceStatus'),
+      roundText: $('sequenceTextImage'),
+      roundActor: $('sequenceImage'),
+      finalHint: $('finalHint'),
+      finalCloud: $('finalCloudImage'),
+      resultStage: $('finalResultStage'),
+      resultText: $('resultTextImage'),
+      outcomeGroup: $('outcomeGroup'),
+      victoryHero: $('victoryHeroImage'),
+      outcome: $('outcomeImage'),
+      action: $('battleAction')
+    };
+  }
+
   function setBattleMode(mode) {
     document.body.dataset.battleMode = mode;
-    if (mode === "sequence") { hide($("battleIntroScene")); show($("battleSequenceScene")); }
-    if (mode === "intro") { show($("battleIntroScene")); hide($("battleSequenceScene")); }
+    const els = battleElements();
+    hide(els.intro);
+    hide(els.loading);
+    hide(els.sequence);
+    if (mode === 'intro') show(els.intro);
+    if (mode === 'loading') show(els.loading);
+    if (mode === 'sequence') show(els.sequence);
   }
-  function showFinalHint(text="Tippe auf die Wolke") { const n=$("finalHint"); if(!n) return; n.textContent=text; show(n); }
-  function hideFinalHint() { hide($("finalHint")); }
+
+  function showFinalHint(text = 'Tippe auf die Wolke') {
+    const n = $('finalHint');
+    if (!n) return;
+    n.textContent = text;
+    show(n);
+  }
+  function hideFinalHint() { hide($('finalHint')); }
   function waitForRenderable(node) {
     if (!node) return Promise.resolve();
     return new Promise(resolve => {
@@ -1288,145 +1349,212 @@
       window.setTimeout(finish, 1400);
     });
   }
-  function pickNoRepeat(list, prev) { const pool = list.filter(x=>x!==prev); return (pool.length?pool:list)[Math.floor(Math.random()*(pool.length?pool:list).length)]; }
-  function answerSoundKeyForAsset(src, soundType, index) {
-    const file = String(src || '').split('/').pop().split('?')[0];
-    const match = file.match(new RegExp(`${soundType}_(\\d+)\\.`, 'i'));
-    const key = match ? `${soundType}_${match[1]}` : `${soundType}_${(index % 3) + 1}`;
-    return AUDIO_FILES[key] ? key : null;
+  function loadImageAsset(src) {
+    return new Promise(resolve => {
+      if (!src) { resolve(); return; }
+      const img = new Image();
+      let done = false;
+      const finish = () => {
+        if (done) return;
+        done = true;
+        img.onload = null;
+        img.onerror = null;
+        resolve();
+      };
+      img.decoding = 'async';
+      img.onload = finish;
+      img.onerror = finish;
+      img.src = src;
+      if (img.complete) finish();
+      window.setTimeout(finish, 1600);
+    });
   }
-  let lastCorrect=null,lastWrong=null;
-  async function runBattleSequence(payload, data, meta) {
-    warmOneShotPools();
-    setBattleMode('sequence');
-    await playSound('fight');
-    playSound('battle_background', { loop:true });
-    const img=$('sequenceImage'), label=$('sequenceLabel'), status=$('sequenceStatus'), dots=$('sequenceDots'), outcome=$('outcomeImage'), action=$('battleAction'), textImg=$('sequenceTextImage');
-    const finalStack=$('finalResultStack'), outcomeGroup=$('outcomeGroup'), victoryHero=$('victoryHeroImage'), resultText=$('resultTextImage') || textImg;
-    action.innerHTML = '';    hide(action);
-    hideFinalHint();
-    if (textImg) { textImg.className = 'battle-text-img hidden'; textImg.removeAttribute('src'); }
-    if (resultText && resultText !== textImg) { resultText.className = 'battle-text-img battle-result-text hidden'; resultText.removeAttribute('src'); }
-    if (finalStack) finalStack.className = 'battle-result-stack behind';
-    if (outcomeGroup) outcomeGroup.className = 'battle-outcome-group';
-    if (victoryHero) { victoryHero.className = 'battle-outcome-hero hidden'; victoryHero.removeAttribute('src'); }
-    label.textContent = ''; status.textContent = '';
-    dots.innerHTML = '<span></span>'.repeat(6);
-    for (let i=0;i<payload.results.length;i++) {
-      const ok = payload.results[i];
+
+  function buildBattleRounds(results = []) {
+    const cursor = { richtig:0, falsch:0 };
+    return results.slice(0, 5).map((ok, index) => {
+      const type = ok ? 'richtig' : 'falsch';
+      const number = (cursor[type]++ % 3) + 1;
       const list = ok ? ASSETS.correct : ASSETS.wrong;
-      const src = ok ? (lastCorrect=pickNoRepeat(list,lastCorrect)) : (lastWrong=pickNoRepeat(list,lastWrong));
-      const textSrc = ok ? ASSETS.text.richtig : ASSETS.text.falsch;
-      const soundType = ok ? 'richtig' : 'falsch';
-      const soundKey = answerSoundKeyForAsset(src, soundType, i);
-      label.textContent = `Frage ${i+1}`;
-      status.textContent = ok ? 'Richtig' : 'Falsch';
-      status.className = `battle-status sr-only ${ok?'ok':'bad'}`;
-      [...dots.children].forEach((d,di)=>d.className=di===i?'active':'');
-      await playAnswerStep(img, textImg, src, textSrc, ok ? 'Richtige Antwort' : 'Falsche Antwort', soundKey);
-    }
-    label.textContent = 'Finale';
-    status.textContent = '';
-    [...dots.children].forEach((d,di)=>d.className=di===5?'active':'');
-    if (textImg) textImg.className = 'battle-text-img hidden';
-    if (resultText && resultText !== textImg) resultText.className = 'battle-text-img battle-result-text hidden';
-    await showFinalCloud(img);
-    showFinalHint();
-    playSound('final');
-    const wrong = payload.results.filter(v=>!v).length; const won = wrong <= 1;
-    outcome.src = won ? data.defeated : ASSETS.loseHero; outcome.alt = won ? `${data.enemyName} besiegt` : 'Du wurdest besiegt';
-    outcome.className='battle-outcome';
-    if (victoryHero) {
-      victoryHero.src = ASSETS.triumphHero;
-      victoryHero.alt = 'Sir Nervus triumphiert';
-      victoryHero.className = won ? 'battle-outcome-hero' : 'battle-outcome-hero hidden';
-    }
-    if (outcomeGroup) outcomeGroup.className = `battle-outcome-group ${won ? 'is-win' : 'is-loss'}`;
-    if (finalStack) finalStack.className = `battle-result-stack behind ${won ? 'is-win' : 'is-loss'}`;
-    img.onclick = async () => {
-      img.onclick = null; hideFinalHint(); stopSound('final');
-      stopSound('battle_background');
-      if (resultText) {
-        resultText.src = won ? ASSETS.text.gewonnen : ASSETS.text.verloren;
-        resultText.alt = won ? 'Gewonnen' : 'Verloren';
-        resultText.className = resultText === textImg ? 'battle-text-img result-preload' : 'battle-text-img battle-result-text result-preload';
-      }
-      if (finalStack) finalStack.className = `battle-result-stack pre-visible ${won ? 'is-win' : 'is-loss'}`;
-      img.classList.remove('final-idle'); img.classList.add('cloud-reveal');
-      if (finalStack) finalStack.className = `battle-result-stack visible ${won ? 'is-win' : 'is-loss'}`;
-      playSound(won ? 'win' : 'lose');
-      await sleep(1120);
-      img.className='battle-seq-img hidden';
-      if (finalStack) finalStack.className = `battle-result-stack visible idle ${won ? 'is-win' : 'is-loss'}`;
-      if (resultText) {
-        await sleep(500);
-        resultText.className = resultText === textImg ? 'battle-text-img result-show' : 'battle-text-img battle-result-text result-show';
-      }
-      showBattleResult(won, data, meta, action, label, status);
-    };
-  }
-
-  function playAnswerStep(img, textImg, src, textSrc, alt, soundKey) {
-    return new Promise(resolve => {
-      img.onclick = null;
-      img.className = "battle-seq-img preparing";
-      img.removeAttribute("src");
-      if (textImg) {
-        textImg.className = "battle-text-img preparing";
-        textImg.removeAttribute("src");
-      }
-      requestAnimationFrame(() => {
-        img.src = src;
-        img.alt = alt;
-        if (textImg) { textImg.src = textSrc; textImg.alt = alt; }
-        Promise.all([waitForRenderable(img), waitForRenderable(textImg)]).then(() => {
-          void playSound(soundKey, { restart:true });
-          void img.offsetWidth;
-          if (textImg) void textImg.offsetWidth;
-          img.className = "battle-seq-img answer-cycle";
-          if (textImg) textImg.className = "battle-text-img answer-text-cycle";
-          window.setTimeout(() => {
-            img.className = "battle-seq-img hidden";
-            if (textImg) textImg.className = "battle-text-img hidden";
-            resolve();
-          }, 2000);
-        });
-      });
+      return {
+        index,
+        ok,
+        type,
+        number,
+        actorSrc: list[number - 1],
+        textSrc: ok ? ASSETS.text.richtig : ASSETS.text.falsch,
+        soundKey: `${type}_${number}`,
+        alt: ok ? `Treffer ${number}` : `Autsch ${number}`
+      };
     });
   }
 
-  function showSequenceImage(img, src, alt, index) {
-    return new Promise(resolve => {
-      img.className='battle-seq-img preparing'; img.src=src; img.alt=alt; img.onclick=null;
-      const apply=()=>{ img.onload=null; void img.offsetWidth; img.className='battle-seq-img answer-cycle'; window.setTimeout(resolve, 2000); };
-      img.onload=apply; if (img.complete) apply();
+  function prepareBattle(data, payload) {
+    const rounds = buildBattleRounds(payload.results);
+    const imageAssets = [
+      ASSETS.text.kampf,
+      ASSETS.hero,
+      ASSETS.triumphHero,
+      ASSETS.loseHero,
+      ASSETS.final,
+      ASSETS.text.gewonnen,
+      ASSETS.text.verloren,
+      data.enemy,
+      data.defeated,
+      ...rounds.flatMap(round => [round.actorSrc, round.textSrc])
+    ];
+    const soundKeys = ['battle_background', 'final', 'win', 'lose', ...rounds.map(round => round.soundKey)];
+    warmOneShotPools(soundKeys.filter(key => /^(richtig|falsch)_/.test(key)));
+    soundKeys.forEach(key => { try { getAudio(key)?.load?.(); } catch (_) {} });
+    return Promise.all(imageAssets.map(loadImageAsset)).then(() => rounds);
+  }
+
+  async function runBattleSequence(payload, data, meta, rounds) {
+    const els = battleElements();
+    resetBattleStage(els);
+    setBattleMode('sequence');
+    stopAllBattleAudio();
+    void playSound('battle_background', { loop:true, restart:true });
+
+    const totalSteps = rounds.length + 1;
+    if (els.dots) els.dots.innerHTML = '<span></span>'.repeat(totalSteps);
+    for (const round of rounds) await playBattleRound(els, round, totalSteps);
+
+    const wrong = payload.results.filter(v => !v).length;
+    const won = wrong <= 1;
+    await playBattleFinal(els, won, data, meta, totalSteps);
+  }
+
+  function resetBattleStage(els) {
+    hideFinalHint();
+    hide(els.action);
+    if (els.action) els.action.innerHTML = '';
+    if (els.label) els.label.textContent = '';
+    if (els.status) els.status.textContent = '';
+    if (els.roundText) { els.roundText.className = 'battle-v84-hit-text hidden'; els.roundText.removeAttribute('src'); }
+    if (els.roundActor) { els.roundActor.className = 'battle-v84-answer-actor hidden'; els.roundActor.removeAttribute('src'); }
+    if (els.finalCloud) { els.finalCloud.className = 'battle-v84-final-cloud hidden'; els.finalCloud.removeAttribute('src'); els.finalCloud.onclick = null; }
+    if (els.resultStage) els.resultStage.className = 'battle-v84-result-stage hidden';
+    if (els.resultText) { els.resultText.removeAttribute('src'); els.resultText.alt = ''; }
+    if (els.victoryHero) { els.victoryHero.className = 'battle-v84-victory-hero hidden'; els.victoryHero.removeAttribute('src'); }
+    if (els.outcome) { els.outcome.removeAttribute('src'); els.outcome.alt = ''; }
+  }
+
+  async function playBattleRound(els, round, totalSteps) {
+    if (els.label) els.label.textContent = `Frage ${round.index + 1}`;
+    if (els.status) els.status.textContent = round.ok ? 'Treffer' : 'Autsch';
+    setBattleDot(els.dots, round.index);
+
+    els.roundText.src = round.textSrc;
+    els.roundText.alt = round.ok ? 'Treffer' : 'Autsch';
+    els.roundActor.src = round.actorSrc;
+    els.roundActor.alt = round.alt;
+    els.roundText.className = 'battle-v84-hit-text is-preparing';
+    els.roundActor.className = 'battle-v84-answer-actor is-preparing';
+    await Promise.all([waitForRenderable(els.roundText), waitForRenderable(els.roundActor)]);
+
+    void els.roundText.offsetWidth;
+    void els.roundActor.offsetWidth;
+    void playSound(round.soundKey, { restart:true });
+    els.roundText.className = 'battle-v84-hit-text is-in';
+    els.roundActor.className = 'battle-v84-answer-actor is-in';
+    await sleep(1660);
+    els.roundText.classList.add('is-out');
+    els.roundActor.classList.add('is-out');
+    await sleep(320);
+    els.roundText.className = 'battle-v84-hit-text hidden';
+    els.roundActor.className = 'battle-v84-answer-actor hidden';
+    if (totalSteps) setBattleDot(els.dots, round.index);
+  }
+
+  function setBattleDot(dots, activeIndex) {
+    if (!dots) return;
+    [...dots.children].forEach((dot, index) => {
+      dot.className = index === activeIndex ? 'active' : '';
     });
   }
-  function showFinalCloud(img) {
-    return new Promise(resolve => {
-      img.className='battle-seq-img preparing';
-      img.removeAttribute('src');
-      requestAnimationFrame(() => {
-        img.src = ASSETS.final;
-        img.alt = 'Finale Staubwolke';
-        waitForRenderable(img).then(() => {
-          void img.offsetWidth;
-          img.className='battle-seq-img final-cloud final-idle';
-          resolve();
-        });
-      });
+
+  async function playBattleFinal(els, won, data, meta, totalSteps) {
+    setBattleDot(els.dots, totalSteps - 1);
+    if (els.label) els.label.textContent = 'Finale';
+    if (els.status) els.status.textContent = '';
+
+    els.finalCloud.src = ASSETS.final;
+    els.finalCloud.alt = 'Finale Wolke';
+    els.finalCloud.className = 'battle-v84-final-cloud is-preparing';
+    await waitForRenderable(els.finalCloud);
+    void els.finalCloud.offsetWidth;
+    els.finalCloud.className = 'battle-v84-final-cloud is-idle';
+    showFinalHint('Tippe auf die Wolke');
+    void playSound('final', { restart:true });
+
+    await new Promise(resolve => {
+      const finish = () => {
+        els.finalCloud.onclick = null;
+        els.finalHint.onclick = null;
+        resolve();
+      };
+      els.finalCloud.onclick = finish;
+      els.finalHint.onclick = finish;
     });
+
+    hideFinalHint();
+    stopSound('final');
+    stopSound('battle_background');
+    els.finalCloud.className = 'battle-v84-final-cloud is-reveal';
+    await sleep(520);
+
+    configureBattleResult(els, won, data);
+    show(els.resultStage);
+    els.resultStage.classList.add('is-visible', won ? 'is-win' : 'is-loss');
+    void playSound(won ? 'win' : 'lose', { restart:true });
+    await sleep(600);
+    els.finalCloud.className = 'battle-v84-final-cloud hidden';
+    renderBattleActions(won, meta, els.action);
   }
-  function showBattleResult(won, data, meta, action, label, status) {
-    label.textContent = ''; status.textContent = ''; status.className = 'battle-status sr-only';
+
+  function configureBattleResult(els, won, data) {
+    els.resultText.src = won ? ASSETS.text.gewonnen : ASSETS.text.verloren;
+    els.resultText.alt = won ? 'Gewonnen' : 'Verloren';
+    els.outcome.src = won ? data.defeated : ASSETS.loseHero;
+    els.outcome.alt = won ? `${data.enemyName} besiegt` : 'Sir Nervus besiegt';
+    if (els.outcomeGroup) els.outcomeGroup.className = `battle-v84-outcome-group ${won ? 'is-win' : 'is-loss'}`;
+    if (won) {
+      els.victoryHero.src = ASSETS.triumphHero;
+      els.victoryHero.alt = 'Sir Nervus triumphiert';
+      els.victoryHero.className = 'battle-v84-victory-hero';
+    } else {
+      els.victoryHero.className = 'battle-v84-victory-hero hidden';
+      els.victoryHero.removeAttribute('src');
+    }
+  }
+
+  function renderBattleActions(won, meta, action) {
+    if (!action) return;
     action.innerHTML = '';
     show(action);
     if (won) {
-      const btn = document.createElement('button'); btn.className='game-btn primary'; btn.textContent='Weiter'; btn.onclick=()=>finishBattleWin(meta); action.appendChild(btn);
+      const btn = document.createElement('button');
+      btn.className = 'game-btn primary';
+      btn.type = 'button';
+      btn.textContent = 'Weiter';
+      btn.onclick = () => finishBattleWin(meta);
+      action.appendChild(btn);
     } else {
-      const retry = document.createElement('button'); retry.className='game-btn primary'; retry.textContent='Neuer Versuch'; retry.onclick=()=>location.href = pageUrl(meta.isBoss ? `level.html?type=boss&slot=${meta.slot}` : `level.html?sense=${encodeURIComponent(meta.senseId)}&slot=${meta.slot}`);
-      const run = document.createElement('button'); run.className='game-btn muted'; run.textContent='Wegrennen'; run.onclick=()=>{ localStorage.setItem(RETURN_STORE, JSON.stringify({ type:'escape', meta })); location.href = pageUrl('index.html'); };
-      action.append(retry,run);
+      const retry = document.createElement('button');
+      retry.className = 'game-btn primary';
+      retry.type = 'button';
+      retry.textContent = 'Neuer Versuch';
+      retry.onclick = () => location.href = pageUrl(meta.isBoss ? `level.html?type=boss&slot=${meta.slot}` : `level.html?sense=${encodeURIComponent(meta.senseId)}&slot=${meta.slot}`);
+      const run = document.createElement('button');
+      run.className = 'game-btn muted';
+      run.type = 'button';
+      run.textContent = 'Wegrennen';
+      run.onclick = () => {
+        localStorage.setItem(RETURN_STORE, JSON.stringify({ type:'escape', meta }));
+        location.href = pageUrl('index.html');
+      };
+      action.append(retry, run);
     }
   }
   function finishBattleWin(meta) {

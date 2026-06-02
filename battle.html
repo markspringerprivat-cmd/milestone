@@ -3,52 +3,62 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Kampf · Königreich der Sinne</title>
-  <link rel="stylesheet" href="./css/style.css?v=v4_82_battle_audio_result_20260602">
-  <link rel="stylesheet" href="./css/v4.css?v=v4_82_battle_audio_result_20260602">
-  <script src="./js/app-v4.js?v=v4_82_battle_audio_result_20260602" defer></script>
+  <title>Kampf - Koenigreich der Sinne</title>
+  <link rel="stylesheet" href="./css/style.css?v=v4_84_battle_rebuild_20260602">
+  <link rel="stylesheet" href="./css/v4.css?v=v4_84_battle_rebuild_20260602">
+  <script src="./js/app-v4.js?v=v4_84_battle_rebuild_20260602" defer></script>
 </head>
 <body data-page="battle" data-battle-mode="intro">
-  <main class="battle-page" aria-label="Kampfseite">
-    <section class="battle-card">
-      <div id="battleIntroScene" class="battle-scene battle-intro-scene">
-        <img id="battleKampfText" class="battle-kampf-text" src="./assets/images/battle/kampf_text.webp" alt="Kampf">
-        <div class="battle-versus-layout">
-          <div class="battle-side hero">
-            <img id="battleHero" class="battle-actor" src="./assets/images/characters/held.webp" alt="Sir Nervus">
-            <div class="battle-name">Sir Nervus</div>
+  <main class="battle-v84-page" aria-label="Kampfseite">
+    <section class="battle-v84-shell">
+      <section id="battleIntroScene" class="battle-v84-scene battle-v84-intro">
+        <img id="battleKampfText" class="battle-v84-kampf-title" src="./assets/images/battle/kampf_text.webp" alt="Kampf">
+        <div class="battle-v84-intro-actors" aria-hidden="true">
+          <div class="battle-v84-intro-side">
+            <img id="battleHero" class="battle-v84-intro-actor" src="./assets/images/characters/held.webp" alt="Sir Nervus">
+            <div class="battle-v84-name">Sir Nervus</div>
           </div>
-                    <div class="battle-side enemy">
-            <img id="battleEnemy" class="battle-actor" alt="Gegner">
-            <div id="battleEnemyName" class="battle-name">Gegner</div>
+          <div class="battle-v84-intro-side">
+            <img id="battleEnemy" class="battle-v84-intro-actor" alt="Gegner">
+            <div id="battleEnemyName" class="battle-v84-name">Gegner</div>
           </div>
         </div>
-        <div class="battle-buttons">
+        <div class="battle-v84-actions">
           <button id="battleStartBtn" class="game-btn primary" type="button">Kampf starten</button>
-          <button id="battleBackBtn" class="game-btn secondary" type="button">Zurück</button>
+          <button id="battleBackBtn" class="game-btn secondary" type="button">Zurueck</button>
         </div>
-      </div>
+        <p id="battlePreloadStatus" class="battle-v84-preload">Kampf wird vorbereitet ...</p>
+      </section>
 
-      <div id="battleSequenceScene" class="battle-scene battle-sequence hidden">
-        <div class="battle-top">
-          <div id="sequenceDots" class="battle-dots" aria-hidden="true"></div>
-          <img id="sequenceTextImage" class="battle-text-img hidden" alt="">
-          <div id="sequenceLabel" class="battle-label sr-only">Frage 1</div>
-          <div id="sequenceStatus" class="battle-status sr-only"></div>
+      <section id="battleLoadingScene" class="battle-v84-scene battle-v84-loading hidden" aria-live="polite">
+        <img class="battle-v84-loading-title" src="./assets/images/battle/kampf_text.webp" alt="Kampf">
+        <div class="battle-v84-loader" aria-hidden="true"></div>
+        <p>Kampf wird vorbereitet ...</p>
+      </section>
+
+      <section id="battleSequenceScene" class="battle-v84-scene battle-v84-sequence hidden">
+        <div id="sequenceDots" class="battle-v84-dots" aria-hidden="true"></div>
+        <div id="sequenceLabel" class="sr-only">Frage 1</div>
+        <div id="sequenceStatus" class="sr-only"></div>
+
+        <div class="battle-v84-round-stage" aria-live="polite">
+          <img id="sequenceTextImage" class="battle-v84-hit-text hidden" alt="">
+          <img id="sequenceImage" class="battle-v84-answer-actor hidden" alt="">
         </div>
-        <div class="battle-stage">
-          <div id="finalHint" class="battle-final-hint hidden">Tippe auf die Wolke</div>
-          <div id="finalResultStack" class="battle-result-stack behind">
-            <img id="resultTextImage" class="battle-text-img battle-result-text hidden" alt="">
-            <div id="outcomeGroup" class="battle-outcome-group">
-              <img id="victoryHeroImage" class="battle-outcome-hero hidden" alt="Sir Nervus triumphiert">
-              <img id="outcomeImage" class="battle-outcome" alt="Ergebnis">
-            </div>
+
+        <button id="finalHint" class="battle-v84-final-hint hidden" type="button">Tippe auf die Wolke</button>
+        <img id="finalCloudImage" class="battle-v84-final-cloud hidden" alt="Finale Wolke">
+
+        <div id="finalResultStage" class="battle-v84-result-stage hidden">
+          <img id="resultTextImage" class="battle-v84-result-title" alt="">
+          <div id="outcomeGroup" class="battle-v84-outcome-group">
+            <img id="victoryHeroImage" class="battle-v84-victory-hero hidden" alt="Sir Nervus triumphiert">
+            <img id="outcomeImage" class="battle-v84-outcome" alt="Ergebnis">
           </div>
-          <img id="sequenceImage" class="battle-seq-img" alt="Auswertung">
         </div>
-        <div id="battleAction" class="battle-action"></div>
-      </div>
+
+        <div id="battleAction" class="battle-v84-bottom-actions hidden"></div>
+      </section>
     </section>
   </main>
 </body>
