@@ -5787,6 +5787,11 @@ body[data-page="battle"]{
   color:#172033!important;
   overscroll-behavior:none!important;
 }
+body[data-page="battle"]::before,
+body[data-page="battle"]::after{
+  display:none!important;
+  content:none!important;
+}
 body[data-page="battle"] .battle-v84-page{
   position:relative!important;
   z-index:2!important;
@@ -5796,19 +5801,17 @@ body[data-page="battle"] .battle-v84-page{
   display:grid!important;
   place-items:center!important;
   padding:max(8px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))!important;
-  background:
-    linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.04)),
-    var(--battle-bg) center/cover no-repeat!important;
+  background:var(--battle-bg) center/cover no-repeat!important;
 }
 body[data-page="battle"] .battle-v84-shell{
   position:relative!important;
   width:min(100%,980px)!important;
   height:min(100%,760px)!important;
   overflow:hidden!important;
-  border-radius:24px!important;
-  background:rgba(255,255,255,.12)!important;
-  box-shadow:0 24px 80px rgba(0,0,0,.34)!important;
-  backdrop-filter:blur(4px)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
 }
 body[data-page="battle"] .battle-v84-scene{
   position:absolute!important;
@@ -5835,9 +5838,17 @@ body[data-page="battle"] .battle-v84-intro{
   justify-content:space-between!important;
   gap:10px!important;
 }
-body[data-page="battle"] .battle-v84-kampf-title,
+body[data-page="battle"] .battle-v84-kampf-title{
+  width:min(104vw,640px)!important;
+  height:min(27svh,205px)!important;
+  object-fit:contain!important;
+  filter:drop-shadow(0 18px 28px rgba(0,0,0,.24))!important;
+  margin-top:clamp(18px,5svh,52px)!important;
+  animation:battleV84TitlePulse 1.25s ease-in-out infinite alternate!important;
+  transform-origin:center center!important;
+}
 body[data-page="battle"] .battle-v84-loading-title{
-  width:min(94vw,520px)!important;
+  width:min(92vw,520px)!important;
   height:min(22svh,156px)!important;
   object-fit:contain!important;
   filter:drop-shadow(0 18px 28px rgba(0,0,0,.24))!important;
@@ -5946,25 +5957,28 @@ body[data-page="battle"] .battle-v84-round-stage{
 body[data-page="battle"] .battle-v84-hit-text{
   position:absolute!important;
   top:12%!important;
-  right:3%!important;
+  left:50%!important;
+  right:auto!important;
   width:min(66vw,520px)!important;
   height:min(18svh,136px)!important;
   object-fit:contain!important;
   object-position:center center!important;
   opacity:0!important;
+  transform:translateX(76vw)!important;
   filter:drop-shadow(0 16px 28px rgba(0,0,0,.25))!important;
   will-change:transform,opacity!important;
   z-index:4!important;
 }
 body[data-page="battle"] .battle-v84-answer-actor{
   position:absolute!important;
-  left:2%!important;
+  left:50%!important;
   bottom:12%!important;
   width:min(88vw,520px)!important;
   height:min(52svh,430px)!important;
   object-fit:contain!important;
-  object-position:left bottom!important;
+  object-position:center bottom!important;
   opacity:0!important;
+  transform:translateX(-132vw)!important;
   filter:drop-shadow(0 18px 32px rgba(0,0,0,.27))!important;
   will-change:transform,opacity!important;
   z-index:3!important;
@@ -5974,10 +5988,10 @@ body[data-page="battle"] .battle-v84-answer-actor.is-preparing{
   opacity:0!important;
 }
 body[data-page="battle"] .battle-v84-hit-text.is-in{
-  animation:battleV84TextIn 1.98s cubic-bezier(.19,.9,.28,1) both!important;
+  animation:battleV84TextIn 2.15s cubic-bezier(.19,.9,.28,1) both!important;
 }
 body[data-page="battle"] .battle-v84-answer-actor.is-in{
-  animation:battleV84ActorIn 1.98s cubic-bezier(.19,.9,.28,1) both!important;
+  animation:battleV84ActorIn 2.15s cubic-bezier(.19,.9,.28,1) both!important;
 }
 body[data-page="battle"] .battle-v84-hit-text.is-out,
 body[data-page="battle"] .battle-v84-answer-actor.is-out{
@@ -6017,10 +6031,10 @@ body[data-page="battle"] .battle-v84-final-cloud.is-preparing{
 }
 body[data-page="battle"] .battle-v84-final-cloud.is-idle{
   opacity:1!important;
-  animation:battleV84CloudPulse .7s ease-in-out infinite alternate!important;
+  animation:battleV84CloudPulse .52s ease-in-out infinite alternate!important;
 }
 body[data-page="battle"] .battle-v84-final-cloud.is-reveal{
-  animation:battleV84CloudReveal .72s ease-out forwards!important;
+  animation:battleV84CloudReveal .98s ease-out forwards!important;
 }
 body[data-page="battle"] .battle-v84-result-stage{
   position:absolute!important;
@@ -6028,7 +6042,7 @@ body[data-page="battle"] .battle-v84-result-stage{
   z-index:7!important;
   opacity:0!important;
   pointer-events:none!important;
-  transition:opacity .34s ease!important;
+  transition:opacity .82s ease!important;
 }
 body[data-page="battle"] .battle-v84-result-stage.is-visible{
   opacity:1!important;
@@ -6036,7 +6050,7 @@ body[data-page="battle"] .battle-v84-result-stage.is-visible{
 body[data-page="battle"] .battle-v84-result-title{
   position:absolute!important;
   left:50%!important;
-  top:7%!important;
+  top:11%!important;
   width:min(122vw,850px)!important;
   height:min(28svh,210px)!important;
   object-fit:contain!important;
@@ -6044,6 +6058,8 @@ body[data-page="battle"] .battle-v84-result-title{
   transform:translateX(-50%)!important;
   filter:drop-shadow(0 18px 30px rgba(0,0,0,.27))!important;
   z-index:3!important;
+  animation:battleV84ResultTitlePulse 1.25s ease-in-out infinite alternate!important;
+  transform-origin:center center!important;
 }
 body[data-page="battle"] .battle-v84-outcome-group{
   position:absolute!important;
@@ -6093,24 +6109,32 @@ body[data-page="battle"] .battle-v84-bottom-actions{
   flex-wrap:wrap!important;
 }
 @keyframes battleV84TextIn{
-  0%{opacity:0;transform:translate(24vw,-22svh) scale(.68) rotate(4deg)}
-  16%{opacity:1}
-  72%{opacity:1;transform:translate(0,0) scale(1) rotate(0)}
-  100%{opacity:0;transform:translate(-5vw,2svh) scale(.96) rotate(-2deg)}
+  0%{opacity:0;transform:translateX(76vw) scale(.96)}
+  18%{opacity:1;transform:translateX(-50%) scale(1)}
+  72%{opacity:1;transform:translateX(-50%) scale(1)}
+  100%{opacity:0;transform:translateX(-132vw) scale(.96)}
 }
 @keyframes battleV84ActorIn{
-  0%{opacity:0;transform:translateX(-72vw) translateY(5svh) scale(.92)}
-  16%{opacity:1}
-  72%{opacity:1;transform:translateX(0) translateY(0) scale(1)}
-  100%{opacity:0;transform:translateX(8vw) translateY(0) scale(.96)}
+  0%{opacity:0;transform:translateX(-132vw) scale(.96)}
+  18%{opacity:1;transform:translateX(-50%) scale(1)}
+  72%{opacity:1;transform:translateX(-50%) scale(1)}
+  100%{opacity:0;transform:translateX(76vw) scale(.96)}
 }
 @keyframes battleV84CloudPulse{
-  from{transform:translate(-50%,-50%) scale(.94)}
-  to{transform:translate(-50%,-50%) scale(1.13)}
+  from{transform:translate(-50%,-50%) scale(.82)}
+  to{transform:translate(-50%,-50%) scale(1.25)}
 }
 @keyframes battleV84CloudReveal{
   0%{opacity:1;transform:translate(-50%,-50%) scale(1)}
   100%{opacity:0;transform:translate(-50%,-50%) scale(1.85)}
+}
+@keyframes battleV84TitlePulse{
+  from{transform:scale(.97)}
+  to{transform:scale(1.06)}
+}
+@keyframes battleV84ResultTitlePulse{
+  from{transform:translateX(-50%) scale(.98)}
+  to{transform:translateX(-50%) scale(1.06)}
 }
 @keyframes battleV84SoftPulse{
   from{transform:scale(.985)}
@@ -6123,9 +6147,13 @@ body[data-page="battle"] .battle-v84-bottom-actions{
   body[data-page="battle"] .battle-v84-shell{
     width:100%!important;
     height:100%!important;
-    border-radius:18px!important;
+    border-radius:0!important;
   }
-  body[data-page="battle"] .battle-v84-kampf-title,
+  body[data-page="battle"] .battle-v84-kampf-title{
+    width:min(112vw,500px)!important;
+    height:min(22svh,165px)!important;
+    margin-top:clamp(22px,7svh,58px)!important;
+  }
   body[data-page="battle"] .battle-v84-loading-title{
     width:min(104vw,440px)!important;
     height:min(19svh,138px)!important;
@@ -6140,16 +6168,18 @@ body[data-page="battle"] .battle-v84-bottom-actions{
     padding:6px 9px!important;
   }
   body[data-page="battle"] .battle-v84-hit-text{
-    top:12%!important;
-    right:-2%!important;
+    top:13%!important;
+    left:50%!important;
+    right:auto!important;
     width:min(82vw,360px)!important;
     height:min(16svh,112px)!important;
   }
   body[data-page="battle"] .battle-v84-answer-actor{
-    left:-2%!important;
-    bottom:16%!important;
+    left:50%!important;
+    bottom:15%!important;
     width:min(105vw,430px)!important;
     height:min(48svh,360px)!important;
+    object-position:center bottom!important;
   }
   body[data-page="battle"] .battle-v84-final-cloud{
     top:52%!important;
@@ -6157,7 +6187,7 @@ body[data-page="battle"] .battle-v84-bottom-actions{
     height:min(34svh,290px)!important;
   }
   body[data-page="battle"] .battle-v84-result-title{
-    top:6%!important;
+    top:10%!important;
     width:min(122vw,525px)!important;
     height:min(23svh,174px)!important;
   }
@@ -6187,7 +6217,9 @@ body[data-page="battle"] .battle-v84-bottom-actions{
 }
 @media (prefers-reduced-motion: reduce){
   body[data-page="battle"] .battle-v84-intro-actor,
+  body[data-page="battle"] .battle-v84-kampf-title,
   body[data-page="battle"] .battle-v84-final-cloud.is-idle,
+  body[data-page="battle"] .battle-v84-result-title,
   body[data-page="battle"] .battle-v84-outcome,
   body[data-page="battle"] .battle-v84-victory-hero{
     animation:none!important;
