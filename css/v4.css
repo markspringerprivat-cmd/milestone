@@ -5815,6 +5815,19 @@ body[data-page="battle"] .battle-v84-scene{
   inset:0!important;
   padding:clamp(12px,2.3vw,22px)!important;
 }
+body[data-page="battle"] .battle-v84-scene.hidden,
+body[data-page="battle"] .battle-v84-hit-text.hidden,
+body[data-page="battle"] .battle-v84-answer-actor.hidden,
+body[data-page="battle"] .battle-v84-final-hint.hidden,
+body[data-page="battle"] .battle-v84-final-cloud.hidden,
+body[data-page="battle"] .battle-v84-result-stage.hidden,
+body[data-page="battle"] .battle-v84-victory-hero.hidden,
+body[data-page="battle"] .battle-v84-bottom-actions.hidden{
+  display:none!important;
+  opacity:0!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
 body[data-page="battle"] .battle-v84-intro{
   display:flex!important;
   flex-direction:column!important;
