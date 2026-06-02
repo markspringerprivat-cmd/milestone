@@ -149,6 +149,7 @@
     wrong: ['assets/images/battle/falsch_1.webp', 'assets/images/battle/falsch_2.webp', 'assets/images/battle/falsch_3.webp'],
     final: 'assets/images/battle/final.webp',
     hero: 'assets/images/characters/held.webp',
+    triumphHero: 'assets/images/characters/held_triumph.webp',
     winHero: 'assets/images/characters/held_gewonnen.webp',
     loseHero: 'assets/images/characters/held_verloren.webp',
     escapeHero: 'assets/images/characters/held_entkommen.webp',
@@ -184,6 +185,7 @@
     ASSETS.wrong = ASSETS.wrong.map(assetUrl);
     ASSETS.final = assetUrl(ASSETS.final);
     ASSETS.hero = assetUrl(ASSETS.hero);
+    ASSETS.triumphHero = assetUrl(ASSETS.triumphHero);
     ASSETS.winHero = assetUrl(ASSETS.winHero);
     ASSETS.loseHero = assetUrl(ASSETS.loseHero);
     ASSETS.escapeHero = assetUrl(ASSETS.escapeHero);
@@ -204,6 +206,7 @@
   let muted = localStorage.getItem(SOUND_STORE) === '1';
   const audio = new Map();
   const oneShotPools = new Map();
+  const activeOneShotAudio = new Set();
   const ONE_SHOT_SOUND_KEYS = ['richtig_1','richtig_2','richtig_3','falsch_1','falsch_2','falsch_3'];
 
   function audioVolumeForKey(key) {
@@ -248,12 +251,40 @@
     if (!oneShotPools.has(key)) warmOneShotPools([key]);
     const pool = oneShotPools.get(key);
     if (!pool || !pool.length) return;
+    stopActiveOneShots(/^(richtig|falsch)_/);
     const a = pool[pool.cursor++ % pool.length];
     try {
       a.pause();
       a.currentTime = 0;
+      activeOneShotAudio.add(a);
+      a.addEventListener('ended', () => activeOneShotAudio.delete(a), { once:true });
+      a.addEventListener('error', () => activeOneShotAudio.delete(a), { once:true });
       await a.play();
-    } catch (_) {}
+    } catch (_) {
+      activeOneShotAudio.delete(a);
+      let fallback = null;
+      try {
+        fallback = new Audio(AUDIO_FILES[key]);
+        fallback.preload = 'auto';
+        fallback.volume = audioVolumeForKey(key);
+        activeOneShotAudio.add(fallback);
+        fallback.addEventListener('ended', () => activeOneShotAudio.delete(fallback), { once:true });
+        fallback.addEventListener('error', () => activeOneShotAudio.delete(fallback), { once:true });
+        await fallback.play();
+      } catch (__) {
+        if (fallback) activeOneShotAudio.delete(fallback);
+      }
+    }
+  }
+
+  function stopActiveOneShots(pattern) {
+    activeOneShotAudio.forEach(a => {
+      const src = a.currentSrc || a.src || '';
+      const matches = !pattern || pattern.test(Object.keys(AUDIO_FILES).find(key => src.includes(AUDIO_FILES[key].split('/').pop())) || src);
+      if (!matches) return;
+      try { a.pause(); a.currentTime = 0; } catch (_) {}
+      activeOneShotAudio.delete(a);
+    });
   }
 
   async function playSound(key, { loop = false, restart = true } = {}) {
@@ -271,7 +302,7 @@
     } catch (_) {}
   }
   function stopSound(key) { const a = getAudio(key); if (a) { a.pause(); try { a.currentTime = 0; } catch (_) {} } }
-  function stopAllBattleAudio() { ['battle_background','final','win','lose','fight','richtig_1','richtig_2','richtig_3','falsch_1','falsch_2','falsch_3'].forEach(stopSound); }
+  function stopAllBattleAudio() { stopActiveOneShots(); ['battle_background','final','win','lose','fight','richtig_1','richtig_2','richtig_3','falsch_1','falsch_2','falsch_3'].forEach(stopSound); }
   function addSpeaker() {
     if ($('globalSpeakerBtn')) return;
     const b = document.createElement('button');
@@ -279,7 +310,7 @@
     b.textContent = muted ? '🔇' : '🔊';
     b.addEventListener('click', () => {
       muted = !muted; localStorage.setItem(SOUND_STORE, muted ? '1' : '0'); b.textContent = muted ? '🔇' : '🔊';
-      if (muted) Array.from(audio.keys()).forEach(stopSound);
+      if (muted) { stopActiveOneShots(); Array.from(audio.keys()).forEach(stopSound); }
       else if (document.body.dataset.page === 'board' && !$('boardScreen')?.classList.contains('hidden')) playSound('background', { loop:true });
       else if (document.body.dataset.page === 'minigame' || document.body.dataset.page === 'minigame2' || document.body.dataset.page === 'minigame3' || document.body.dataset.page === 'minigame4') playSound('minigame_background', { loop:true, restart:false });
     });
@@ -378,7 +409,7 @@
     });
   }
   function preloadBattleAssets(data, meta) {
-    preloadAssets([ASSETS.hero, ASSETS.versus, ASSETS.text.kampf, ASSETS.text.richtig, ASSETS.text.falsch, ASSETS.text.gewonnen, ASSETS.text.verloren, data.enemy, data.defeated, ASSETS.loseHero, ASSETS.final, ...ASSETS.correct, ...ASSETS.wrong, bgForMeta(meta), popupBgForMeta(meta), ...Object.values(AUDIO_FILES)]);
+    preloadAssets([ASSETS.hero, ASSETS.triumphHero, ASSETS.versus, ASSETS.text.kampf, ASSETS.text.richtig, ASSETS.text.falsch, ASSETS.text.gewonnen, ASSETS.text.verloren, data.enemy, data.defeated, ASSETS.loseHero, ASSETS.final, ...ASSETS.correct, ...ASSETS.wrong, bgForMeta(meta), popupBgForMeta(meta), ...Object.values(AUDIO_FILES)]);
     warmOneShotPools();
   }
   function prefetchPage(href) {
@@ -1258,6 +1289,12 @@
     });
   }
   function pickNoRepeat(list, prev) { const pool = list.filter(x=>x!==prev); return (pool.length?pool:list)[Math.floor(Math.random()*(pool.length?pool:list).length)]; }
+  function answerSoundKeyForAsset(src, soundType, index) {
+    const file = String(src || '').split('/').pop().split('?')[0];
+    const match = file.match(new RegExp(`${soundType}_(\\d+)\\.`, 'i'));
+    const key = match ? `${soundType}_${match[1]}` : `${soundType}_${(index % 3) + 1}`;
+    return AUDIO_FILES[key] ? key : null;
+  }
   let lastCorrect=null,lastWrong=null;
   async function runBattleSequence(payload, data, meta) {
     warmOneShotPools();
@@ -1265,19 +1302,23 @@
     await playSound('fight');
     playSound('battle_background', { loop:true });
     const img=$('sequenceImage'), label=$('sequenceLabel'), status=$('sequenceStatus'), dots=$('sequenceDots'), outcome=$('outcomeImage'), action=$('battleAction'), textImg=$('sequenceTextImage');
+    const finalStack=$('finalResultStack'), outcomeGroup=$('outcomeGroup'), victoryHero=$('victoryHeroImage'), resultText=$('resultTextImage') || textImg;
     action.innerHTML = '';    hide(action);
     hideFinalHint();
     if (textImg) { textImg.className = 'battle-text-img hidden'; textImg.removeAttribute('src'); }
+    if (resultText && resultText !== textImg) { resultText.className = 'battle-text-img battle-result-text hidden'; resultText.removeAttribute('src'); }
+    if (finalStack) finalStack.className = 'battle-result-stack behind';
+    if (outcomeGroup) outcomeGroup.className = 'battle-outcome-group';
+    if (victoryHero) { victoryHero.className = 'battle-outcome-hero hidden'; victoryHero.removeAttribute('src'); }
     label.textContent = ''; status.textContent = '';
     dots.innerHTML = '<span></span>'.repeat(6);
-    const soundCursor = { richtig:0, falsch:0 };
     for (let i=0;i<payload.results.length;i++) {
       const ok = payload.results[i];
       const list = ok ? ASSETS.correct : ASSETS.wrong;
       const src = ok ? (lastCorrect=pickNoRepeat(list,lastCorrect)) : (lastWrong=pickNoRepeat(list,lastWrong));
       const textSrc = ok ? ASSETS.text.richtig : ASSETS.text.falsch;
       const soundType = ok ? 'richtig' : 'falsch';
-      const soundKey = `${soundType}_${(soundCursor[soundType]++ % 3) + 1}`;
+      const soundKey = answerSoundKeyForAsset(src, soundType, i);
       label.textContent = `Frage ${i+1}`;
       status.textContent = ok ? 'Richtig' : 'Falsch';
       status.className = `battle-status sr-only ${ok?'ok':'bad'}`;
@@ -1288,30 +1329,38 @@
     status.textContent = '';
     [...dots.children].forEach((d,di)=>d.className=di===5?'active':'');
     if (textImg) textImg.className = 'battle-text-img hidden';
+    if (resultText && resultText !== textImg) resultText.className = 'battle-text-img battle-result-text hidden';
     await showFinalCloud(img);
     showFinalHint();
     playSound('final');
     const wrong = payload.results.filter(v=>!v).length; const won = wrong <= 1;
     outcome.src = won ? data.defeated : ASSETS.loseHero; outcome.alt = won ? `${data.enemyName} besiegt` : 'Du wurdest besiegt';
-    outcome.className='battle-outcome behind';
+    outcome.className='battle-outcome';
+    if (victoryHero) {
+      victoryHero.src = ASSETS.triumphHero;
+      victoryHero.alt = 'Sir Nervus triumphiert';
+      victoryHero.className = won ? 'battle-outcome-hero' : 'battle-outcome-hero hidden';
+    }
+    if (outcomeGroup) outcomeGroup.className = `battle-outcome-group ${won ? 'is-win' : 'is-loss'}`;
+    if (finalStack) finalStack.className = `battle-result-stack behind ${won ? 'is-win' : 'is-loss'}`;
     img.onclick = async () => {
       img.onclick = null; hideFinalHint(); stopSound('final');
       stopSound('battle_background');
-      if (textImg) {
-        textImg.src = won ? ASSETS.text.gewonnen : ASSETS.text.verloren;
-        textImg.alt = won ? 'Gewonnen' : 'Verloren';
-        textImg.className = 'battle-text-img result-preload';
+      if (resultText) {
+        resultText.src = won ? ASSETS.text.gewonnen : ASSETS.text.verloren;
+        resultText.alt = won ? 'Gewonnen' : 'Verloren';
+        resultText.className = resultText === textImg ? 'battle-text-img result-preload' : 'battle-text-img battle-result-text result-preload';
       }
-      outcome.classList.add('pre-visible');
+      if (finalStack) finalStack.className = `battle-result-stack pre-visible ${won ? 'is-win' : 'is-loss'}`;
       img.classList.remove('final-idle'); img.classList.add('cloud-reveal');
-      outcome.className='battle-outcome visible';
+      if (finalStack) finalStack.className = `battle-result-stack visible ${won ? 'is-win' : 'is-loss'}`;
       playSound(won ? 'win' : 'lose');
       await sleep(1120);
       img.className='battle-seq-img hidden';
-      outcome.className='battle-outcome visible idle';
-      if (textImg) {
+      if (finalStack) finalStack.className = `battle-result-stack visible idle ${won ? 'is-win' : 'is-loss'}`;
+      if (resultText) {
         await sleep(500);
-        textImg.className = 'battle-text-img result-show';
+        resultText.className = resultText === textImg ? 'battle-text-img result-show' : 'battle-text-img battle-result-text result-show';
       }
       showBattleResult(won, data, meta, action, label, status);
     };

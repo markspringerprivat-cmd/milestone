@@ -5630,3 +5630,148 @@ body[data-page="battle"] .battle-outcome.visible.idle{
     animation:none!important;
   }
 }
+
+/* === v82 five-answer audio support + centered final result group === */
+body[data-page="battle"] .battle-result-stack{
+  position:absolute!important;
+  left:50%!important;
+  top:52%!important;
+  width:min(98vw,720px)!important;
+  z-index:4!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  pointer-events:none!important;
+  opacity:0!important;
+  visibility:hidden!important;
+  transform:translate(-50%,-50%) scale(.92)!important;
+  transform-origin:center center!important;
+  will-change:opacity,transform!important;
+}
+body[data-page="battle"] .battle-result-stack.pre-visible{
+  opacity:0!important;
+  visibility:visible!important;
+}
+body[data-page="battle"] .battle-result-stack.visible{
+  opacity:1!important;
+  visibility:visible!important;
+  transform:translate(-50%,-50%) scale(1)!important;
+  transition:opacity .55s ease, transform .55s ease!important;
+}
+body[data-page="battle"] .battle-result-text{
+  position:relative!important;
+  left:auto!important;
+  right:auto!important;
+  top:auto!important;
+  display:block!important;
+  width:min(104vw,680px)!important;
+  height:min(20svh,150px)!important;
+  max-width:none!important;
+  margin:0 0 -6px!important;
+  object-fit:contain!important;
+  object-position:center center!important;
+  opacity:0!important;
+  visibility:hidden!important;
+  transform:translateY(-12px) scale(.9)!important;
+  transform-origin:center center!important;
+  filter:drop-shadow(0 14px 24px rgba(0,0,0,.25))!important;
+  z-index:3!important;
+}
+body[data-page="battle"] .battle-result-text.result-preload{
+  opacity:0!important;
+  visibility:visible!important;
+  transform:translateY(-18px) scale(.78)!important;
+  transition:none!important;
+}
+body[data-page="battle"] .battle-result-text.result-show{
+  opacity:1!important;
+  visibility:visible!important;
+  transform:translateY(0) scale(1)!important;
+  transition:opacity .44s cubic-bezier(.18,.9,.28,1), transform .44s cubic-bezier(.18,.9,.28,1)!important;
+}
+body[data-page="battle"] .battle-outcome-group{
+  width:100%!important;
+  display:flex!important;
+  align-items:flex-end!important;
+  justify-content:center!important;
+  gap:clamp(4px,2vw,18px)!important;
+}
+body[data-page="battle"] .battle-outcome-group .battle-outcome{
+  position:relative!important;
+  left:auto!important;
+  top:auto!important;
+  display:block!important;
+  opacity:1!important;
+  transform:none!important;
+  transition:none!important;
+  width:min(86vw,408px)!important;
+  height:min(36svh,340px)!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+  filter:drop-shadow(0 18px 30px rgba(0,0,0,.25))!important;
+  z-index:1!important;
+}
+body[data-page="battle"] .battle-outcome-group.is-win .battle-outcome{
+  width:min(56vw,408px)!important;
+  height:min(36svh,340px)!important;
+}
+body[data-page="battle"] .battle-outcome-hero{
+  display:block!important;
+  flex:0 0 auto!important;
+  width:min(34vw,230px)!important;
+  height:min(31svh,300px)!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+  filter:drop-shadow(0 16px 26px rgba(0,0,0,.22))!important;
+  transform-origin:center bottom!important;
+  z-index:2!important;
+}
+body[data-page="battle"] .battle-outcome-hero.hidden{
+  display:none!important;
+}
+body[data-page="battle"] .battle-result-stack.visible.idle .battle-outcome,
+body[data-page="battle"] .battle-result-stack.visible.idle .battle-outcome-hero:not(.hidden){
+  animation:battleResultSpritePulseV82 1.7s ease-in-out infinite alternate!important;
+}
+@keyframes battleResultTextOverOutcomeV82{
+  0%{opacity:0;transform:translateY(-18px) scale(.78)}
+  100%{opacity:1;transform:translateY(0) scale(1)}
+}
+@keyframes battleResultSpritePulseV82{
+  0%{scale:.985}
+  100%{scale:1.025}
+}
+@media(max-width:560px){
+  body[data-page="battle"] .battle-result-stack{
+    top:54%!important;
+    width:min(100vw,430px)!important;
+  }
+  body[data-page="battle"] .battle-result-text{
+    width:min(108vw,438px)!important;
+    height:min(17svh,126px)!important;
+    margin-bottom:-4px!important;
+  }
+  body[data-page="battle"] .battle-outcome-group{
+    gap:clamp(2px,1.2vw,8px)!important;
+  }
+  body[data-page="battle"] .battle-outcome-group .battle-outcome{
+    width:min(88vw,320px)!important;
+    height:min(31svh,270px)!important;
+  }
+  body[data-page="battle"] .battle-outcome-group.is-win .battle-outcome{
+    width:min(57vw,300px)!important;
+    height:min(31svh,270px)!important;
+  }
+  body[data-page="battle"] .battle-outcome-hero{
+    width:min(31vw,142px)!important;
+    height:min(27svh,238px)!important;
+  }
+}
+@media (prefers-reduced-motion: reduce){
+  body[data-page="battle"] .battle-result-stack.visible.idle .battle-outcome,
+  body[data-page="battle"] .battle-result-stack.visible.idle .battle-outcome-hero:not(.hidden),
+  body[data-page="battle"] .battle-result-text.result-show{
+    animation:none!important;
+  }
+}
