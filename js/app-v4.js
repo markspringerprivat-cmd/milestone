@@ -208,6 +208,7 @@
   const oneShotPools = new Map();
   const activeOneShotAudio = new Set();
   const ONE_SHOT_SOUND_KEYS = ['richtig_1','richtig_2','richtig_3','falsch_1','falsch_2','falsch_3'];
+  let allowedBattleOneShotKey = null;
   let battleAudioContext = null;
   let battleWebBackground = null;
   const battleAudioBuffers = new Map();
@@ -251,6 +252,7 @@
 
   function playBattleWebAudio(key, { loop = false } = {}) {
     if (muted) return false;
+    if (/^(richtig|falsch)_\d$/.test(key) && key !== allowedBattleOneShotKey) return false;
     const ctx = getBattleAudioContext();
     const buffer = battleAudioBuffers.get(key);
     if (!ctx || !buffer) return false;
@@ -310,6 +312,7 @@
   }
 
   async function playPooledOneShot(key) {
+    if (key !== allowedBattleOneShotKey) return;
     if (!oneShotPools.has(key)) warmOneShotPools([key]);
     stopActiveOneShots(/^(richtig|falsch)_/);
     const base = getAudio(key);
@@ -368,6 +371,7 @@
 
   async function playSound(key, { loop = false, restart = true } = {}) {
     if (muted) return;
+    if (/^(richtig|falsch)_\d$/.test(key) && key !== allowedBattleOneShotKey) return;
     const a = getAudio(key); if (!a) return;
     try {
       a.loop = loop;
@@ -1592,7 +1596,14 @@
     els.roundText.className = 'battle-v84-hit-text is-in';
     els.roundActor.className = 'battle-v84-answer-actor is-in';
     await new Promise(resolve => requestAnimationFrame(resolve));
-    void playSound(round.soundKey, { restart:true });
+    allowedBattleOneShotKey = round.soundKey;
+    try {
+      void playSound(round.soundKey, { restart:true });
+    } finally {
+      window.setTimeout(() => {
+        if (allowedBattleOneShotKey === round.soundKey) allowedBattleOneShotKey = null;
+      }, 650);
+    }
     await sleep(2150);
     els.roundText.className = 'battle-v84-hit-text hidden';
     els.roundActor.className = 'battle-v84-answer-actor hidden';
