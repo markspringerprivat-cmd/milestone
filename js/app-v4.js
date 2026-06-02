@@ -208,7 +208,6 @@
   const oneShotPools = new Map();
   const activeOneShotAudio = new Set();
   const ONE_SHOT_SOUND_KEYS = ['richtig_1','richtig_2','richtig_3','falsch_1','falsch_2','falsch_3'];
-  const BATTLE_AUDIO_KEYS = ['battle_background','final','win','lose',...ONE_SHOT_SOUND_KEYS];
   let battleAudioContext = null;
   let battleWebBackground = null;
   const battleAudioBuffers = new Map();
@@ -273,7 +272,7 @@
     }
   }
 
-  async function primeBattleWebAudioFromGesture(keys = BATTLE_AUDIO_KEYS) {
+  async function primeBattleWebAudioFromGesture(keys = ['battle_background']) {
     const ctx = getBattleAudioContext();
     if (!ctx) return;
     try { await ctx.resume(); } catch (_) {}
@@ -352,7 +351,7 @@
         await fallback.play();
       } catch (__) {
         if (fallback) activeOneShotAudio.delete(fallback);
-        playBattleWebAudio(key);
+        if (!playBattleWebAudio(key)) void loadBattleAudioBuffer(key).then(() => playBattleWebAudio(key));
       }
     }
   }
@@ -380,7 +379,7 @@
       if (restart) a.currentTime = 0;
       await a.play();
     } catch (_) {
-      playBattleWebAudio(key, { loop });
+      if (!playBattleWebAudio(key, { loop })) void loadBattleAudioBuffer(key).then(() => playBattleWebAudio(key, { loop }));
     }
   }
   function stopSound(key) {
@@ -391,6 +390,7 @@
   function stopAllBattleAudio() { stopActiveOneShots(); ['battle_background','final','win','lose','fight','richtig_1','richtig_2','richtig_3','falsch_1','falsch_2','falsch_3'].forEach(stopSound); }
   function ensureBattleBackgroundMusic({ restart = false } = {}) {
     if (muted) return;
+    if (battleWebBackground) return;
     const bg = getAudio('battle_background');
     if (!bg) return;
     if (!restart && !bg.paused) return;
@@ -401,8 +401,7 @@
     localStorage.setItem(SOUND_STORE, '0');
     const speaker = $('globalSpeakerBtn');
     if (speaker) speaker.textContent = String.fromCodePoint(0x1f50a);
-    warmOneShotPools(ONE_SHOT_SOUND_KEYS);
-    const webAudioReady = primeBattleWebAudioFromGesture(BATTLE_AUDIO_KEYS);
+    const webAudioReady = primeBattleWebAudioFromGesture(['battle_background']);
 
     const bg = getAudio('battle_background');
     if (!bg) return webAudioReady;
@@ -416,20 +415,6 @@
       if (started && typeof started.catch === 'function') started.catch(() => {});
     } catch (_) {}
     return webAudioReady;
-  }
-  function prepareBattleAudioElementsFromStartButton(keys = ONE_SHOT_SOUND_KEYS) {
-    if (muted) return;
-    warmOneShotPools(keys);
-    keys.forEach(key => {
-      const a = getAudio(key);
-      if (!a) return;
-      try {
-        a.loop = false;
-        a.muted = false;
-        a.volume = audioVolumeForKey(key);
-        a.load();
-      } catch (_) {}
-    });
   }
   function startFinalCloudPulse(node) {
     if (!node) return;
@@ -560,8 +545,7 @@
     });
   }
   function preloadBattleAssets(data, meta) {
-    preloadAssets([ASSETS.hero, ASSETS.triumphHero, ASSETS.versus, ASSETS.text.kampf, ASSETS.text.richtig, ASSETS.text.falsch, ASSETS.text.gewonnen, ASSETS.text.verloren, data.enemy, data.defeated, ASSETS.loseHero, ASSETS.final, ...ASSETS.correct, ...ASSETS.wrong, bgForMeta(meta), popupBgForMeta(meta), ...Object.values(AUDIO_FILES)]);
-    warmOneShotPools();
+    preloadAssets([ASSETS.hero, ASSETS.triumphHero, ASSETS.versus, ASSETS.text.kampf, ASSETS.text.richtig, ASSETS.text.falsch, ASSETS.text.gewonnen, ASSETS.text.verloren, data.enemy, data.defeated, ASSETS.loseHero, ASSETS.final, ...ASSETS.correct, ...ASSETS.wrong, bgForMeta(meta), popupBgForMeta(meta)]);
   }
   function prefetchPage(href) {
     const url = href.includes('://') || href.startsWith('file:') ? href : pageUrl(href);
@@ -1424,7 +1408,6 @@
       els.start.disabled = true;
       stopAllBattleAudio();
       const audioReady = enableBattleAudioFromStartButton();
-      prepareBattleAudioElementsFromStartButton(['final','win','lose',...ONE_SHOT_SOUND_KEYS]);
       setBattleMode('loading');
       try {
         const rounds = await prepared;
@@ -1606,9 +1589,10 @@
 
     void els.roundText.offsetWidth;
     void els.roundActor.offsetWidth;
-    void playSound(round.soundKey, { restart:true });
     els.roundText.className = 'battle-v84-hit-text is-in';
     els.roundActor.className = 'battle-v84-answer-actor is-in';
+    await new Promise(resolve => requestAnimationFrame(resolve));
+    void playSound(round.soundKey, { restart:true });
     await sleep(2150);
     els.roundText.className = 'battle-v84-hit-text hidden';
     els.roundActor.className = 'battle-v84-answer-actor hidden';
