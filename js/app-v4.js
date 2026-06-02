@@ -249,9 +249,25 @@
 
   async function playPooledOneShot(key) {
     if (!oneShotPools.has(key)) warmOneShotPools([key]);
+    stopActiveOneShots(/^(richtig|falsch)_/);
+    const base = getAudio(key);
+    if (base) {
+      try {
+        base.pause();
+        base.currentTime = 0;
+        base.loop = false;
+        base.volume = audioVolumeForKey(key);
+        activeOneShotAudio.add(base);
+        base.addEventListener('ended', () => activeOneShotAudio.delete(base), { once:true });
+        base.addEventListener('error', () => activeOneShotAudio.delete(base), { once:true });
+        await base.play();
+        return;
+      } catch (_) {
+        activeOneShotAudio.delete(base);
+      }
+    }
     const pool = oneShotPools.get(key);
     if (!pool || !pool.length) return;
-    stopActiveOneShots(/^(richtig|falsch)_/);
     const a = pool[pool.cursor++ % pool.length];
     try {
       a.pause();
@@ -309,6 +325,23 @@
     if (!bg) return;
     if (!restart && !bg.paused) return;
     void playSound('battle_background', { loop:true, restart });
+  }
+  function enableBattleAudioFromStartButton() {
+    muted = false;
+    localStorage.setItem(SOUND_STORE, '0');
+    const speaker = $('globalSpeakerBtn');
+    if (speaker) speaker.textContent = String.fromCodePoint(0x1f50a);
+    warmOneShotPools(ONE_SHOT_SOUND_KEYS);
+
+    const bg = getAudio('battle_background');
+    if (!bg) return;
+    try {
+      bg.loop = true;
+      bg.volume = audioVolumeForKey('battle_background');
+      bg.currentTime = 0;
+      const started = bg.play();
+      if (started && typeof started.catch === 'function') started.catch(() => {});
+    } catch (_) {}
   }
   function primeBattleAnswerAudioFromGesture(keys = ONE_SHOT_SOUND_KEYS) {
     if (muted) return;
@@ -1304,7 +1337,7 @@
       battleStarting = true;
       els.start.disabled = true;
       stopAllBattleAudio();
-      ensureBattleBackgroundMusic({ restart:true });
+      enableBattleAudioFromStartButton();
       primeBattleAnswerAudioFromGesture();
       setBattleMode('loading');
       try {
@@ -1515,7 +1548,7 @@
     els.finalCloud.className = 'battle-v84-final-cloud is-preparing';
     await waitForRenderable(els.finalCloud);
     void els.finalCloud.offsetWidth;
-    els.finalCloud.className = 'battle-v84-final-cloud is-idle';
+    els.finalCloud.className = 'battle-v84-final-cloud is-idle is-pulsing';
     showFinalHint('Tippe auf die Wolke');
     void playSound('final', { restart:true });
 

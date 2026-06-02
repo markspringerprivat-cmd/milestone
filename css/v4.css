@@ -6033,6 +6033,10 @@ body[data-page="battle"] .battle-v84-final-cloud.is-idle{
   opacity:1!important;
   animation:battleV84CloudPulse .52s ease-in-out infinite alternate!important;
 }
+body[data-page="battle"] .battle-v84-final-cloud.is-pulsing{
+  opacity:1!important;
+  animation:battleV84CloudPulse .48s ease-in-out infinite alternate!important;
+}
 body[data-page="battle"] .battle-v84-final-cloud.is-reveal{
   animation:battleV84CloudReveal .98s ease-out forwards!important;
 }
@@ -6121,8 +6125,9 @@ body[data-page="battle"] .battle-v84-bottom-actions{
   100%{opacity:0;transform:translateX(76vw) scale(.96)}
 }
 @keyframes battleV84CloudPulse{
-  from{transform:translate(-50%,-50%) scale(.82)}
-  to{transform:translate(-50%,-50%) scale(1.25)}
+  0%{transform:translate(-50%,-50%) scale(.76)}
+  50%{transform:translate(-50%,-50%) scale(1.28)}
+  100%{transform:translate(-50%,-50%) scale(.76)}
 }
 @keyframes battleV84CloudReveal{
   0%{opacity:1;transform:translate(-50%,-50%) scale(1)}
@@ -6218,10 +6223,13 @@ body[data-page="battle"] .battle-v84-bottom-actions{
 @media (prefers-reduced-motion: reduce){
   body[data-page="battle"] .battle-v84-intro-actor,
   body[data-page="battle"] .battle-v84-kampf-title,
-  body[data-page="battle"] .battle-v84-final-cloud.is-idle,
   body[data-page="battle"] .battle-v84-result-title,
   body[data-page="battle"] .battle-v84-outcome,
   body[data-page="battle"] .battle-v84-victory-hero{
     animation:none!important;
+  }
+  body[data-page="battle"] .battle-v84-final-cloud.is-idle,
+  body[data-page="battle"] .battle-v84-final-cloud.is-pulsing{
+    animation:battleV84CloudPulse .8s ease-in-out infinite!important;
   }
 }
