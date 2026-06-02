@@ -5603,3 +5603,30 @@ body[data-page="battle"] .battle-text-img.result-show{
     margin-top:34px!important;
   }
 }
+
+/* === v81 transparent character assets + soft sprite pulse === */
+body[data-page="level"] .hero-enemy,
+.encounter-card .character-img,
+body[data-page="battle"] .battle-side .battle-actor{
+  transform-origin:center bottom!important;
+  animation:characterSpriteSoftPulseV81 1.8s ease-in-out infinite alternate!important;
+}
+body[data-page="battle"] .battle-outcome.visible.idle{
+  animation:battleOutcomeSoftPulseV81 1.7s ease-in-out infinite alternate!important;
+}
+@keyframes characterSpriteSoftPulseV81{
+  0%{transform:scale(.985)}
+  100%{transform:scale(1.025)}
+}
+@keyframes battleOutcomeSoftPulseV81{
+  0%{transform:translate(-50%,-50%) scale(.96)}
+  100%{transform:translate(-50%,-50%) scale(1.025)}
+}
+@media (prefers-reduced-motion: reduce){
+  body[data-page="level"] .hero-enemy,
+  .encounter-card .character-img,
+  body[data-page="battle"] .battle-side .battle-actor,
+  body[data-page="battle"] .battle-outcome.visible.idle{
+    animation:none!important;
+  }
+}
