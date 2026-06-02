@@ -417,29 +417,18 @@
     } catch (_) {}
     return webAudioReady;
   }
-  function primeBattleAnswerAudioFromGesture(keys = ONE_SHOT_SOUND_KEYS) {
+  function prepareBattleAudioElementsFromStartButton(keys = ONE_SHOT_SOUND_KEYS) {
     if (muted) return;
     warmOneShotPools(keys);
     keys.forEach(key => {
       const a = getAudio(key);
       if (!a) return;
-      const oldMuted = a.muted;
-      const oldVolume = a.volume;
-      const restore = () => {
-        try { a.pause(); a.currentTime = 0; } catch (_) {}
-        a.muted = oldMuted;
-        a.volume = oldVolume;
-      };
       try {
         a.loop = false;
-        a.muted = true;
-        a.volume = 0;
-        const played = a.play();
-        if (played && typeof played.then === 'function') played.then(restore).catch(restore);
-        else restore();
-      } catch (_) {
-        restore();
-      }
+        a.muted = false;
+        a.volume = audioVolumeForKey(key);
+        a.load();
+      } catch (_) {}
     });
   }
   function startFinalCloudPulse(node) {
@@ -1435,7 +1424,7 @@
       els.start.disabled = true;
       stopAllBattleAudio();
       const audioReady = enableBattleAudioFromStartButton();
-      primeBattleAnswerAudioFromGesture(['final','win','lose',...ONE_SHOT_SOUND_KEYS]);
+      prepareBattleAudioElementsFromStartButton(['final','win','lose',...ONE_SHOT_SOUND_KEYS]);
       setBattleMode('loading');
       try {
         const rounds = await prepared;
