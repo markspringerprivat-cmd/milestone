@@ -1136,7 +1136,9 @@
     try {
       if (!await waitForScannerLibrary()) throw new Error('Scanner-Bibliothek nicht verfügbar.');
       scanner = new window.Html5Qrcode('qrReader');
-      await scanner.start({ facingMode:'environment' }, { fps: 8, qrbox: { width: 220, height: 220 } }, txt => unlockByCode(txt));
+      const rect = $('qrReader')?.getBoundingClientRect();
+      const side = Math.max(130, Math.round(Math.min(rect?.width || 180, rect?.height || 180) * 0.86));
+      await scanner.start({ facingMode:'environment' }, { fps: 8, qrbox: { width: side, height: side } }, txt => unlockByCode(txt));
       if (info) info.textContent='';
     } catch (e) { if (info) info.textContent='QR-Scanner nicht verfügbar.'; }
   }

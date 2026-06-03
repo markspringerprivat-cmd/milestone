@@ -124,7 +124,7 @@ body[data-page="board"] #scanModal.market-scan-modal .scan-card::after{
 body[data-page="board"] #scanModal.market-scan-modal .scan-head{
   position:absolute!important;
   left:50%!important;
-  top:22.5%!important;
+  top:24.0%!important;
   width:50%!important;
   transform:translateX(-50%)!important;
   display:block!important;
@@ -189,27 +189,31 @@ body[data-page="board"] #scanModal.market-scan-modal #closeScanBtn:active{
 body[data-page="board"] #scanModal.market-scan-modal .scan-layout{
   position:absolute!important;
   left:50%!important;
-  top:59.5%!important;
+  top:60.5%!important;
   width:60%!important;
-  height:54%!important;
+  height:57%!important;
   transform:translate(-50%,-50%)!important;
   display:flex!important;
   flex-direction:column!important;
-  justify-content:center!important;
-  gap:9px!important;
+  justify-content:flex-start!important;
+  gap:8px!important;
+  padding:3% 0 5.5%!important;
+  box-sizing:border-box!important;
   z-index:3!important;
 }
 body[data-page="board"] #scanModal.market-scan-modal .camera-box{
   display:grid!important;
   place-items:center!important;
   position:relative!important;
-  width:100%!important;
+  width:min(100%,210px,25svh)!important;
+  aspect-ratio:1/1!important;
+  align-self:center!important;
   min-height:0!important;
-  height:min(22svh,190px)!important;
-  border-radius:16px!important;
-  border:2px solid rgba(255,255,255,.72)!important;
-  background:rgba(16,20,33,.88)!important;
-  box-shadow:0 8px 18px rgba(38,18,4,.28)!important;
+  height:auto!important;
+  border-radius:12px!important;
+  border:0!important;
+  background:rgba(20,12,6,.88)!important;
+  box-shadow:inset 0 0 0 2px rgba(255,224,150,.30), 0 7px 15px rgba(38,18,4,.24)!important;
   overflow:hidden!important;
 }
 body[data-page="board"] #scanModal.market-scan-modal .qr-reader{
@@ -217,11 +221,49 @@ body[data-page="board"] #scanModal.market-scan-modal .qr-reader{
   inset:0!important;
   width:100%!important;
   height:100%!important;
+  aspect-ratio:1/1!important;
   border-radius:14px!important;
   overflow:hidden!important;
+  background:rgba(20,12,6,.88)!important;
+}
+body[data-page="board"] #scanModal.market-scan-modal .qr-reader > div{
+  width:100%!important;
+  height:100%!important;
+  max-width:100%!important;
+  max-height:100%!important;
+  border:0!important;
+}
+body[data-page="board"] #scanModal.market-scan-modal #qrReader__scan_region{
+  width:100%!important;
+  height:100%!important;
+  min-height:100%!important;
+  aspect-ratio:1/1!important;
+  display:grid!important;
+  place-items:center!important;
+  overflow:hidden!important;
+}
+body[data-page="board"] #scanModal.market-scan-modal #qrReader__scan_region > video,
+body[data-page="board"] #scanModal.market-scan-modal #qrReader__scan_region > canvas,
+body[data-page="board"] #scanModal.market-scan-modal #qrReader__scan_region img{
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
 }
 body[data-page="board"] #scanModal.market-scan-modal .qr-reader video{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
   border-radius:14px!important;
+}
+body[data-page="board"] #scanModal.market-scan-modal .qr-reader canvas{
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+}
+body[data-page="board"] #scanModal.market-scan-modal #qrReader__dashboard,
+body[data-page="board"] #scanModal.market-scan-modal #qrReader__dashboard_section{
+  display:none!important;
 }
 body[data-page="board"] #scanModal.market-scan-modal .camera-info{
   font-size:clamp(.7rem,2.3vw,.84rem)!important;
@@ -237,7 +279,7 @@ body[data-page="board"] #scanModal.market-scan-modal .manual-box{
   gap:9px!important;
   width:100%!important;
   padding:0!important;
-  margin:0!important;
+  margin:auto 0 0!important;
   border:0!important;
   border-radius:0!important;
   background:transparent!important;
@@ -261,7 +303,17 @@ body[data-page="board"] #scanModal.market-scan-modal #randomUnlockBtn{
   font-size:clamp(.78rem,2.7vw,.95rem)!important;
   line-height:1.05!important;
   white-space:normal!important;
-  box-shadow:0 8px 16px rgba(38,18,4,.24)!important;
+  border:1px solid rgba(74,35,8,.55)!important;
+  text-shadow:0 1px 0 rgba(255,255,255,.22)!important;
+  box-shadow:0 8px 16px rgba(38,18,4,.24), inset 0 1px 0 rgba(255,240,180,.40)!important;
+}
+body[data-page="board"] #scanModal.market-scan-modal #backToBoardBtn{
+  background:linear-gradient(180deg,#d39b55 0%,#8a4317 100%)!important;
+  color:#fff6df!important;
+}
+body[data-page="board"] #scanModal.market-scan-modal #randomUnlockBtn{
+  background:linear-gradient(180deg,#ffe08a 0%,#c88224 54%,#8a4317 100%)!important;
+  color:#321704!important;
 }
 body[data-page="board"] #scanModal.market-scan-modal #scanMessage{
   margin:0!important;
@@ -275,18 +327,20 @@ body[data-page="board"] #scanModal.market-scan-modal #scanMessage{
     width:min(94vw,66svh)!important;
   }
   body[data-page="board"] #scanModal.market-scan-modal .scan-head{
-    top:22.8%!important;
+    top:24.2%!important;
     width:53%!important;
     padding:6px 8px!important;
   }
   body[data-page="board"] #scanModal.market-scan-modal .scan-layout{
-    top:59.5%!important;
+    top:60.8%!important;
     width:64%!important;
-    height:54%!important;
+    height:57%!important;
     gap:7px!important;
+    padding:3% 0 5%!important;
   }
   body[data-page="board"] #scanModal.market-scan-modal .camera-box{
-    height:min(18.5svh,150px)!important;
+    width:min(100%,168px,22svh)!important;
+    height:auto!important;
   }
   body[data-page="board"] #scanModal.market-scan-modal #backToBoardBtn,
   body[data-page="board"] #scanModal.market-scan-modal #randomUnlockBtn{
