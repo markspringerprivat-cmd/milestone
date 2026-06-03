@@ -1191,33 +1191,6 @@
     });
     (boardScreen || inner).appendChild(market);
 
-    const lockRow = document.createElement('div');
-    lockRow.className = 'board-lock-row';
-    LOCK_RENDER_ORDER.forEach(id => {
-      const lockBtn = document.createElement('button');
-      lockBtn.type = 'button';
-      lockBtn.className = 'board-overlay-btn board-lock-btn';
-      lockBtn.dataset.lockId = id;
-      const stateNow = getState();
-      const hidden = Boolean(stateNow.removedLocks?.[id]);
-      const unlockable = Boolean(stateNow.keysFound?.[id]);
-      if (hidden) lockBtn.classList.add('is-hidden');
-      if (unlockable && !hidden) lockBtn.classList.add('is-unlockable');
-      const src = assetUrl(BIOME_BY_SENSE[id].lock);
-      lockBtn.innerHTML = `<img src="${src}" alt="${esc(BIOME_BY_SENSE[id].label + '-Schloss')}">`;
-      lockBtn.addEventListener('click', () => {
-        const live = getState();
-        const canUnlock = Boolean(live.keysFound?.[id]);
-        if (!canUnlock || live.removedLocks?.[id]) {
-          triggerLockShake(lockBtn);
-          return;
-        }
-        unlockBiomeLockAnimated(id);
-      });
-      lockRow.appendChild(lockBtn);
-    });
-    inner.appendChild(lockRow);
-
     KEY_ORDER.forEach(id => {
       if (!state.keysFound?.[id] || state.removedLocks?.[id]) return;
       const key = document.createElement('button');
@@ -1229,7 +1202,7 @@
       key.style.left = `${pos.x}%`;
       key.style.top = `${pos.y}%`;
       key.innerHTML = `<img src="${assetUrl(BIOME_BY_SENSE[id].key)}" alt="${esc(BIOME_BY_SENSE[id].label + '-Schlüssel')}">`;
-      key.addEventListener('click', () => unlockBiomeLockAnimated(id));
+      key.addEventListener('click', () => { location.href = pageUrl('magieschloss.html'); });
       inner.appendChild(key);
     });
 
@@ -4388,8 +4361,20 @@
     addSpeaker();
     const hero = $('magicCastleHero');
     if (hero) hero.alt = `${getHeroName()} auf der Brücke`;
+    const keyBar = $('magicCastleKeyBar');
+    const renderKeyBar = state => {
+      if (!keyBar) return;
+      keyBar.innerHTML = KEY_ORDER
+        .filter(id => state.keysFound?.[id] && !state.removedLocks?.[id])
+        .map(id => `<button class="magic-castle-key-chip" type="button" data-key-id="${id}" aria-label="${esc(BIOME_BY_SENSE[id].label)}-Schlüssel verwenden"><img src="${assetUrl(BIOME_BY_SENSE[id].key)}" alt="${esc(BIOME_BY_SENSE[id].label + '-Schlüssel')}"></button>`)
+        .join('');
+      keyBar.querySelectorAll('.magic-castle-key-chip').forEach(chip => {
+        chip.addEventListener('click', () => document.querySelector(`.magic-castle-lock[data-lock-id="${chip.dataset.keyId}"]`)?.click());
+      });
+    };
     const renderLocks = () => {
       const state = getState();
+      renderKeyBar(state);
       document.querySelectorAll('.magic-castle-lock').forEach(lock => {
         const id = lock.dataset.lockId;
         const opened = Boolean(state.removedLocks?.[id]);

@@ -6830,8 +6830,8 @@ body[data-page="board"] .board-image{
 body[data-page="board"] .magic-castle-board-btn{
   position:absolute!important;
   left:50%!important;
-  top:7.8%!important;
-  width:clamp(92px,18vw,190px)!important;
+  top:21.8%!important;
+  width:clamp(190px,34vw,380px)!important;
   transform:translate(-50%,-50%)!important;
   padding:0!important;
   border:0!important;
@@ -6840,7 +6840,10 @@ body[data-page="board"] .magic-castle-board-btn{
   cursor:pointer!important;
   pointer-events:auto!important;
   filter:drop-shadow(0 0 16px rgba(183,88,255,.58)) drop-shadow(0 14px 18px rgba(0,0,0,.38))!important;
-  animation:magicCastleBoardPulse 2.4s ease-in-out infinite!important;
+  animation:magicCastleBoardFloat 5.6s ease-in-out infinite!important;
+}
+body[data-page="board"] .board-lock-row{
+  display:none!important;
 }
 body[data-page="board"] .magic-castle-board-btn img{
   display:block!important;
@@ -6853,6 +6856,10 @@ body[data-page="board"] .magic-castle-board-btn:active{
 @keyframes magicCastleBoardPulse{
   0%,100%{transform:translate(-50%,-50%) scale(1)}
   50%{transform:translate(-50%,-50%) scale(1.035)}
+}
+@keyframes magicCastleBoardFloat{
+  0%,100%{transform:translate(-50%,-50%) translateY(2mm) scale(1)}
+  50%{transform:translate(-50%,-50%) translateY(-2mm) scale(1.025)}
 }
 .magic-castle-page{
   position:relative!important;
@@ -6872,18 +6879,18 @@ body[data-page="board"] .magic-castle-board-btn:active{
 }
 .magic-castle-hero{
   position:absolute!important;
-  left:-12%!important;
-  top:73.5%!important;
-  width:clamp(34px,8.5vw,74px)!important;
+  left:13.5%!important;
+  top:69.5%!important;
+  width:clamp(32px,7vw,62px)!important;
   height:auto!important;
   z-index:4!important;
   filter:drop-shadow(0 8px 10px rgba(0,0,0,.45))!important;
-  transform:translate3d(0,0,0) rotate(-10deg) scale(.96)!important;
-  animation:magicCastleHeroEnter 2.2s cubic-bezier(.22,1,.36,1) .22s forwards, magicCastleHeroIdle 1.9s ease-in-out 2.5s infinite alternate!important;
+  transform:translate3d(0,0,0) rotate(-9deg) scale(.96)!important;
+  animation:magicCastleHeroIdle 1.9s ease-in-out infinite alternate!important;
 }
 .magic-castle-lock{
   position:absolute!important;
-  width:clamp(42px,11vw,92px)!important;
+  width:clamp(44px,9.6vw,82px)!important;
   aspect-ratio:1!important;
   border:0!important;
   padding:0!important;
@@ -6916,19 +6923,46 @@ body[data-page="board"] .magic-castle-board-btn:active{
 .magic-castle-lock.shake-once{
   animation:v72Shake .34s ease both!important;
 }
-.magic-lock-ice{left:50.5%!important;top:36.2%!important;width:clamp(50px,12.5vw,104px)!important}
-.magic-lock-grass{left:40.4%!important;top:46.0%!important}
-.magic-lock-lava{left:59.5%!important;top:46.4%!important}
-.magic-lock-cloud{left:42.8%!important;top:56.9%!important}
-.magic-lock-sand{left:56.2%!important;top:57.0%!important}
-.magic-castle-back{
+.magic-lock-ice{left:50.5%!important;top:41.3%!important;width:clamp(48px,10.8vw,92px)!important}
+.magic-lock-grass{left:42.6%!important;top:49.7%!important}
+.magic-lock-lava{left:58.4%!important;top:50.0%!important}
+.magic-lock-cloud{left:44.8%!important;top:58.6%!important}
+.magic-lock-sand{left:56.2%!important;top:58.8%!important}
+.magic-castle-bottom-bar{
   position:absolute!important;
   left:max(12px,env(safe-area-inset-left))!important;
   bottom:max(12px,env(safe-area-inset-bottom))!important;
   z-index:8!important;
+  display:flex!important;
+  align-items:flex-end!important;
+  gap:10px!important;
+  max-width:calc(100vw - 24px)!important;
+}
+.magic-castle-back{
   width:auto!important;
   min-width:104px!important;
   text-decoration:none!important;
+}
+.magic-castle-key-bar{
+  display:flex!important;
+  align-items:center!important;
+  gap:6px!important;
+  min-height:48px!important;
+}
+.magic-castle-key-chip{
+  width:clamp(40px,10vw,64px)!important;
+  aspect-ratio:1!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  cursor:pointer!important;
+  filter:drop-shadow(0 8px 12px rgba(0,0,0,.48)) drop-shadow(0 0 10px rgba(255,231,142,.38))!important;
+}
+.magic-castle-key-chip img{
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+  display:block!important;
 }
 @keyframes magicCastleHeroEnter{
   from{left:-12%;top:75.5%;opacity:0;transform:translate3d(0,0,0) rotate(-12deg) scale(.9)}
@@ -6944,11 +6978,12 @@ body[data-page="board"] .magic-castle-board-btn:active{
 }
 @media(max-width:560px){
   body[data-page="board"] .magic-castle-board-btn{
-    top:8.4%!important;
-    width:clamp(86px,24vw,126px)!important;
+    top:20.6%!important;
+    width:clamp(176px,49vw,248px)!important;
   }
   .magic-castle-bg{object-position:center top!important}
-  .magic-castle-lock{width:clamp(38px,12vw,58px)!important}
-  .magic-lock-ice{width:clamp(42px,13vw,64px)!important}
+  .magic-castle-lock{width:clamp(34px,10.6vw,52px)!important}
+  .magic-lock-ice{width:clamp(38px,11.8vw,58px)!important}
   .magic-castle-back{min-width:88px!important;padding:10px 14px!important}
+  .magic-castle-key-chip{width:clamp(34px,10vw,48px)!important}
 }
