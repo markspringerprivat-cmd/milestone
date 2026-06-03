@@ -6832,7 +6832,7 @@ body[data-page="board"] .magic-castle-board-btn{
   left:50%!important;
   top:21.8%!important;
   width:clamp(190px,34vw,380px)!important;
-  transform:translate(-50%,-50%)!important;
+  transform:translate(-50%,-50%) translateY(-0.5cm)!important;
   padding:0!important;
   border:0!important;
   background:transparent!important;
@@ -6840,7 +6840,7 @@ body[data-page="board"] .magic-castle-board-btn{
   cursor:pointer!important;
   pointer-events:auto!important;
   filter:drop-shadow(0 0 16px rgba(183,88,255,.58)) drop-shadow(0 14px 18px rgba(0,0,0,.38))!important;
-  animation:magicCastleBoardFloat 5.6s ease-in-out infinite!important;
+  animation:magicCastleBoardFloat 6.8s ease-in-out infinite!important;
 }
 body[data-page="board"] .board-lock-row{
   display:none!important;
@@ -6851,15 +6851,15 @@ body[data-page="board"] .magic-castle-board-btn img{
   height:auto!important;
 }
 body[data-page="board"] .magic-castle-board-btn:active{
-  transform:translate(-50%,-50%) scale(1.06)!important;
+  transform:translate(-50%,-50%) translateY(-0.5cm) scale(1.06)!important;
 }
 @keyframes magicCastleBoardPulse{
   0%,100%{transform:translate(-50%,-50%) scale(1)}
   50%{transform:translate(-50%,-50%) scale(1.035)}
 }
 @keyframes magicCastleBoardFloat{
-  0%,100%{transform:translate(-50%,-50%) translateY(2mm) scale(1)}
-  50%{transform:translate(-50%,-50%) translateY(-2mm) scale(1.025)}
+  0%,100%{transform:translate(-50%,-50%) translateY(calc(-0.5cm + 2mm)) scale(1)}
+  50%{transform:translate(-50%,-50%) translateY(calc(-0.5cm - 2mm)) scale(1.012)}
 }
 .magic-castle-page{
   position:relative!important;
@@ -6880,8 +6880,8 @@ body[data-page="board"] .magic-castle-board-btn:active{
 .magic-castle-hero{
   position:absolute!important;
   left:13.5%!important;
-  top:69.5%!important;
-  width:clamp(32px,7vw,62px)!important;
+  top:calc(69.5% - 1.5cm)!important;
+  width:clamp(96px,21vw,186px)!important;
   height:auto!important;
   z-index:4!important;
   filter:drop-shadow(0 8px 10px rgba(0,0,0,.45))!important;
@@ -6890,7 +6890,7 @@ body[data-page="board"] .magic-castle-board-btn:active{
 }
 .magic-castle-lock{
   position:absolute!important;
-  width:clamp(44px,9.6vw,82px)!important;
+  width:clamp(50px,10.6vw,90px)!important;
   aspect-ratio:1!important;
   border:0!important;
   padding:0!important;
@@ -6923,11 +6923,40 @@ body[data-page="board"] .magic-castle-board-btn:active{
 .magic-castle-lock.shake-once{
   animation:v72Shake .34s ease both!important;
 }
-.magic-lock-ice{left:50.5%!important;top:41.3%!important;width:clamp(48px,10.8vw,92px)!important}
-.magic-lock-grass{left:42.6%!important;top:49.7%!important}
-.magic-lock-lava{left:58.4%!important;top:50.0%!important}
-.magic-lock-cloud{left:44.8%!important;top:58.6%!important}
-.magic-lock-sand{left:56.2%!important;top:58.8%!important}
+.magic-lock-ice{left:calc(50.5% + 0.5cm)!important;top:41.3%!important;width:clamp(56px,11.8vw,100px)!important}
+.magic-lock-grass{left:calc(46.0% + 0.5cm)!important;top:49.7%!important}
+.magic-lock-lava{left:calc(55.5% + 0.5cm)!important;top:50.0%!important}
+.magic-lock-cloud{left:calc(47.2% + 0.5cm)!important;top:58.6%!important}
+.magic-lock-sand{left:calc(54.5% + 0.5cm)!important;top:58.8%!important}
+.magic-castle-flying-key{
+  position:fixed!important;
+  left:0;
+  top:0;
+  width:clamp(46px,9vw,74px)!important;
+  aspect-ratio:1!important;
+  z-index:9!important;
+  pointer-events:none!important;
+  transform:translate(-50%,-50%)!important;
+  filter:drop-shadow(0 8px 14px rgba(0,0,0,.48)) drop-shadow(0 0 14px rgba(255,232,128,.72))!important;
+}
+.magic-castle-flying-key img{
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+  display:block!important;
+}
+.magic-castle-flying-key.is-burst{
+  opacity:0!important;
+  transition:opacity .24s ease!important;
+}
+.magic-castle-lock.is-targeted{
+  filter:drop-shadow(0 0 24px rgba(255,238,133,1)) drop-shadow(0 10px 12px rgba(0,0,0,.55))!important;
+}
+.magic-castle-key-chip.is-launching{
+  opacity:.32!important;
+  transform:scale(.82)!important;
+  transition:opacity .22s ease, transform .22s ease!important;
+}
 .magic-castle-bottom-bar{
   position:absolute!important;
   left:max(12px,env(safe-area-inset-left))!important;
@@ -6982,8 +7011,9 @@ body[data-page="board"] .magic-castle-board-btn:active{
     width:clamp(176px,49vw,248px)!important;
   }
   .magic-castle-bg{object-position:center top!important}
-  .magic-castle-lock{width:clamp(34px,10.6vw,52px)!important}
-  .magic-lock-ice{width:clamp(38px,11.8vw,58px)!important}
+  .magic-castle-hero{width:clamp(82px,30vw,148px)!important}
+  .magic-castle-lock{width:clamp(38px,11.4vw,58px)!important}
+  .magic-lock-ice{width:clamp(42px,12.5vw,64px)!important}
   .magic-castle-back{min-width:88px!important;padding:10px 14px!important}
   .magic-castle-key-chip{width:clamp(34px,10vw,48px)!important}
 }

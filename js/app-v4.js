@@ -897,7 +897,14 @@
     if (state.started) { showBoard(false); } else { show($('introScreen')); hide($('boardScreen')); hide($('openBoardMenuBtn')); hide($('belowBoard')); }
     if (shouldForceBoardMusic) {
       try { sessionStorage.removeItem('koenigreichSinneV4StartMusic'); } catch (_) {}
-      window.setTimeout(() => playSound('background', { loop:true, restart:false }), 180);
+      const ensureBoardBackgroundMusic = () => {
+        if (muted) return;
+        playSound('background', { loop:true, restart:false });
+      };
+      [120, 420, 900, 1500].forEach(delay => window.setTimeout(ensureBoardBackgroundMusic, delay));
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden && !$('boardScreen')?.classList.contains('hidden')) ensureBoardBackgroundMusic();
+      }, { passive:true, once:true });
     }
     let introTransitioning = false;
     const startGame = async () => {
@@ -4362,6 +4369,7 @@
     const hero = $('magicCastleHero');
     if (hero) hero.alt = `${getHeroName()} auf der Brücke`;
     const keyBar = $('magicCastleKeyBar');
+    let magicUnlockingId = null;
     const renderKeyBar = state => {
       if (!keyBar) return;
       keyBar.innerHTML = KEY_ORDER
@@ -4382,23 +4390,73 @@
         lock.classList.toggle('is-opened', opened);
         lock.classList.toggle('is-unlockable', unlockable && !opened);
         lock.classList.toggle('is-locked', !unlockable && !opened);
+        lock.classList.remove('is-targeted');
         lock.disabled = opened;
       });
+    };
+    const flyKeyToLock = (id, lock) => {
+      if (magicUnlockingId) return;
+      const state = getState();
+      if (state.removedLocks?.[id] || !state.keysFound?.[id]) return;
+      magicUnlockingId = id;
+      const chip = document.querySelector(`.magic-castle-key-chip[data-key-id="${id}"]`);
+      const heroRect = hero?.getBoundingClientRect?.();
+      const lockRect = lock.getBoundingClientRect();
+      const start = heroRect
+        ? { x: heroRect.left + heroRect.width * .62, y: heroRect.top + heroRect.height * .48 }
+        : { x: lockRect.left - 70, y: lockRect.top + lockRect.height * .8 };
+      const end = { x: lockRect.left + lockRect.width * .5, y: lockRect.top + lockRect.height * .5 };
+      const control = { x:(start.x + end.x) / 2, y: Math.min(start.y, end.y) - Math.max(54, Math.abs(end.x - start.x) * .18) };
+      const flyer = document.createElement('div');
+      flyer.className = 'magic-castle-flying-key';
+      flyer.innerHTML = `<img src="${assetUrl(BIOME_BY_SENSE[id].key)}" alt="">`;
+      flyer.style.left = `${start.x}px`;
+      flyer.style.top = `${start.y}px`;
+      flyer.style.width = `${Math.max(46, Math.min(74, lockRect.width * .82))}px`;
+      document.body.appendChild(flyer);
+      chip?.classList.add('is-launching');
+      lock.classList.add('is-targeted');
+      playSound('collect');
+      const duration = 900;
+      const started = performance.now();
+      const ease = t => 1 - Math.pow(1 - t, 3);
+      const tick = now => {
+        const raw = Math.min(1, (now - started) / duration);
+        const t = ease(raw);
+        const omt = 1 - t;
+        const x = omt * omt * start.x + 2 * omt * t * control.x + t * t * end.x;
+        const y = omt * omt * start.y + 2 * omt * t * control.y + t * t * end.y;
+        flyer.style.left = `${x}px`;
+        flyer.style.top = `${y}px`;
+        flyer.style.transform = `translate(-50%,-50%) rotate(${Math.round(t * 620)}deg) scale(${(1 - t * .18).toFixed(3)})`;
+        if (raw < 1) {
+          requestAnimationFrame(tick);
+          return;
+        }
+        flyer.classList.add('is-burst');
+        lock.classList.add('is-opening');
+        playSound('levelunlocked');
+        window.setTimeout(() => {
+          flyer.remove();
+          const next = getState();
+          next.removedLocks[id] = true;
+          setState(next);
+          magicUnlockingId = null;
+          renderLocks();
+        }, 280);
+      };
+      requestAnimationFrame(tick);
     };
     document.querySelectorAll('.magic-castle-lock').forEach(lock => {
       lock.addEventListener('click', () => {
         const id = lock.dataset.lockId;
         const state = getState();
-        if (state.removedLocks?.[id]) return;
+        if (state.removedLocks?.[id] || magicUnlockingId) return;
         if (!state.keysFound?.[id]) {
           triggerLockShake(lock);
           return;
         }
-        state.removedLocks[id] = true;
-        setState(state);
-        lock.classList.add('is-opening');
-        playSound('levelunlocked');
-        window.setTimeout(renderLocks, 360);
+        flyKeyToLock(id, lock);
       });
     });
     renderLocks();
