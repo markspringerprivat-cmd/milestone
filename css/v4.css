@@ -157,6 +157,35 @@ body[data-page="board"] #scanModal.market-scan-modal #manualUnlockBtn,
 body[data-page="board"] #scanModal.market-scan-modal #skipLevelBtn{
   display:none!important;
 }
+body[data-page="board"] #scanModal.market-scan-modal .scan-head-actions{
+  display:block!important;
+  position:absolute!important;
+  right:-46px!important;
+  top:-28px!important;
+  z-index:6!important;
+}
+body[data-page="board"] #scanModal.market-scan-modal #toggleScannerBtn{
+  display:none!important;
+}
+body[data-page="board"] #scanModal.market-scan-modal #closeScanBtn{
+  display:grid!important;
+  place-items:center!important;
+  width:38px!important;
+  height:38px!important;
+  min-height:38px!important;
+  padding:0!important;
+  border-radius:50%!important;
+  border:2px solid rgba(91,48,10,.55)!important;
+  background:linear-gradient(180deg,#fff9df,#ffd44f)!important;
+  color:#4b2307!important;
+  font-size:1.45rem!important;
+  line-height:1!important;
+  box-shadow:0 8px 18px rgba(37,16,4,.35)!important;
+  cursor:pointer!important;
+}
+body[data-page="board"] #scanModal.market-scan-modal #closeScanBtn:active{
+  transform:scale(.94)!important;
+}
 body[data-page="board"] #scanModal.market-scan-modal .scan-layout{
   position:absolute!important;
   left:50%!important;
@@ -263,6 +292,16 @@ body[data-page="board"] #scanModal.market-scan-modal #scanMessage{
   body[data-page="board"] #scanModal.market-scan-modal #randomUnlockBtn{
     min-height:38px!important;
     padding:8px 10px!important;
+  }
+  body[data-page="board"] #scanModal.market-scan-modal .scan-head-actions{
+    right:-38px!important;
+    top:-24px!important;
+  }
+  body[data-page="board"] #scanModal.market-scan-modal #closeScanBtn{
+    width:34px!important;
+    height:34px!important;
+    min-height:34px!important;
+    font-size:1.3rem!important;
   }
 }
 
@@ -6405,4 +6444,87 @@ body[data-page="battle"] .battle-v84-bottom-actions{
   body[data-page="battle"] .battle-v84-final-cloud.is-pulsing{
     animation:battleV84CloudThrob 800ms ease-in-out infinite!important;
   }
+}
+
+/* === Market board toggle: guided icon and sliding scanner board === */
+body[data-page="board"] .market-board-btn{
+  overflow:visible!important;
+  animation:none!important;
+  transform:translateY(0) scale(1)!important;
+  transform-origin:center bottom!important;
+  transition:transform .46s cubic-bezier(.19,.9,.28,1), opacity .28s ease!important;
+  will-change:transform,opacity!important;
+}
+body[data-page="board"] .market-board-btn img{
+  transform-origin:center bottom!important;
+  animation:v99MarketIconPulse 2.8s ease-in-out infinite!important;
+}
+body[data-page="board"].market-popup-open .market-board-btn{
+  animation:none!important;
+  transform:translateY(calc(100% + 46px)) scale(.94)!important;
+  opacity:0!important;
+  pointer-events:none!important;
+}
+body[data-page="board"] .market-board-btn.is-guided::before{
+  content:""!important;
+  position:absolute!important;
+  left:50%!important;
+  bottom:calc(100% + 8px)!important;
+  width:0!important;
+  height:0!important;
+  transform:translateX(-50%)!important;
+  border-left:18px solid transparent!important;
+  border-right:18px solid transparent!important;
+  border-top:34px solid #ffd02f!important;
+  filter:drop-shadow(0 4px 0 #9b5b00) drop-shadow(0 0 12px rgba(255,222,64,.95))!important;
+  animation:v99MarketArrowBounce .95s ease-in-out infinite!important;
+  pointer-events:none!important;
+  z-index:3!important;
+}
+body[data-page="board"] .market-board-btn.is-guided::after{
+  content:""!important;
+  position:absolute!important;
+  left:50%!important;
+  bottom:calc(100% + 38px)!important;
+  width:15px!important;
+  height:26px!important;
+  border-radius:999px!important;
+  transform:translateX(-50%)!important;
+  background:linear-gradient(180deg,#fff07b,#ffbd10)!important;
+  box-shadow:0 4px 0 #9b5b00,0 0 12px rgba(255,222,64,.82)!important;
+  animation:v99MarketArrowBounce .95s ease-in-out infinite!important;
+  pointer-events:none!important;
+  z-index:2!important;
+}
+body[data-page="board"].market-popup-open .market-board-btn::before,
+body[data-page="board"].market-popup-open .market-board-btn::after,
+body[data-page="board"] .market-board-btn.is-disabled::before,
+body[data-page="board"] .market-board-btn.is-disabled::after{
+  display:none!important;
+}
+body[data-page="board"] #scanModal.market-scan-modal{
+  background:transparent!important;
+}
+body[data-page="board"] #scanModal.market-scan-modal .scan-card{
+  animation:v99MarketPopupIn .52s cubic-bezier(.19,.9,.28,1) both!important;
+  transform-origin:center bottom!important;
+}
+body[data-page="board"] #scanModal.market-scan-modal.is-closing .scan-card{
+  animation:v99MarketPopupOut .38s cubic-bezier(.45,0,.7,.45) both!important;
+}
+@keyframes v99MarketIconPulse{
+  0%,100%{transform:scale(1);filter:drop-shadow(0 0 14px rgba(255,220,140,.42)) drop-shadow(0 8px 18px rgba(0,0,0,.34))}
+  50%{transform:scale(1.035);filter:drop-shadow(0 0 22px rgba(255,232,165,.78)) drop-shadow(0 10px 20px rgba(0,0,0,.38))}
+}
+@keyframes v99MarketArrowBounce{
+  0%,100%{translate:0 0}
+  50%{translate:0 -9px}
+}
+@keyframes v99MarketPopupIn{
+  from{opacity:0;transform:translate3d(0,110vh,0) scale(.94)}
+  to{opacity:1;transform:translate3d(0,0,0) scale(1)}
+}
+@keyframes v99MarketPopupOut{
+  from{opacity:1;transform:translate3d(0,0,0) scale(1)}
+  to{opacity:0;transform:translate3d(0,110vh,0) scale(.94)}
 }

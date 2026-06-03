@@ -920,7 +920,9 @@
     market.id = 'marketScanBtn';
     market.className = 'board-overlay-btn market-board-btn';
     market.setAttribute('aria-label', 'Marktbrett öffnen und QR-Code scannen');
-    if (state.activeBiome && Number.isInteger(activeBoardSlot(state))) market.classList.add('is-disabled');
+    const marketAvailable = !allLevelsDone(state) && !(state.activeBiome && Number.isInteger(activeBoardSlot(state)));
+    if (!marketAvailable) market.classList.add('is-disabled');
+    else market.classList.add('is-guided');
     market.innerHTML = `<img src="${assetUrl('assets/images/ui/market_board.png')}" alt="Marktbrett">`;
     market.addEventListener('click', () => {
       const live = getState();
@@ -1037,15 +1039,31 @@
     return;
   }
 
-  let scanIndex = null, scanner = null;
+  let scanIndex = null, scanner = null, scanCloseTimer = null;
   function activeScanMeta() { return null; }
+  function resetScanModalState() {
+    if (scanCloseTimer) {
+      clearTimeout(scanCloseTimer);
+      scanCloseTimer = null;
+    }
+    document.body.classList.remove('market-popup-open');
+    const modal = $('scanModal');
+    modal?.classList.remove('market-scan-modal', 'is-closing', 'stage-popup');
+    hide(modal);
+    scanIndex = null;
+  }
   function openScan() {
     stopSound('background');
     stopScanner();
+    if (scanCloseTimer) {
+      clearTimeout(scanCloseTimer);
+      scanCloseTimer = null;
+    }
     scanIndex = null;
     const modal = $('scanModal');
+    document.body.classList.add('market-popup-open');
     modal?.classList.add('market-scan-modal');
-    modal?.classList.remove('stage-popup');
+    modal?.classList.remove('stage-popup', 'is-closing');
     modal?.style.removeProperty('--popup-bg');
     if ($('manualCodeInput')) $('manualCodeInput').value='';
     if ($('scanHelp')) $('scanHelp').textContent = '';
@@ -1056,18 +1074,28 @@
   function closeScan() {
     stopScanner();
     const modal = $('scanModal');
-    modal?.classList.remove('market-scan-modal', 'stage-popup');
-    hide(modal);
+    document.body.classList.remove('market-popup-open');
+    if (!modal || modal.classList.contains('hidden')) {
+      scanIndex = null;
+      playSound('background', { loop:true, restart:true });
+      return;
+    }
+    modal.classList.add('is-closing');
     scanIndex = null;
-    playSound('background', { loop:true, restart:true });
+    if (scanCloseTimer) clearTimeout(scanCloseTimer);
+    scanCloseTimer = setTimeout(() => {
+      hide(modal);
+      modal.classList.remove('market-scan-modal', 'is-closing', 'stage-popup');
+      scanCloseTimer = null;
+      playSound('background', { loop:true, restart:true });
+    }, 420);
   }
   function skipCurrentLevel() {
     const state = getState();
     const slot = state.activeBiome ? nextSlotForBiome(state.activeBiome, state) : null;
     if (!Number.isInteger(slot)) return;
     stopScanner();
-    hide($('scanModal'));
-    scanIndex = null;
+    resetScanModalState();
     state.completed[slot] = true;
     state.heroIndex = null;
     if (!nextSlotForBiome(state.activeBiome, state)) state.activeBiome = null;
@@ -1141,7 +1169,7 @@
   }
   async function unlockSense(id, index) {
     await stopScanner();
-    hide($('scanModal'));
+    resetScanModalState();
     const state = getState();
     state.started = true;
     state.activeBiome = id;
