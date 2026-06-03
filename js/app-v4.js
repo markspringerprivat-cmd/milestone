@@ -6,6 +6,7 @@
   const BATTLE_BACKUP_STORE = 'koenigreichSinneV4BattleBackup';
   const RETURN_STORE = 'koenigreichSinneV4BoardReturn';
   const SOUND_STORE = 'koenigreichSinneV4Muted';
+  const DEFAULT_HERO_NAME = 'Sir Nervus';
   const STATE_VERSION = 'v4_76_stable_village_layout';
   const APP_ROOT = new URL('./', document.baseURI);
   const pageUrl = target => new URL(target, APP_ROOT).href;
@@ -188,30 +189,35 @@
   };
 
   const STORY_SLIDES = [
-    { image: 'assets/images/story/1.png', text: 'Hoch über den grünen Tälern lag das Königreich der Sinne, hell, friedlich und voller Freude.' },
-    { image: 'assets/images/story/2.png', text: 'An diesem Tag genossen alle ein prächtiges Fest mit warmem Essen, Musik und fröhlichem Lachen.' },
-    { image: 'assets/images/story/3.png', text: 'Doch draußen stand ein böser Zauberer. Er war eifersüchtig, weil niemand ihn eingeladen hatte.' },
-    { image: 'assets/images/story/4.png', text: 'Durch das Fenster sah er, wie der König sich den saftigen Maiskolben schmecken ließ.' },
-    { image: 'assets/images/story/5.png', text: 'Er sah auch, wie gemütlich der König in seinem weichen Thron saß und den Tag genoss.' },
-    { image: 'assets/images/story/6.png', text: 'Der Duft der dampfenden Burger zog durch den Saal. Sogar draußen konnte man ihn fast riechen.' },
-    { image: 'assets/images/story/7.png', text: 'Überall standen schöne Blumen und festliche Dekorationen. Alles sah warm, bunt und freundlich aus.' },
-    { image: 'assets/images/story/8.png', text: 'Der Barde spielte eine helle Melodie, die wunderbar klang und den ganzen Saal erfüllte.' },
-    { image: 'assets/images/story/9.png', text: 'Da platzte der Zauberer vor Neid. Mit einem Krachen brach er in den Festsaal ein.' },
-    { image: 'assets/images/story/10.png', text: 'Der König stellte sich schützend vor seine Bürger, doch der Zauberer schleuderte lila Magie durch den Raum.' },
-    { image: 'assets/images/story/11.png', text: 'Dann verschwand der Zauberer in einem wirbelnden Nebel und ließ seinen Fluch zurück.' },
-    { image: 'assets/images/story/12.png', text: 'Plötzlich klang die Musik des Barden schrecklich verzerrt, als würden die Töne stolpern.' },
-    { image: 'assets/images/story/13.png', text: 'Die Blumen verwelkten, die Farben wurden matt, und nichts sah mehr schön aus.' },
-    { image: 'assets/images/story/14.png', text: 'Der köstliche Burgerduft wich einem grausamen Gestank, der allen den Appetit verdarb.' },
-    { image: 'assets/images/story/15.png', text: 'Auch der vorher so gemütliche Thron fühlte sich plötzlich hart, stachelig und unbequem an.' },
-    { image: 'assets/images/story/16.png', text: 'Der Maiskolben verlor seinen Geschmack. Was eben lecker war, war nun kaum noch genießbar.' },
-    { image: 'assets/images/story/17.png', text: 'Alle wurden traurig: Sie konnten kaum noch fühlen, riechen, schmecken, hören oder Schönes sehen.' },
-    { image: 'assets/images/story/18.png', text: 'Zwischenzeitlich in der Speisekammer: Nur einer blieb vom Fluch des bösen Magiers verschont.' },
-    { image: 'assets/images/story/19.png', text: 'Sir Nervus schlug sich gerade heimlich den Bauch voll und ahnte noch nichts vom Chaos im Saal.' },
-    { image: 'assets/images/story/20.png', text: 'Doch dann hielt er inne. Irgendetwas stimmte nicht, und plötzlich war Nachtisch nicht mehr wichtig.' },
-    { image: 'assets/images/story/21.png', text: 'Sir Nervus kehrte zurück und sah, wie still und traurig das ganze Fest geworden war.' },
-    { image: 'assets/images/story/22.png', text: 'Der König bat ihn um Hilfe. Nur Sir Nervus konnte die verlorenen Sinne wiederfinden.' },
-    { image: 'assets/images/story/23.png', text: 'Mit Schwert, Schild und vollem Magen versprach Sir Nervus, das Königreich zu retten.' },
-    { image: 'assets/images/story/24.png', text: 'So begann seine Reise durch alle Biome, um Sehen, Hören, Riechen, Schmecken und Fühlen zurückzubringen.' }
+    { image: 'assets/images/story/1.png', text: 'Im Königreich der Sinne erhob sich ein wunderschönes Schloss über grünen Tälern, hellen Türmen und friedlichen Mauern.' },
+    { image: 'assets/images/story/2.png', text: 'Im großen Saal feierten König und Bürger ein fröhliches Fest. Alle lachten, aßen miteinander und genossen den Tag.' },
+    { image: 'assets/images/story/3.png', text: 'Draußen vor dem Fenster stand ein Magier. Er war eifersüchtig, denn alle feierten, nur er war nicht eingeladen.' },
+    { image: 'assets/images/story/4.png', text: 'Neidisch beobachtete er alles: den leckeren Mais, den gemütlichen Thron, den Burgerduft, die schönen Blumen und die wohltuende Harfe.' },
+    { image: 'assets/images/story/5.png', text: 'Besonders die Freude im Saal machte ihn wütend. Der Magier spürte, wie sein Neid immer größer wurde.' },
+    { image: 'assets/images/story/6.png', text: 'Schließlich konnte er sich nicht mehr halten. Er brach herein und schleuderte einen finsteren Fluch durch den Festsaal.' },
+    { image: 'assets/images/story/7.png', text: 'Der Fluch kroch durch die Luft, legte sich über alle Gäste und nahm dem Königreich die Freude an seinen Sinnen.' },
+    { image: 'assets/images/story/8.png', text: 'Alle starrten erschrocken auf ihre Hände. Sie spürten sofort: Irgendetwas stimmte überhaupt nicht mehr.' },
+    { image: 'assets/images/story/9.png', text: 'Aus der Harfe kamen plötzlich nur noch schiefe, kratzende Töne. Was eben schön klang, tat nun fast in den Ohren weh.' },
+    { image: 'assets/images/story/10.png', text: 'Die Blumen verwelkten und die Dekoration verlor ihren Glanz. Der Festsaal sah nicht mehr warm und feierlich aus.' },
+    { image: 'assets/images/story/11.png', text: 'Der köstliche Duft der Burger verwandelte sich in einen schrecklichen Gestank. Niemand wollte mehr davon essen.' },
+    { image: 'assets/images/story/12.png', text: 'Der bequemste Stuhl im ganzen Schloss fühlte sich plötzlich hart, spitz und schrecklich unbequem an.' },
+    { image: 'assets/images/story/13.png', text: 'Auch der Maiskolben verlor seinen Geschmack. Was vorher lecker war, schmeckte nun fade und ungenießbar.' },
+    { image: 'assets/images/story/14.png', text: 'Der Magier hatte die Sinne des Königreichs gestohlen und in seinem Stab gespeichert.' },
+    { image: 'assets/images/story/15.png', text: 'Damit niemand ihn aufhalten konnte, fasste er einen neuen Plan und suchte Tiere tief im Wald auf.' },
+    { image: 'assets/images/story/16.png', text: 'Mit dunkler Magie verwandelte er die Tiere in mächtige Gegner, die ihn von nun an beschützen sollten.' },
+    { image: 'assets/images/story/17.png', text: 'Jedem verwandelten Gegner gab der Magier einen Schlüssel. Diese Schlüssel sollten den Weg zu ihm versperren.' },
+    { image: 'assets/images/story/18.png', text: 'Dann verschanzte er sich in seinem Schloss. Am Tor hingen fünf Schlösser, und nur die Schlüssel konnten sie öffnen.' },
+    { image: 'assets/images/story/19.png', text: 'Zurück im Palast waren alle vom Fluch betroffen. Niemand konnte noch Freude am Fühlen, Riechen, Schmecken, Hören oder Sehen empfinden.' },
+    { image: 'assets/images/story/20.png', text: 'Zwischenzeitlich in der Speisekammer stellte sich eine wichtige Frage: War wirklich jeder im Königreich vom Fluch betroffen?' },
+    { image: 'assets/images/story/21.png', text: 'Nein! Ein tapferer Ritter hatte sich während des Vorfalls heimlich den Bauch mit Kuchen vollgeschlagen.', requiresHeroName: true },
+    { image: 'assets/images/story/22.png', text: 'Plötzlich hörte der Ritter neben seinem eigenen Schmatzen ein leises Wimmern aus dem Festsaal und wurde aufmerksam.' },
+    { image: 'assets/images/story/23.png', text: '{heroName} betrat den Saal und sah, wie betrübt König und Bürger am Tisch saßen.' },
+    { image: 'assets/images/story/24.png', text: 'Der König stützte sich auf {heroName} und bat ihn, die gestohlenen Sinne der Bürger zurückzubeschaffen.' },
+    { image: 'assets/images/story/25.png', text: '{heroName} erklärte sich bereit, hinaus ins Land zu ziehen, den Magier zu finden und die Sinne zurückzuholen.' },
+    { image: 'assets/images/story/26.png', text: 'Vor ihm lagen verschiedene Zonen des Königreichs, gefährliche Gegner und die fünf Schlüssel zum Schloss des Magiers.' },
+    { image: 'assets/images/story/27.png', text: 'Er würde jedes Biom durchqueren, die verwandelten Wächter besiegen und Stück für Stück die verlorenen Sinne befreien.' },
+    { image: 'assets/images/story/28.png', text: 'Erst wenn alle Schlösser geöffnet waren, konnte {heroName} dem Magier gegenübertreten.' },
+    { image: 'assets/images/story/29.png', text: 'So begann das große Abenteuer, um die Sinne zurück ins Königreich zu bringen.' }
   ];
 
   function normalizeAssetPaths() {
@@ -244,6 +250,7 @@
   const esc = txt => String(txt ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   const clamp = (n,min,max) => Math.max(min, Math.min(max, n));
+  const cleanHeroName = value => String(value || '').replace(/\s+/g, ' ').trim().slice(0, 28);
 
   let muted = localStorage.getItem(SOUND_STORE) === '1';
   const audio = new Map();
@@ -561,11 +568,12 @@
   }
 
   function blankFlags() { return { sehen:false, hoeren:false, riechen:false, schmecken:false, fuehlen:false, boss:false }; }
-  function defaultState() { return { stateVersion:STATE_VERSION, started:false, slots:Array(LEVEL_COUNT).fill(null), completed:Array(LEVEL_COUNT).fill(false), bossCompleted:false, heroIndex:null, introUsed:false, revealedMax:0, keysFound:blankFlags(), removedLocks:blankFlags(), activeBiome:null }; }
+  function defaultState() { return { stateVersion:STATE_VERSION, started:false, slots:Array(LEVEL_COUNT).fill(null), completed:Array(LEVEL_COUNT).fill(false), bossCompleted:false, heroIndex:null, heroName:DEFAULT_HERO_NAME, introUsed:false, revealedMax:0, keysFound:blankFlags(), removedLocks:blankFlags(), activeBiome:null }; }
   function normalizeState(raw) {
     const base = defaultState();
     if (!raw || raw.stateVersion !== STATE_VERSION) return base;
     const state = { ...base, ...(raw || {}) };
+    state.heroName = cleanHeroName(raw?.heroName) || DEFAULT_HERO_NAME;
     const oldSlots = Array.isArray(raw?.slots) ? raw.slots : [];
     const oldCompleted = Array.isArray(raw?.completed) ? raw.completed : [];
     state.slots = Array.from({ length: LEVEL_COUNT }, (_, i) => oldSlots[i] || null);
@@ -599,6 +607,14 @@
     try { return normalizeState(JSON.parse(localStorage.getItem(STORE)) || null); } catch (_) { return defaultState(); }
   }
   function setState(state) { localStorage.setItem(STORE, JSON.stringify(normalizeState(state))); }
+  function getHeroName() { return getState().heroName || DEFAULT_HERO_NAME; }
+  function setHeroName(name) {
+    const state = getState();
+    state.heroName = cleanHeroName(name) || DEFAULT_HERO_NAME;
+    setState(state);
+    return state.heroName;
+  }
+  function heroText(text, name = getHeroName()) { return String(text || '').replace(/\{heroName\}/g, name); }
   function currentSlot(state = getState()) { const i = state.completed.findIndex(v => !v); return i < 0 ? LEVEL_COUNT : i; }
   function biomeLevelPlan(id) { return BIOME_LEVEL_PLAN[id] || []; }
   function nextSlotForBiome(id, state = getState()) { return biomeLevelPlan(id).find(slot => !state.completed[slot]); }
@@ -720,6 +736,8 @@
     const prevBtn = $('storyPrevBtn');
     const nextBtn = $('storyNextBtn');
     const startBtn = $('storyStartBtn');
+    const nameBox = $('storyHeroNameBox');
+    const nameInput = $('storyHeroNameInput');
     const card = document.querySelector('.story-card');
     if (!image || !text || !counter || !prevBtn || !nextBtn || !startBtn) return;
 
@@ -743,12 +761,14 @@
 
     const updateStoryControls = () => {
       const isLast = index === lastIndex;
+      const needsName = Boolean(STORY_SLIDES[index]?.requiresHeroName);
+      const nameReady = !needsName || Boolean(cleanHeroName(nameInput?.value));
       prevBtn.disabled = index === 0;
-      nextBtn.disabled = !textReady;
+      nextBtn.disabled = !textReady || !nameReady;
       nextBtn.classList.toggle('hidden', isLast);
       startBtn.classList.toggle('hidden', !isLast);
-      startBtn.classList.toggle('is-disabled', isLast && !textReady);
-      startBtn.setAttribute('aria-disabled', String(isLast && !textReady));
+      startBtn.classList.toggle('is-disabled', isLast && (!textReady || !nameReady));
+      startBtn.setAttribute('aria-disabled', String(isLast && (!textReady || !nameReady)));
     };
 
     const finishTextReveal = () => {
@@ -761,7 +781,7 @@
     const revealStoryText = rawText => {
       clearRevealTimers();
       textReady = false;
-      const words = String(rawText || '').split(/\s+/).filter(Boolean);
+      const words = heroText(rawText, cleanHeroName(nameInput?.value) || getHeroName()).split(/\s+/).filter(Boolean);
       text.innerHTML = words.map(word => `<span class="story-word">${esc(word)}</span>`).join(' ');
       updateStoryControls();
       const spans = [...text.querySelectorAll('.story-word')];
@@ -781,6 +801,7 @@
     const render = () => {
       const slide = STORY_SLIDES[index];
       const isLast = index === lastIndex;
+      const needsName = Boolean(slide.requiresHeroName);
 
       image.classList.add('is-changing');
       image.src = images[index];
@@ -790,11 +811,17 @@
       else image.onload = finishImageSwap;
 
       counter.textContent = `${index + 1} / ${STORY_SLIDES.length}`;
+      nameBox?.classList.toggle('hidden', !needsName);
+      if (needsName && nameInput && !cleanHeroName(nameInput.value)) {
+        const existing = getHeroName();
+        nameInput.value = existing === DEFAULT_HERO_NAME ? '' : existing;
+      }
       revealStoryText(slide.text);
       preloadAround();
     };
 
     const goTo = nextIndex => {
+      if (STORY_SLIDES[index]?.requiresHeroName) setHeroName(nameInput?.value);
       index = clamp(nextIndex, 0, lastIndex);
       render();
     };
@@ -805,6 +832,12 @@
         finishTextReveal();
         return;
       }
+      if (STORY_SLIDES[index]?.requiresHeroName && !cleanHeroName(nameInput?.value)) {
+        nameInput?.focus();
+        updateStoryControls();
+        return;
+      }
+      if (nameInput) setHeroName(nameInput.value);
       const state = getState();
       state.started = true;
       state.introUsed = true;
@@ -815,8 +848,12 @@
     };
 
     prevBtn.addEventListener('click', () => goTo(index - 1));
-    nextBtn.addEventListener('click', () => { if (textReady) goTo(index + 1); });
+    nextBtn.addEventListener('click', () => { if (!nextBtn.disabled) goTo(index + 1); });
     startBtn.addEventListener('click', beginAdventure);
+    nameInput?.addEventListener('input', () => {
+      if (STORY_SLIDES[index]?.requiresHeroName) setHeroName(nameInput.value);
+      updateStoryControls();
+    });
     card?.addEventListener('click', ev => {
       if (ev.target.closest('button,a')) return;
       if (!textReady) { finishTextReveal(); return; }
