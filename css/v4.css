@@ -6840,7 +6840,7 @@ body[data-page="board"] .magic-castle-board-btn{
   cursor:pointer!important;
   pointer-events:auto!important;
   filter:drop-shadow(0 0 16px rgba(183,88,255,.58)) drop-shadow(0 14px 18px rgba(0,0,0,.38))!important;
-  animation:magicCastleBoardFloat 6.8s ease-in-out infinite!important;
+  will-change:transform!important;
 }
 body[data-page="board"] .board-lock-row{
   display:none!important;
@@ -6858,8 +6858,8 @@ body[data-page="board"] .magic-castle-board-btn:active{
   50%{transform:translate(-50%,-50%) scale(1.035)}
 }
 @keyframes magicCastleBoardFloat{
-  0%,100%{transform:translate(-50%,-50%) translateY(calc(-0.5cm + 2mm)) scale(1)}
-  50%{transform:translate(-50%,-50%) translateY(calc(-0.5cm - 2mm)) scale(1.012)}
+  0%,100%{transform:translate(-50%,-50%) translateY(calc(-0.5cm + 2.5mm)) scale(1)}
+  50%{transform:translate(-50%,-50%) translateY(calc(-0.5cm - 2.5mm)) scale(1.01)}
 }
 .magic-castle-page{
   position:relative!important;
@@ -6879,9 +6879,9 @@ body[data-page="board"] .magic-castle-board-btn:active{
 }
 .magic-castle-hero{
   position:absolute!important;
-  left:13.5%!important;
-  top:calc(69.5% - 1.5cm)!important;
-  width:clamp(96px,21vw,186px)!important;
+  left:9.8%!important;
+  top:46.8%!important;
+  width:clamp(102px,22vw,194px)!important;
   height:auto!important;
   z-index:4!important;
   filter:drop-shadow(0 8px 10px rgba(0,0,0,.45))!important;
@@ -6923,11 +6923,11 @@ body[data-page="board"] .magic-castle-board-btn:active{
 .magic-castle-lock.shake-once{
   animation:v72Shake .34s ease both!important;
 }
-.magic-lock-ice{left:calc(50.5% + 0.5cm)!important;top:41.3%!important;width:clamp(56px,11.8vw,100px)!important}
-.magic-lock-grass{left:calc(46.0% + 0.5cm)!important;top:49.7%!important}
-.magic-lock-lava{left:calc(55.5% + 0.5cm)!important;top:50.0%!important}
-.magic-lock-cloud{left:calc(47.2% + 0.5cm)!important;top:58.6%!important}
-.magic-lock-sand{left:calc(54.5% + 0.5cm)!important;top:58.8%!important}
+.magic-lock-ice{left:50.5%!important;top:31.7%!important;width:clamp(60px,12.4vw,106px)!important}
+.magic-lock-grass{left:46.2%!important;top:36.9%!important;width:clamp(56px,11.8vw,98px)!important}
+.magic-lock-lava{left:56.0%!important;top:37.1%!important;width:clamp(56px,11.8vw,98px)!important}
+.magic-lock-cloud{left:48.2%!important;top:42.1%!important;width:clamp(56px,11.8vw,98px)!important}
+.magic-lock-sand{left:55.8%!important;top:42.6%!important;width:clamp(56px,11.8vw,98px)!important}
 .magic-castle-flying-key{
   position:fixed!important;
   left:0;
@@ -6994,8 +6994,8 @@ body[data-page="board"] .magic-castle-board-btn:active{
   display:block!important;
 }
 @keyframes magicCastleHeroEnter{
-  from{left:-12%;top:75.5%;opacity:0;transform:translate3d(0,0,0) rotate(-12deg) scale(.9)}
-  to{left:18.5%;top:69.5%;opacity:1;transform:translate3d(0,0,0) rotate(-9deg) scale(.96)}
+  from{left:-12%;top:60%;opacity:0;transform:translate3d(0,0,0) rotate(-12deg) scale(.9)}
+  to{left:9.8%;top:46.8%;opacity:1;transform:translate3d(0,0,0) rotate(-9deg) scale(.96)}
 }
 @keyframes magicCastleHeroIdle{
   from{transform:translate3d(0,0,0) rotate(-9deg) scale(.96)}
@@ -7011,9 +7011,22 @@ body[data-page="board"] .magic-castle-board-btn:active{
     width:clamp(176px,49vw,248px)!important;
   }
   .magic-castle-bg{object-position:center top!important}
-  .magic-castle-hero{width:clamp(82px,30vw,148px)!important}
+  .magic-castle-hero{left:8.6%!important;top:47.8%!important;width:clamp(86px,30vw,152px)!important}
   .magic-castle-lock{width:clamp(38px,11.4vw,58px)!important}
-  .magic-lock-ice{width:clamp(42px,12.5vw,64px)!important}
+  .magic-lock-ice{width:clamp(44px,12.8vw,66px)!important}
   .magic-castle-back{min-width:88px!important;padding:10px 14px!important}
   .magic-castle-key-chip{width:clamp(34px,10vw,48px)!important}
+}
+
+.board-welcome-card{
+  width:min(92vw,560px)!important;
+}
+.board-welcome-text{
+  align-items:center!important;
+  text-align:center!important;
+  padding:8px 4px!important;
+}
+.board-welcome-text p{
+  max-width:26em!important;
+  margin-inline:auto!important;
 }

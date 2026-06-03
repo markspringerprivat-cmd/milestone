@@ -6,6 +6,7 @@
   const BATTLE_BACKUP_STORE = 'koenigreichSinneV4BattleBackup';
   const RETURN_STORE = 'koenigreichSinneV4BoardReturn';
   const SOUND_STORE = 'koenigreichSinneV4Muted';
+  const BOARD_WELCOME_STORE = 'koenigreichSinneV4PendingBoardWelcome';
   const DEFAULT_HERO_NAME = 'Sir Nervus';
   const STATE_VERSION = 'v4_76_stable_village_layout';
   const APP_ROOT = new URL('./', document.baseURI);
@@ -842,9 +843,8 @@
       state.started = true;
       state.introUsed = true;
       setState(state);
-      try { sessionStorage.setItem('koenigreichSinneV4StartMusic', '1'); } catch (_) {}
-      playSound('background', { loop:true, restart:true });
-      window.setTimeout(() => { location.href = pageUrl('index.html?board=1&music=1'); }, 120);
+      try { sessionStorage.setItem(BOARD_WELCOME_STORE, '1'); } catch (_) {}
+      window.setTimeout(() => { location.href = pageUrl('index.html?board=1&welcome=1'); }, 120);
     };
 
     prevBtn.addEventListener('click', () => goTo(index - 1));
@@ -884,9 +884,10 @@
     addSpeaker();
     resetBoardViewport();
     const state = getState();
-    const shouldForceBoardMusic = qs('music') === '1' || (() => {
-      try { return sessionStorage.getItem('koenigreichSinneV4StartMusic') === '1'; } catch (_) { return false; }
+    const pendingBoardWelcome = qs('welcome') === '1' || (() => {
+      try { return sessionStorage.getItem(BOARD_WELCOME_STORE) === '1'; } catch (_) { return false; }
     })();
+    const shouldForceBoardMusic = !pendingBoardWelcome && (qs('music') === '1');
     if (qs('board') === '1') {
       state.started = true;
       state.introUsed = true;
@@ -894,9 +895,11 @@
       try { history.replaceState(null, '', pageUrl('index.html')); } catch (_) {}
     }
     hide($('outroScreen'));
-    if (state.started) { showBoard(false); } else { show($('introScreen')); hide($('boardScreen')); hide($('openBoardMenuBtn')); hide($('belowBoard')); }
+    if (state.started) { showBoard(false, { playMusic: !pendingBoardWelcome }); } else { show($('introScreen')); hide($('boardScreen')); hide($('openBoardMenuBtn')); hide($('belowBoard')); }
+    if (pendingBoardWelcome) {
+      window.setTimeout(showBoardWelcomeModal, 220);
+    }
     if (shouldForceBoardMusic) {
-      try { sessionStorage.removeItem('koenigreichSinneV4StartMusic'); } catch (_) {}
       const ensureBoardBackgroundMusic = () => {
         if (muted) return;
         playSound('background', { loop:true, restart:false });
@@ -928,6 +931,8 @@
       }, 160);
     };
     $('startGameBtn')?.addEventListener('click', startGame);
+    $('boardWelcomeContinueBtn')?.addEventListener('click', () => closeBoardWelcomeModal(true));
+    $('boardWelcomeModal')?.addEventListener('click', ev => { if (ev.target === $('boardWelcomeModal')) closeBoardWelcomeModal(true); });
     $('introScreen')?.addEventListener('click', (ev) => { if (ev.target.closest('#startGameBtn')) return; startGame(); });
     $('outroContinueBtn')?.addEventListener('click', () => { hide($('outroScreen')); showBoard(false); });
     $('resetGameBtn')?.addEventListener('click', () => { if (confirm('Spielbrett wirklich zurücksetzen?')) { localStorage.removeItem(STORE); localStorage.removeItem(RETURN_STORE); location.href = pageUrl('index.html'); } });
@@ -950,15 +955,48 @@
     $('boardGuide')?.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); startIntroHeroJourney(); } });
     window.addEventListener('resize', () => { resetBoardViewport(); updateMapGeometry(); }, { passive:true });
     window.visualViewport?.addEventListener?.('resize', () => { resetBoardViewport(); updateMapGeometry(); }, { passive:true });
-    window.addEventListener('pageshow', () => { resetBoardViewport(); updateMapGeometry(); renderBoard(); }, { passive:true });
+    window.addEventListener('pageshow', () => { resetBoardViewport(); updateMapGeometry(); renderBoard(); startMagicCastleBoardFloat(); }, { passive:true });
     setTimeout(() => applyReturnModal(), 150);
   }
 
-  function showBoard(firstStart=false) {
+  function showBoard(firstStart=false, options={}) {
+    const { playMusic = true } = options;
     hide($('introScreen')); show($('boardScreen')); show($('openBoardMenuBtn')); show($('belowBoard'));
     resetBoardViewport();
     updateMapGeometry(); renderBoard();
-    playSound('background', { loop:true, restart:!firstStart });
+    startMagicCastleBoardFloat();
+    if (playMusic) playSound('background', { loop:true, restart:!firstStart });
+  }
+
+  let magicCastleBoardFloatRaf = 0;
+
+  function startMagicCastleBoardFloat() {
+    const btn = $('magicCastleBtn');
+    if (!btn) return;
+    if (magicCastleBoardFloatRaf) cancelAnimationFrame(magicCastleBoardFloatRaf);
+    const baseOffset = -18.9;
+    const amplitude = 9.5;
+    const cycleMs = 3600;
+    const tick = now => {
+      const phase = (now % cycleMs) / cycleMs;
+      const offset = baseOffset + Math.sin(phase * Math.PI * 2) * amplitude;
+      btn.style.setProperty('transform', `translate(-50%, -50%) translateY(${offset.toFixed(2)}px)`, 'important');
+      magicCastleBoardFloatRaf = requestAnimationFrame(tick);
+    };
+    magicCastleBoardFloatRaf = requestAnimationFrame(tick);
+  }
+
+  function closeBoardWelcomeModal(startMusic=false) {
+    const modal = $('boardWelcomeModal');
+    hide(modal);
+    try { sessionStorage.removeItem(BOARD_WELCOME_STORE); } catch (_) {}
+    if (startMusic && !muted) playSound('background', { loop:true, restart:true });
+  }
+
+  function showBoardWelcomeModal() {
+    const modal = $('boardWelcomeModal');
+    if (!modal) return;
+    show(modal);
   }
 
   function updateMapGeometry() {
