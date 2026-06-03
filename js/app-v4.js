@@ -139,10 +139,25 @@
     fuehlen: [7, 8],
     boss: [11, 10]
   };
-  const stageIndexForSlot = slot => { const senseId = SLOT_SENSE_MAP[Number(slot)] || 'boss'; return BIOME_BY_SENSE[senseId]?.stageIndex ?? 5; };
   const slotSenseId = slot => SLOT_SENSE_MAP[Number(slot)] || 'boss';
   const biomeForSenseId = senseId => BIOME_BY_SENSE[senseId] || BIOME_BY_SENSE.boss;
   const biomeForSlot = slot => biomeForSenseId(slotSenseId(slot));
+  const stageIndexForSlot = slot => {
+    const senseId = slotSenseId(slot);
+    return BIOME_BY_SENSE[senseId]?.stageIndex ?? 5;
+  };
+  function senseIdForMeta(meta) {
+    if (meta?.isBoss || meta?.senseId === 'boss') return 'boss';
+    if (meta?.senseId && BIOME_BY_SENSE[meta.senseId]) return meta.senseId;
+    const slot = Number(meta?.slot);
+    const assigned = Number.isInteger(slot) ? getState().slots?.[slot] : null;
+    if (assigned && BIOME_BY_SENSE[assigned]) return assigned;
+    return slotSenseId(slot);
+  }
+  function stageIndexForMeta(meta) {
+    const senseId = senseIdForMeta(meta);
+    return BIOME_BY_SENSE[senseId]?.stageIndex ?? stageIndexForSlot(meta?.slot);
+  }
 
   const ASSETS = {
     correct: ['assets/images/battle/richtig_1.webp', 'assets/images/battle/richtig_2.webp', 'assets/images/battle/richtig_3.webp'],
@@ -471,23 +486,36 @@
   function startFinalCloudPulse(node) {
     if (!node) return;
     stopFinalCloudPulse(node);
-    try {
-      node._battlePulseAnimation = node.animate([
-        { transform:'translate(-50%,-50%) translateX(-10px) scale(.86) rotate(-1.5deg)', opacity:1 },
-        { transform:'translate(-50%,-50%) translateX(10px) scale(1.18) rotate(1.5deg)', opacity:1 },
-        { transform:'translate(-50%,-50%) translateX(-10px) scale(.86) rotate(-1.5deg)', opacity:1 }
-      ], {
-        duration:720,
-        iterations:Infinity,
-        easing:'ease-in-out'
-      });
-    } catch (_) {}
+    node.style.animation = 'none';
+    node.style.transformOrigin = 'center center';
+    const startedAt = performance.now();
+    const run = now => {
+      const phase = ((now - startedAt) % 760) / 760;
+      const wave = 0.5 - Math.cos(phase * Math.PI * 2) / 2;
+      const scale = 0.84 + wave * 0.46;
+      const glow = 0.24 + wave * 0.24;
+      node.style.opacity = '1';
+      node.style.transform = `translate(-50%,-50%) scale(${scale.toFixed(3)})`;
+      node.style.filter = `drop-shadow(0 ${Math.round(18 + wave * 14)}px ${Math.round(30 + wave * 22)}px rgba(255,255,255,${glow.toFixed(2)}))`;
+      node._battlePulseRaf = requestAnimationFrame(run);
+    };
+    node._battlePulseRaf = requestAnimationFrame(run);
   }
   function stopFinalCloudPulse(node) {
     try {
       if (node?._battlePulseAnimation) {
         node._battlePulseAnimation.cancel();
         node._battlePulseAnimation = null;
+      }
+      if (node?._battlePulseRaf) {
+        cancelAnimationFrame(node._battlePulseRaf);
+        node._battlePulseRaf = null;
+      }
+      if (node) {
+        node.style.animation = '';
+        node.style.transform = '';
+        node.style.filter = '';
+        node.style.opacity = '';
       }
     } catch (_) {}
   }
@@ -556,8 +584,8 @@
   function usedIds(state = getState()) { return state.slots.filter(Boolean); }
   function dataForMeta(meta) { return meta?.isBoss || meta?.senseId === 'boss' ? BOSS : SENSES[meta?.senseId]; }
   function getQuestionsForId(id) { return QUESTION_BANK[id] || QUESTION_BANK.sehen; }
-  function bgForMeta(meta) { return STAGE_BACKGROUNDS[stageIndexForSlot(meta?.slot)]; }
-  function popupBgForMeta(meta) { return POPUP_BACKGROUNDS[stageIndexForSlot(meta?.slot)]; }
+  function bgForMeta(meta) { return STAGE_BACKGROUNDS[stageIndexForMeta(meta)]; }
+  function popupBgForMeta(meta) { return POPUP_BACKGROUNDS[stageIndexForMeta(meta)]; }
   function boardPointForSlot(index, state = getState()) {
     if (!Number.isInteger(index)) return HERO_DEFAULT_POINT;
     const assigned = state.slots[index] || slotSenseId(index);
@@ -642,7 +670,7 @@
     $('openBoardMenuBtn')?.addEventListener('click', () => document.body.classList.add('board-menu-open'));
     $('closeBoardMenuBtn')?.addEventListener('click', () => document.body.classList.remove('board-menu-open'));
     $('closeScanBtn')?.addEventListener('click', closeScan);
-    $('backToBoardBtn')?.addEventListener('click', () => escapeToBoard(activeScanMeta()));
+    $('backToBoardBtn')?.addEventListener('click', closeScan);
     $('manualUnlockBtn')?.addEventListener('click', () => unlockByCode($('manualCodeInput')?.value || ''));
     $('randomUnlockBtn')?.addEventListener('click', () => unlockRandom());
     $('skipLevelBtn')?.addEventListener('click', skipCurrentLevel);
@@ -1013,15 +1041,26 @@
   function activeScanMeta() { return null; }
   function openScan() {
     stopSound('background');
+    stopScanner();
     scanIndex = null;
-    $('manualCodeInput').value='';
-    $('scanHelp').textContent = 'Scanne einen QR-Code. Danach erscheint im passenden Biom ein Levelfeld auf der Karte.';
+    const modal = $('scanModal');
+    modal?.classList.add('market-scan-modal');
+    modal?.classList.remove('stage-popup');
+    modal?.style.removeProperty('--popup-bg');
+    if ($('manualCodeInput')) $('manualCodeInput').value='';
+    if ($('scanHelp')) $('scanHelp').textContent = '';
     setScanMessage('');
-    applyStagePopup($('scanModal'), { slot:(Number.isInteger(getState().heroIndex) ? getState().heroIndex : 6), isBoss:false });
-    show($('scanModal'));
-    startScanner();
+    show(modal);
+    setTimeout(startScanner, 120);
   }
-  function closeScan() { stopScanner(); hide($('scanModal')); scanIndex = null; playSound('background', { loop:true, restart:true }); }
+  function closeScan() {
+    stopScanner();
+    const modal = $('scanModal');
+    modal?.classList.remove('market-scan-modal', 'stage-popup');
+    hide(modal);
+    scanIndex = null;
+    playSound('background', { loop:true, restart:true });
+  }
   function skipCurrentLevel() {
     const state = getState();
     const slot = state.activeBiome ? nextSlotForBiome(state.activeBiome, state) : null;
@@ -1058,14 +1097,21 @@
   }
 
   function setScanMessage(text, bad=false) { const msg=$('scanMessage'); if (!msg) return; msg.textContent=text; msg.className = text ? `message ${bad?'bad':'ok'}` : 'message hidden'; }
+  async function waitForScannerLibrary(timeoutMs = 2200) {
+    const start = Date.now();
+    while (!window.Html5Qrcode && Date.now() - start < timeoutMs) {
+      await sleep(80);
+    }
+    return Boolean(window.Html5Qrcode);
+  }
   async function startScanner() {
     const info = $('cameraInfo'); if (info) info.textContent='Kamera wird vorbereitet …';
     try {
-      if (!window.Html5Qrcode) throw new Error('Scanner-Bibliothek nicht verfügbar.');
+      if (!await waitForScannerLibrary()) throw new Error('Scanner-Bibliothek nicht verfügbar.');
       scanner = new window.Html5Qrcode('qrReader');
       await scanner.start({ facingMode:'environment' }, { fps: 8, qrbox: { width: 220, height: 220 } }, txt => unlockByCode(txt));
       if (info) info.textContent='';
-    } catch (e) { if (info) info.textContent='Kamera nicht verfügbar. Code bitte manuell eingeben.'; }
+    } catch (e) { if (info) info.textContent='QR-Scanner nicht verfügbar.'; }
   }
   async function stopScanner() { try { if (scanner) await scanner.stop(); } catch (_) {} scanner = null; }
   function unlockByCode(raw) {
@@ -1440,7 +1486,7 @@
     if (!data) { location.replace(pageUrl('index.html')); return; }
 
     const els = battleElements();
-    document.body.style.setProperty('--battle-bg', `url("${popupBgForMeta(meta)}")`);
+    document.body.style.setProperty('--battle-bg', `url("${bgForMeta(meta)}")`);
     if (els.kampfTitle) els.kampfTitle.src = ASSETS.text.kampf;
     if (els.introHero) els.introHero.src = ASSETS.hero;
     if (els.introEnemy) { els.introEnemy.src = data.enemy; els.introEnemy.alt = data.enemyName; }
@@ -1690,10 +1736,10 @@
     show(els.resultStage);
     void els.resultStage?.offsetWidth;
     els.finalCloud.className = 'battle-v84-final-cloud is-reveal';
-    await sleep(360);
+    await sleep(560);
     els.resultStage.classList.add('is-visible', won ? 'is-win' : 'is-loss');
     void playBattleCue(won ? 'win' : 'lose', { stopSame:true });
-    await sleep(1050);
+    await sleep(1120);
     els.finalCloud.className = 'battle-v84-final-cloud hidden';
     renderBattleActions(won, meta, els.action);
   }
@@ -1809,7 +1855,7 @@
     hero.after(heroClone);
 
     const miniMeta = { slot: Number(qs('slot')) || 0, isBoss:false };
-    stage.style.setProperty('--mini-stage-bg', `url("${popupBgForMeta(miniMeta)}")`);
+    stage.style.setProperty('--mini-stage-bg', `url("${bgForMeta(miniMeta)}")`);
 
     const SPRITES = {
       walkRight1: assetUrl('assets/images/minigame/mini_walk_right_1.png'),
@@ -2471,7 +2517,7 @@
 
     const slot = Number(qs('slot')) || 3;
     const memory2Meta = { slot, isBoss:false };
-    stage.style.setProperty('--memory2-bg', `url("${popupBgForMeta(memory2Meta)}")`);
+    stage.style.setProperty('--memory2-bg', `url("${bgForMeta(memory2Meta)}")`);
     applyStagePopup(introModal, memory2Meta);
     applyStagePopup(resultModal, memory2Meta);
     applyStagePopup(menu, memory2Meta);
@@ -2894,7 +2940,7 @@
 
     const slot = Number(qs('slot')) || 5;
     const pipe3Meta = { slot, isBoss:false };
-    stage.style.setProperty('--pipe3-bg', `url("${popupBgForMeta(pipe3Meta)}")`);
+    stage.style.setProperty('--pipe3-bg', `url("${bgForMeta(pipe3Meta)}")`);
     applyStagePopup(introModal, pipe3Meta);
     applyStagePopup(resultModal, pipe3Meta);
     applyStagePopup(menu, pipe3Meta);
@@ -3590,14 +3636,13 @@
     const countdownSegmentEls = () => Array.from(document.querySelectorAll('.touch4-v60-countdown-segment'));
     if (!stage || !grid || !bridge) return;
 
-    const TOUCH4_BG = assetUrl('assets/images/minigame4/lava_bg.png');
     const TOUCH4_CARD_BACK = assetUrl('assets/images/minigame4/card_back.png');
     const TOUCH4_HERO_IDLE = assetUrl('assets/images/minigame4/knight_idle.png');
     const TOUCH4_HERO_RUN = assetUrl('assets/images/minigame4/knight_run.png');
     const TOUCH4_HERO_HURT = assetUrl('assets/images/minigame4/knight_hurt.png');
     const TOUCH4_GAMEOVER_ART = assetUrl('assets/images/minigame4/gameover_screen.png');
-    stage.style.setProperty('--touch4-bg', `url("${TOUCH4_BG}")`);
     const touch4Meta = { slot, isBoss:false };
+    stage.style.setProperty('--touch4-bg', `url("${bgForMeta(touch4Meta)}")`);
     applyStagePopup(intro, touch4Meta);
     applyStagePopup(result, touch4Meta);
     applyStagePopup(menu, touch4Meta);
