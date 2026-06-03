@@ -6814,3 +6814,141 @@ body[data-page="story"]::after{
   .story-actions{gap:8px!important}
   .story-actions .game-btn{min-height:46px!important;padding:11px 12px!important}
 }
+
+/* === v105 magic castle board and gate === */
+body[data-page="board"] .board-screen{
+  background:#050713!important;
+  position:relative!important;
+}
+body[data-page="board"] .board-image{
+  object-fit:cover!important;
+  object-position:center center!important;
+  width:100%!important;
+  height:100%!important;
+  transform:translate(-50%,-50%) scale(1)!important;
+}
+body[data-page="board"] .magic-castle-board-btn{
+  position:absolute!important;
+  left:50%!important;
+  top:7.8%!important;
+  width:clamp(92px,18vw,190px)!important;
+  transform:translate(-50%,-50%)!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  z-index:7!important;
+  cursor:pointer!important;
+  pointer-events:auto!important;
+  filter:drop-shadow(0 0 16px rgba(183,88,255,.58)) drop-shadow(0 14px 18px rgba(0,0,0,.38))!important;
+  animation:magicCastleBoardPulse 2.4s ease-in-out infinite!important;
+}
+body[data-page="board"] .magic-castle-board-btn img{
+  display:block!important;
+  width:100%!important;
+  height:auto!important;
+}
+body[data-page="board"] .magic-castle-board-btn:active{
+  transform:translate(-50%,-50%) scale(1.06)!important;
+}
+@keyframes magicCastleBoardPulse{
+  0%,100%{transform:translate(-50%,-50%) scale(1)}
+  50%{transform:translate(-50%,-50%) scale(1.035)}
+}
+.magic-castle-page{
+  position:relative!important;
+  width:100vw!important;
+  height:100svh!important;
+  overflow:hidden!important;
+  background:#050713!important;
+}
+.magic-castle-bg{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  object-position:center center!important;
+  user-select:none!important;
+}
+.magic-castle-hero{
+  position:absolute!important;
+  left:-12%!important;
+  top:73.5%!important;
+  width:clamp(34px,8.5vw,74px)!important;
+  height:auto!important;
+  z-index:4!important;
+  filter:drop-shadow(0 8px 10px rgba(0,0,0,.45))!important;
+  transform:translate3d(0,0,0) rotate(-10deg) scale(.96)!important;
+  animation:magicCastleHeroEnter 2.2s cubic-bezier(.22,1,.36,1) .22s forwards, magicCastleHeroIdle 1.9s ease-in-out 2.5s infinite alternate!important;
+}
+.magic-castle-lock{
+  position:absolute!important;
+  width:clamp(42px,11vw,92px)!important;
+  aspect-ratio:1!important;
+  border:0!important;
+  padding:0!important;
+  background:transparent!important;
+  cursor:pointer!important;
+  z-index:5!important;
+  transform:translate(-50%,-50%)!important;
+  transition:opacity .34s ease, transform .34s ease, filter .25s ease!important;
+  filter:drop-shadow(0 10px 12px rgba(0,0,0,.55))!important;
+}
+.magic-castle-lock img{
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+  display:block!important;
+}
+.magic-castle-lock.is-unlockable{
+  filter:drop-shadow(0 0 18px rgba(255,230,130,.95)) drop-shadow(0 10px 12px rgba(0,0,0,.55))!important;
+  animation:magicCastleLockPulse 1.7s ease-in-out infinite!important;
+}
+.magic-castle-lock.is-locked{
+  filter:grayscale(.08) brightness(.92) drop-shadow(0 10px 12px rgba(0,0,0,.55))!important;
+}
+.magic-castle-lock.is-opening,
+.magic-castle-lock.is-opened{
+  opacity:0!important;
+  transform:translate(-50%,-50%) scale(.42) rotate(16deg)!important;
+  pointer-events:none!important;
+}
+.magic-castle-lock.shake-once{
+  animation:v72Shake .34s ease both!important;
+}
+.magic-lock-ice{left:50.5%!important;top:36.2%!important;width:clamp(50px,12.5vw,104px)!important}
+.magic-lock-grass{left:40.4%!important;top:46.0%!important}
+.magic-lock-lava{left:59.5%!important;top:46.4%!important}
+.magic-lock-cloud{left:42.8%!important;top:56.9%!important}
+.magic-lock-sand{left:56.2%!important;top:57.0%!important}
+.magic-castle-back{
+  position:absolute!important;
+  left:max(12px,env(safe-area-inset-left))!important;
+  bottom:max(12px,env(safe-area-inset-bottom))!important;
+  z-index:8!important;
+  width:auto!important;
+  min-width:104px!important;
+  text-decoration:none!important;
+}
+@keyframes magicCastleHeroEnter{
+  from{left:-12%;top:75.5%;opacity:0;transform:translate3d(0,0,0) rotate(-12deg) scale(.9)}
+  to{left:18.5%;top:69.5%;opacity:1;transform:translate3d(0,0,0) rotate(-9deg) scale(.96)}
+}
+@keyframes magicCastleHeroIdle{
+  from{transform:translate3d(0,0,0) rotate(-9deg) scale(.96)}
+  to{transform:translate3d(5px,-3px,0) rotate(-8deg) scale(1)}
+}
+@keyframes magicCastleLockPulse{
+  0%,100%{transform:translate(-50%,-50%) scale(1)}
+  50%{transform:translate(-50%,-50%) scale(1.07)}
+}
+@media(max-width:560px){
+  body[data-page="board"] .magic-castle-board-btn{
+    top:8.4%!important;
+    width:clamp(86px,24vw,126px)!important;
+  }
+  .magic-castle-bg{object-position:center top!important}
+  .magic-castle-lock{width:clamp(38px,12vw,58px)!important}
+  .magic-lock-ice{width:clamp(42px,13vw,64px)!important}
+  .magic-castle-back{min-width:88px!important;padding:10px 14px!important}
+}

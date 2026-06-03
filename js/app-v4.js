@@ -938,6 +938,7 @@
     $('launchLevelBtn')?.addEventListener('click', handleLaunchLevel);
     $('encounterBackBtn')?.addEventListener('click', handleEncounterBack);
     $('levelUnlockedContinueBtn')?.addEventListener('click', handleLevelUnlockedContinue);
+    $('magicCastleBtn')?.addEventListener('click', () => { location.href = pageUrl('magieschloss.html'); });
     $('boardGuide')?.addEventListener('click', startIntroHeroJourney);
     $('boardGuide')?.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); startIntroHeroJourney(); } });
     window.addEventListener('resize', () => { resetBoardViewport(); updateMapGeometry(); }, { passive:true });
@@ -4383,9 +4384,45 @@
     grid.innerHTML = [...Object.values(SENSES), BOSS].map(s=>`<article class="qr-card"><img src="${assetUrl(`assets/images/qr/qr_${s.id}.png`)}" alt="QR-Code ${esc(s.label)}"><h2>${esc(s.label)}</h2><p>${esc(s.code)}</p></article>`).join('');
   }
 
+  function initMagicCastle() {
+    addSpeaker();
+    const hero = $('magicCastleHero');
+    if (hero) hero.alt = `${getHeroName()} auf der Brücke`;
+    const renderLocks = () => {
+      const state = getState();
+      document.querySelectorAll('.magic-castle-lock').forEach(lock => {
+        const id = lock.dataset.lockId;
+        const opened = Boolean(state.removedLocks?.[id]);
+        const unlockable = Boolean(state.keysFound?.[id]);
+        lock.classList.toggle('is-opened', opened);
+        lock.classList.toggle('is-unlockable', unlockable && !opened);
+        lock.classList.toggle('is-locked', !unlockable && !opened);
+        lock.disabled = opened;
+      });
+    };
+    document.querySelectorAll('.magic-castle-lock').forEach(lock => {
+      lock.addEventListener('click', () => {
+        const id = lock.dataset.lockId;
+        const state = getState();
+        if (state.removedLocks?.[id]) return;
+        if (!state.keysFound?.[id]) {
+          triggerLockShake(lock);
+          return;
+        }
+        state.removedLocks[id] = true;
+        setState(state);
+        lock.classList.add('is-opening');
+        playSound('levelunlocked');
+        window.setTimeout(renderLocks, 360);
+      });
+    });
+    renderLocks();
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     const page = document.body.dataset.page;
     if (page === 'board') initBoard();
+    else if (page === 'magiccastle') initMagicCastle();
     else if (page === 'story') initStory();
     else if (page === 'level') initLevel();
     else if (page === 'battle') initBattle();
