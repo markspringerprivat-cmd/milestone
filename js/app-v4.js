@@ -187,6 +187,33 @@
     falsch_1: 'assets/audio/falsch_1.mp3', falsch_2: 'assets/audio/falsch_2.mp3', falsch_3: 'assets/audio/falsch_3.mp3'
   };
 
+  const STORY_SLIDES = [
+    { image: 'assets/images/story/1.png', text: 'Hoch über den grünen Tälern lag das Königreich der Sinne, hell und friedlich unter blauem Himmel.' },
+    { image: 'assets/images/story/2.png', text: 'Im Schloss wurde gefeiert. Auf dem Tisch standen Speisen, Musik und Gelächter erfüllten den Saal.' },
+    { image: 'assets/images/story/3.png', text: 'Doch draußen lauerte ein dunkler Zauberer und beobachtete das fröhliche Fest durch das Fenster.' },
+    { image: 'assets/images/story/4.png', text: 'Der König ahnte nichts. Er genoss sein Essen und freute sich über den ruhigen Abend.' },
+    { image: 'assets/images/story/5.png', text: 'Satt und zufrieden lehnte sich der König zurück. Alles schien sicher und gemütlich.' },
+    { image: 'assets/images/story/6.png', text: 'Sogar die Burger dampften noch frisch. Niemand bemerkte, dass ein Fluch näherkam.' },
+    { image: 'assets/images/story/7.png', text: 'Blumen schmückten den Saal, und überall sah das Fest prächtig und freundlich aus.' },
+    { image: 'assets/images/story/8.png', text: 'Ein junger Barde spielte auf seiner Harfe und ließ die Gäste noch glücklicher werden.' },
+    { image: 'assets/images/story/9.png', text: 'Plötzlich krachte die Mauer auf. Der Zauberer brach in den Saal ein.' },
+    { image: 'assets/images/story/10.png', text: 'Violetter Nebel schoss durch den Raum. Die Sinne des Königreichs gerieten durcheinander.' },
+    { image: 'assets/images/story/11.png', text: 'Der Fluch breitete sich wie dunkler Staub aus und verschlang den Zauberer in seiner eigenen Magie.' },
+    { image: 'assets/images/story/12.png', text: 'Selbst die Musik verstummte. Der Barde starrte erschrocken auf seine Harfe.' },
+    { image: 'assets/images/story/13.png', text: 'Die Blumen verloren ihre Farben, als hätte ihnen jemand jeden Duft genommen.' },
+    { image: 'assets/images/story/14.png', text: 'Auch das Essen veränderte sich. Was eben noch lecker war, wurde plötzlich ungenießbar.' },
+    { image: 'assets/images/story/15.png', text: 'Der Thron wurde zur Falle. Der König spürte: Dieser Fluch traf alle Sinne zugleich.' },
+    { image: 'assets/images/story/16.png', text: 'Ein einziger Bissen konnte schon täuschen. Geschmack, Geruch und Gefühl spielten verrückt.' },
+    { image: 'assets/images/story/17.png', text: 'Im Saal herrschte Stille. Die Gäste waren traurig, und das Königreich brauchte Hilfe.' },
+    { image: 'assets/images/story/18.png', text: 'Zwischenzeitlich in der Speisekammer passierte etwas sehr Wichtiges.' },
+    { image: 'assets/images/story/19.png', text: 'Sir Nervus hatte sich dort mit Kuchen gestärkt und bekam vom Chaos zunächst nichts mit.' },
+    { image: 'assets/images/story/20.png', text: 'Als die Rufe lauter wurden, hielt er inne. Jetzt war keine Zeit mehr für Nachtisch.' },
+    { image: 'assets/images/story/21.png', text: 'Sir Nervus kam zurück in den Saal und sah, wie ernst die Lage geworden war.' },
+    { image: 'assets/images/story/22.png', text: 'Der König bat ihn um Hilfe. Nur Sir Nervus konnte die Sinne wieder ordnen.' },
+    { image: 'assets/images/story/23.png', text: 'Mit Mut, Schwert und Schild versprach Sir Nervus, das Königreich zu retten.' },
+    { image: 'assets/images/story/24.png', text: 'So begann die Reise durch alle Biome des Königreichs der Sinne.' }
+  ];
+
   function normalizeAssetPaths() {
     Object.values(SENSES).forEach(item => {
       item.enemy = assetUrl(item.enemy);
@@ -644,10 +671,89 @@
     window.scrollTo(0, 0);
   }
 
+  function initStory() {
+    const image = $('storyImage');
+    const text = $('storyText');
+    const counter = $('storyCounter');
+    const prevBtn = $('storyPrevBtn');
+    const nextBtn = $('storyNextBtn');
+    const startBtn = $('storyStartBtn');
+    const card = document.querySelector('.story-card');
+    if (!image || !text || !counter || !prevBtn || !nextBtn || !startBtn) return;
+
+    const images = STORY_SLIDES.map(slide => assetUrl(slide.image));
+    const lastIndex = STORY_SLIDES.length - 1;
+    let index = 0;
+
+    const preloadAround = () => {
+      const nearby = [index - 1, index, index + 1, index + 2]
+        .filter(i => i >= 0 && i <= lastIndex)
+        .map(i => images[i]);
+      preloadAssets(nearby);
+    };
+
+    const render = () => {
+      const slide = STORY_SLIDES[index];
+      const isLast = index === lastIndex;
+
+      image.classList.add('is-changing');
+      image.src = images[index];
+      image.alt = `Geschichte ${index + 1}`;
+      const finishImageSwap = () => image.classList.remove('is-changing');
+      if (image.complete) window.setTimeout(finishImageSwap, 80);
+      else image.onload = finishImageSwap;
+
+      text.textContent = slide.text;
+      counter.textContent = `${index + 1} / ${STORY_SLIDES.length}`;
+      prevBtn.disabled = index === 0;
+      nextBtn.classList.toggle('hidden', isLast);
+      startBtn.classList.toggle('hidden', !isLast);
+      preloadAround();
+    };
+
+    const goTo = nextIndex => {
+      index = clamp(nextIndex, 0, lastIndex);
+      render();
+    };
+
+    const beginAdventure = ev => {
+      ev?.preventDefault?.();
+      const state = getState();
+      state.started = true;
+      state.introUsed = true;
+      setState(state);
+      location.href = pageUrl('index.html?board=1');
+    };
+
+    prevBtn.addEventListener('click', () => goTo(index - 1));
+    nextBtn.addEventListener('click', () => goTo(index + 1));
+    startBtn.addEventListener('click', beginAdventure);
+    card?.addEventListener('click', ev => {
+      if (ev.target.closest('button,a')) return;
+      if (index < lastIndex) goTo(index + 1);
+    });
+    document.addEventListener('keydown', ev => {
+      if (ev.key === 'ArrowLeft') { ev.preventDefault(); goTo(index - 1); }
+      if (ev.key === 'ArrowRight') { ev.preventDefault(); goTo(index + 1); }
+      if ((ev.key === 'Enter' || ev.key === ' ') && index === lastIndex) beginAdventure(ev);
+    });
+
+    render();
+    const preloadAll = () => preloadAssets(images);
+    if ('requestIdleCallback' in window) window.requestIdleCallback(preloadAll);
+    else window.setTimeout(preloadAll, 400);
+  }
+
   function initBoard() {
     addSpeaker();
     resetBoardViewport();
     const state = getState();
+    if (qs('board') === '1') {
+      state.started = true;
+      state.introUsed = true;
+      setState(state);
+      try { history.replaceState(null, '', pageUrl('index.html')); } catch (_) {}
+    }
     hide($('outroScreen'));
     if (state.started) { showBoard(false); } else { show($('introScreen')); hide($('boardScreen')); hide($('openBoardMenuBtn')); hide($('belowBoard')); }
     let introTransitioning = false;
@@ -659,7 +765,7 @@
       intro?.classList.add('intro-leaving');
       startBtn?.setAttribute('disabled', 'disabled');
       window.setTimeout(() => {
-        const s = getState(); s.started = true; setState(s); showBoard(true); playSound('background', { loop:true, restart:true });
+        location.href = pageUrl('Geschichte.html');
       }, 760);
     };
     $('startGameBtn')?.addEventListener('click', startGame);
@@ -4116,6 +4222,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     const page = document.body.dataset.page;
     if (page === 'board') initBoard();
+    else if (page === 'story') initStory();
     else if (page === 'level') initLevel();
     else if (page === 'battle') initBattle();
     else if (page === 'minigame') initMiniGame();
