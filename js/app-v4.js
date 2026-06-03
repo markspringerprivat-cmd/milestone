@@ -1053,7 +1053,6 @@
     scanIndex = null;
   }
   function openScan() {
-    stopSound('background');
     stopScanner();
     if (scanCloseTimer) {
       clearTimeout(scanCloseTimer);
@@ -1077,7 +1076,7 @@
     document.body.classList.remove('market-popup-open');
     if (!modal || modal.classList.contains('hidden')) {
       scanIndex = null;
-      playSound('background', { loop:true, restart:true });
+      playSound('background', { loop:true, restart:false });
       return;
     }
     modal.classList.add('is-closing');
@@ -1087,7 +1086,7 @@
       hide(modal);
       modal.classList.remove('market-scan-modal', 'is-closing', 'stage-popup');
       scanCloseTimer = null;
-      playSound('background', { loop:true, restart:true });
+      playSound('background', { loop:true, restart:false });
     }, 420);
   }
   function skipCurrentLevel() {
@@ -1178,7 +1177,7 @@
     setState(state);
     renderBoard();
     playSound('levelunlocked');
-    playSound('background', { loop:true, restart:true });
+    playSound('background', { loop:true, restart:false });
   }
   function showEncounter(id,index) {
     const isBoss = id === 'boss';
