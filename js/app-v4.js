@@ -192,32 +192,32 @@
     { image: 'assets/images/story/1.png', text: 'Im Königreich der Sinne erhob sich ein wunderschönes Schloss über grünen Tälern, hellen Türmen und friedlichen Mauern.' },
     { image: 'assets/images/story/2.png', text: 'Im großen Saal feierten König und Bürger ein fröhliches Fest. Alle lachten, aßen miteinander und genossen den Tag.' },
     { image: 'assets/images/story/3.png', text: 'Draußen vor dem Fenster stand ein Magier. Er war eifersüchtig, denn alle feierten, nur er war nicht eingeladen.' },
-    { image: 'assets/images/story/4.png', text: 'Neidisch beobachtete er alles: den leckeren Mais, den gemütlichen Thron, den Burgerduft, die schönen Blumen und die wohltuende Harfe.' },
-    { image: 'assets/images/story/5.png', text: 'Besonders die Freude im Saal machte ihn wütend. Der Magier spürte, wie sein Neid immer größer wurde.' },
-    { image: 'assets/images/story/6.png', text: 'Schließlich konnte er sich nicht mehr halten. Er brach herein und schleuderte einen finsteren Fluch durch den Festsaal.' },
-    { image: 'assets/images/story/7.png', text: 'Der Fluch kroch durch die Luft, legte sich über alle Gäste und nahm dem Königreich die Freude an seinen Sinnen.' },
-    { image: 'assets/images/story/8.png', text: 'Alle starrten erschrocken auf ihre Hände. Sie spürten sofort: Irgendetwas stimmte überhaupt nicht mehr.' },
-    { image: 'assets/images/story/9.png', text: 'Aus der Harfe kamen plötzlich nur noch schiefe, kratzende Töne. Was eben schön klang, tat nun fast in den Ohren weh.' },
-    { image: 'assets/images/story/10.png', text: 'Die Blumen verwelkten und die Dekoration verlor ihren Glanz. Der Festsaal sah nicht mehr warm und feierlich aus.' },
-    { image: 'assets/images/story/11.png', text: 'Der köstliche Duft der Burger verwandelte sich in einen schrecklichen Gestank. Niemand wollte mehr davon essen.' },
-    { image: 'assets/images/story/12.png', text: 'Der bequemste Stuhl im ganzen Schloss fühlte sich plötzlich hart, spitz und schrecklich unbequem an.' },
-    { image: 'assets/images/story/13.png', text: 'Auch der Maiskolben verlor seinen Geschmack. Was vorher lecker war, schmeckte nun fade und ungenießbar.' },
-    { image: 'assets/images/story/14.png', text: 'Der Magier hatte die Sinne des Königreichs gestohlen und in seinem Stab gespeichert.' },
-    { image: 'assets/images/story/15.png', text: 'Damit niemand ihn aufhalten konnte, fasste er einen neuen Plan und suchte Tiere tief im Wald auf.' },
-    { image: 'assets/images/story/16.png', text: 'Mit dunkler Magie verwandelte er die Tiere in mächtige Gegner, die ihn von nun an beschützen sollten.' },
-    { image: 'assets/images/story/17.png', text: 'Jedem verwandelten Gegner gab der Magier einen Schlüssel. Diese Schlüssel sollten den Weg zu ihm versperren.' },
-    { image: 'assets/images/story/18.png', text: 'Dann verschanzte er sich in seinem Schloss. Am Tor hingen fünf Schlösser, und nur die Schlüssel konnten sie öffnen.' },
-    { image: 'assets/images/story/19.png', text: 'Zurück im Palast waren alle vom Fluch betroffen. Niemand konnte noch Freude am Fühlen, Riechen, Schmecken, Hören oder Sehen empfinden.' },
-    { image: 'assets/images/story/20.png', text: 'Zwischenzeitlich in der Speisekammer stellte sich eine wichtige Frage: War wirklich jeder im Königreich vom Fluch betroffen?' },
-    { image: 'assets/images/story/21.png', text: 'Nein! Ein tapferer Ritter hatte sich während des Vorfalls heimlich den Bauch mit Kuchen vollgeschlagen.', requiresHeroName: true },
-    { image: 'assets/images/story/22.png', text: 'Plötzlich hörte der Ritter neben seinem eigenen Schmatzen ein leises Wimmern aus dem Festsaal und wurde aufmerksam.' },
-    { image: 'assets/images/story/23.png', text: '{heroName} betrat den Saal und sah, wie betrübt König und Bürger am Tisch saßen.' },
-    { image: 'assets/images/story/24.png', text: 'Der König stützte sich auf {heroName} und bat ihn, die gestohlenen Sinne der Bürger zurückzubeschaffen.' },
-    { image: 'assets/images/story/25.png', text: '{heroName} erklärte sich bereit, hinaus ins Land zu ziehen, den Magier zu finden und die Sinne zurückzuholen.' },
-    { image: 'assets/images/story/26.png', text: 'Vor ihm lagen verschiedene Zonen des Königreichs, gefährliche Gegner und die fünf Schlüssel zum Schloss des Magiers.' },
-    { image: 'assets/images/story/27.png', text: 'Er würde jedes Biom durchqueren, die verwandelten Wächter besiegen und Stück für Stück die verlorenen Sinne befreien.' },
-    { image: 'assets/images/story/28.png', text: 'Erst wenn alle Schlösser geöffnet waren, konnte {heroName} dem Magier gegenübertreten.' },
-    { image: 'assets/images/story/29.png', text: 'So begann das große Abenteuer, um die Sinne zurück ins Königreich zu bringen.' }
+    { image: 'assets/images/story/4.png', text: 'Der Magier sah, wie der König den Maiskolben genoss. Jeder Bissen schien ihm köstlich zu schmecken.' },
+    { image: 'assets/images/story/5.png', text: 'Dann bemerkte er den weichen Thron. Der König saß so gemütlich, als könnte ihm nichts auf der Welt passieren.' },
+    { image: 'assets/images/story/6.png', text: 'Auch der Duft der dampfenden Burger zog durch den Saal. Alles roch warm, würzig und unglaublich lecker.' },
+    { image: 'assets/images/story/7.png', text: 'Überall standen frische Blumen und festliche Dekorationen. Der ganze Saal sah bunt, freundlich und wunderschön aus.' },
+    { image: 'assets/images/story/8.png', text: 'Der Barde spielte auf seiner Harfe. Die Melodie klang wohltuend und machte das Fest noch friedlicher.' },
+    { image: 'assets/images/story/9.png', text: 'Da konnte sich der Magier vor Neid nicht mehr halten. Wütend brach er in den Festsaal ein.' },
+    { image: 'assets/images/story/10.png', text: 'Mit lila Magie belegte er alle mit einem Fluch. Der Zauber kroch durch den Raum und griff nach den Sinnen.' },
+    { image: 'assets/images/story/11.png', text: 'Alle sahen sich schockiert an. Sofort merkten sie, dass etwas nicht stimmte, während der Magier im Nebel verschwand.' },
+    { image: 'assets/images/story/12.png', text: 'Aus der Harfe kamen plötzlich nur noch schiefe, kratzende Klänge. Was eben schön war, tat nun fast weh.' },
+    { image: 'assets/images/story/13.png', text: 'Die Blumen verwelkten und die Dekoration verlor ihren Glanz. Nichts sah mehr hell und festlich aus.' },
+    { image: 'assets/images/story/14.png', text: 'Der köstliche Burgerduft verwandelte sich in einen schrecklichen Gestank. Niemand wollte mehr davon essen.' },
+    { image: 'assets/images/story/15.png', text: 'Der bequemste Stuhl im Schloss fühlte sich plötzlich hart, spitz und furchtbar unbequem an.' },
+    { image: 'assets/images/story/16.png', text: 'Auch das Essen verlor seinen Geschmack. Was vorher lecker war, schmeckte nun fade und ungenießbar.' },
+    { image: 'assets/images/story/17.png', text: 'Der Magier hatte die Sinne des Königreichs gestohlen und in seinem Stab gespeichert.' },
+    { image: 'assets/images/story/18.png', text: 'Damit niemand ihn aufhalten konnte, fasste er einen neuen Plan: Er suchte Tiere tief im Wald auf.' },
+    { image: 'assets/images/story/19.png', text: 'Mit dunkler Magie verwandelte er die Tiere in mächtige Gegner, die ihn von nun an beschützen sollten.' },
+    { image: 'assets/images/story/20.png', text: 'Jedem verwandelten Gegner gab der Magier einen Schlüssel, den er bewachen und verteidigen sollte.' },
+    { image: 'assets/images/story/21.png', text: 'Dann versteckte sich der Magier in seinem Schloss. Am Tor hingen fünf Schlösser, die nur mit diesen Schlüsseln geöffnet werden konnten.' },
+    { image: 'assets/images/story/22.png', text: 'Zurück im Palast waren alle vom Fluch betroffen. Niemand konnte noch Freude am Fühlen, Riechen, Schmecken, Hören oder Sehen empfinden.' },
+    { image: 'assets/images/story/23.png', text: 'Zwischenzeitlich in der Speisekammer stellte sich eine wichtige Frage: War wirklich jeder im Königreich vom Fluch betroffen?' },
+    { image: 'assets/images/story/24.png', text: 'Nein! Ein tapferer Ritter hatte sich während des Vorfalls heimlich den Bauch mit Kuchen vollgeschlagen.', requiresHeroName: true },
+    { image: 'assets/images/story/25.png', text: 'Plötzlich hörte der Ritter neben seinem eigenen Schmatzen ein leises Wimmern aus dem Festsaal und wurde aufmerksam.' },
+    { image: 'assets/images/story/26.png', text: '{heroName} betrat den Saal und sah, wie betrübt König und Bürger am Tisch saßen.' },
+    { image: 'assets/images/story/27.png', text: 'Der König stützte sich auf {heroName} und bat ihn, die gestohlenen Sinne der Bürger zurückzubeschaffen.' },
+    { image: 'assets/images/story/28.png', text: '{heroName} erklärte sich bereit, hinaus ins Land zu ziehen, den Magier zu finden und die Sinne zurückzuholen.' },
+    { image: 'assets/images/story/29.png', text: 'So begann die Reise durch alle Zonen des Königreichs, bis {heroName} den Magier finden und die Sinne zurückbringen konnte.' }
   ];
 
   function normalizeAssetPaths() {
@@ -855,8 +855,12 @@
       updateStoryControls();
     });
     card?.addEventListener('click', ev => {
-      if (ev.target.closest('button,a')) return;
+      if (ev.target.closest('button,a,input,label')) return;
       if (!textReady) { finishTextReveal(); return; }
+      if (nextBtn.disabled) {
+        if (STORY_SLIDES[index]?.requiresHeroName) nameInput?.focus();
+        return;
+      }
       if (index < lastIndex) goTo(index + 1);
     });
     document.addEventListener('keydown', ev => {
@@ -864,7 +868,8 @@
       if (ev.key === 'ArrowRight') {
         ev.preventDefault();
         if (!textReady) finishTextReveal();
-        else goTo(index + 1);
+        else if (!nextBtn.disabled) goTo(index + 1);
+        else if (STORY_SLIDES[index]?.requiresHeroName) nameInput?.focus();
       }
       if ((ev.key === 'Enter' || ev.key === ' ') && index === lastIndex) beginAdventure(ev);
     });
@@ -1246,7 +1251,7 @@
     hero.type = 'button';
     hero.id = 'movingHero';
     hero.className = 'map-token moving-hero-token';
-    hero.innerHTML = '<img class="hero-token" src="assets/images/characters/held.webp" alt="Sir Nervus">';
+    hero.innerHTML = `<img class="hero-token" src="assets/images/characters/held.webp" alt="${esc(getHeroName())}">`;
     inner.appendChild(hero);
 
     if (Number.isInteger(state.heroIndex)) setHeroAt(state.heroIndex, true);
@@ -1458,7 +1463,7 @@
       $('launchLevelBtn').textContent = done ? 'Spiel erneut starten' : 'Spiel starten';
       $('encounterBackBtn').textContent = done ? 'Zurück' : 'Überspringen';
       $('encounterImage').src = ASSETS.hero;
-      $('encounterImage').alt = 'Sir Nervus';
+      $('encounterImage').alt = getHeroName();
       $('encounterKicker').textContent = done ? 'Level wiederholen' : '';
       $('encounterTitle').textContent = 'Test';
       $('encounterSpeech').textContent = done ? 'Du kannst das Minispiel erneut spielen.' : '';
@@ -1501,7 +1506,7 @@
       $('launchLevelBtn').textContent = done ? 'Fühl-Kran erneut starten' : 'Spiel starten';
       $('encounterBackBtn').textContent = done ? 'Zurück' : 'Überspringen';
       $('encounterImage').src = ASSETS.hero;
-      $('encounterImage').alt = 'Sir Nervus';
+      $('encounterImage').alt = getHeroName();
       $('encounterKicker').textContent = 'Tastsinn-Kran';
       $('encounterTitle').textContent = 'Weich oder spitz?';
       $('encounterSpeech').textContent = done ? 'Du kannst den Tastsinn-Kran erneut spielen.' : 'Steuere den Kran und sammle nur weiche Gegenstände. Spitze Dinge lösen Schmerz aus und kosten ein Herz.';
@@ -1514,7 +1519,7 @@
       $('launchLevelBtn').textContent = 'Platzhalter schaffen';
       $('encounterBackBtn').textContent = 'Wegrennen';
       $('encounterImage').src = ASSETS.winHero;
-      $('encounterImage').alt = 'Sir Nervus auf dem Weg zur Krone';
+      $('encounterImage').alt = `${getHeroName()} auf dem Weg zur Krone`;
       $('encounterKicker').textContent = 'Kronenpfad';
       $('encounterTitle').textContent = 'Der Weg zur Krone';
       $('encounterSpeech').textContent = 'Hier kommt spaeter ein neues Minispiel hin. Fuer jetzt zaehlt dieser Platzhalter als geschafft und schaltet danach die Krone mit dem Roboter frei.';
@@ -1526,7 +1531,7 @@
     $('launchLevelBtn').textContent = index === 9 ? 'Hör-Level freischalten' : (index === LEVEL_COUNT - 1 ? 'Zum Finale' : 'Weiter');
     $('encounterBackBtn').textContent = 'Wegrennen';
     $('encounterImage').src = ASSETS.winHero;
-    $('encounterImage').alt = 'Sir Nervus macht weiter';
+    $('encounterImage').alt = `${getHeroName()} macht weiter`;
     $('encounterKicker').textContent = index === 9 ? 'Hör-Station' : 'Zwischenstation';
     $('encounterTitle').textContent = index === 9 ? 'Lausch genau hin!' : `Level ${index + 1}`;
     $('encounterSpeech').textContent = index === 9 ? 'Dieses Feld dient als Hör-Station. Nach dem Antippen wird das Fragen-Level im Wüstenland freigeschaltet.' : (index === LEVEL_COUNT - 1 ? 'Das Königreich ist gerettet. Weiter zum Abschluss!' : 'Kurze Rast geschafft. Weiter zum nächsten Feld!');
@@ -1701,7 +1706,7 @@
         text.textContent = `${BIOME_BY_SENSE[senseId]?.label || 'Das Biom'} zeigt jetzt das Fragen-Level. Tippe auf das neue runde Feld im selben Biom.`;
       } else {
         title.textContent = 'Zurück ins Dorf';
-        text.textContent = 'Sir Nervus läuft jetzt direkt ins Dorf zurück.';
+        text.textContent = `${getHeroName()} läuft jetzt direkt ins Dorf zurück.`;
       }
       playSound('levelunlocked');
     }
@@ -1770,7 +1775,12 @@
     const els = battleElements();
     document.body.style.setProperty('--battle-bg', `url("${bgForMeta(meta)}")`);
     if (els.kampfTitle) els.kampfTitle.src = ASSETS.text.kampf;
-    if (els.introHero) els.introHero.src = ASSETS.hero;
+    if (els.introHero) {
+      els.introHero.src = ASSETS.hero;
+      els.introHero.alt = getHeroName();
+      const heroNameNode = els.introHero.closest('.battle-v84-intro-side')?.querySelector('.battle-v84-name');
+      if (heroNameNode) heroNameNode.textContent = getHeroName();
+    }
     if (els.introEnemy) { els.introEnemy.src = data.enemy; els.introEnemy.alt = data.enemyName; }
     if (els.introEnemyName) els.introEnemyName.textContent = data.enemyName;
     if (els.preloadStatus) els.preloadStatus.textContent = 'Kampf wird vorbereitet ...';
@@ -2030,11 +2040,11 @@
     els.resultText.src = won ? ASSETS.text.gewonnen : ASSETS.text.verloren;
     els.resultText.alt = won ? 'Gewonnen' : 'Verloren';
     els.outcome.src = won ? data.defeated : ASSETS.loseHero;
-    els.outcome.alt = won ? `${data.enemyName} besiegt` : 'Sir Nervus besiegt';
+    els.outcome.alt = won ? `${data.enemyName} besiegt` : `${getHeroName()} besiegt`;
     if (els.outcomeGroup) els.outcomeGroup.className = `battle-v84-outcome-group ${won ? 'is-win' : 'is-loss'}`;
     if (won) {
       els.victoryHero.src = ASSETS.triumphHero;
-      els.victoryHero.alt = 'Sir Nervus triumphiert';
+      els.victoryHero.alt = `${getHeroName()} triumphiert`;
       els.victoryHero.className = 'battle-v84-victory-hero';
     } else {
       els.victoryHero.className = 'battle-v84-victory-hero hidden';
@@ -2126,6 +2136,7 @@
     const resultBoardBtn = $('miniResultBoardBtn');
     const hud = $('miniHud');
     if (!hero || !stage) return;
+    hero.alt = getHeroName();
 
     const heroClone = hero.cloneNode(false);
     heroClone.id = 'miniHeroClone';
@@ -2299,6 +2310,7 @@
       return { node, active:false, kind:'', x:0, y:0, size:0, scale:1, scaleStr:'1.000', speed:0 };
     });
 
+    const heroName = esc(getHeroName());
     const tutorial = document.createElement('div');
     tutorial.className = 'mini-tutorial-modal stage-popup hidden';
     tutorial.setAttribute('role', 'dialog');
@@ -2307,8 +2319,8 @@
     tutorial.innerHTML = `
       <div class="mini-tutorial-card">
         <p class="mini-tutorial-kicker">Geschmackssinn</p>
-        <h2 id="miniTutorialTitle">Bereite Sir Nervus auf den Weg vor</h2>
-        <p>Bewege Sir Nervus nur nach <strong>links</strong> und <strong>rechts</strong>. Sammle <strong>10 lecker schmeckende Obststücke</strong>. Etwa alle fünf Sekunden kommt ein zufälliges Obstteil herunter – dazwischen fallen vor allem <strong>scharfe Chilischoten</strong> und <strong>verdorbener Fisch</strong>, denen du ausweichen musst.</p>
+        <h2 id="miniTutorialTitle">Bereite ${heroName} auf den Weg vor</h2>
+        <p>Bewege ${heroName} nur nach <strong>links</strong> und <strong>rechts</strong>. Sammle <strong>10 lecker schmeckende Obststücke</strong>. Etwa alle fünf Sekunden kommt ein zufälliges Obstteil herunter – dazwischen fallen vor allem <strong>scharfe Chilischoten</strong> und <strong>verdorbener Fisch</strong>, denen du ausweichen musst.</p>
         <p>Der Geschmackssinn hilft uns, Speisen zu unterscheiden: süßes oder frisches Essen kann angenehm schmecken, sehr scharfe oder verdorbene Dinge warnen den Körper. In diesem Minispiel trainierst du genau diese Entscheidung: gutes Essen sammeln, gefährliche Reize vermeiden.</p>
         <div class="mini-tutorial-actions">
           <button id="miniTutorialStartBtn" class="game-btn" type="button">Spiel starten</button>
@@ -2796,6 +2808,9 @@
     const introStartBtn = $('memory2IntroStartBtn');
     const introBoardBtn = $('memory2IntroBoardBtn');
     if (!stage || !grid || !hero || !jumpBtn || !projectile) return;
+    hero.alt = getHeroName();
+    const memoryIntroTitle = $('memory2IntroTitle');
+    if (memoryIntroTitle) memoryIntroTitle.textContent = `Bereite ${getHeroName()} auf den Weg vor`;
 
     const slot = Number(qs('slot')) || 3;
     const memory2Meta = { slot, isBoss:false };
@@ -3112,7 +3127,7 @@
       if (won) {
         gameWon = true;
         resultTitle.textContent = 'Gewonnen';
-        resultText.textContent = 'Du hast alle Symbolpaare gefunden und Sir Nervus sicher an den Blendkugeln vorbeigeführt.';
+        resultText.textContent = `Du hast alle Symbolpaare gefunden und ${getHeroName()} sicher an den Blendkugeln vorbeigeführt.`;
         retryBtn.textContent = 'Zurück zum Spielfeld';
         hide(boardBtn);
         retryBtn.onclick = () => {
@@ -3122,7 +3137,7 @@
       } else {
         gameOver = true;
         resultTitle.textContent = 'Verloren';
-        resultText.textContent = 'Sir Nervus wurde zu oft von Blendkugeln getroffen.';
+        resultText.textContent = `${getHeroName()} wurde zu oft von Blendkugeln getroffen.`;
         retryBtn.textContent = 'Neuer Versuch';
         retryBtn.onclick = () => { stopLoop(); location.reload(); };
         show(boardBtn);
@@ -3217,6 +3232,7 @@
     const settingsBtn = $('pipe3SettingsBtn');
     const menu = $('pipe3Menu');
     const menuBoardBtn = $('pipe3MenuBoardBtn');
+    if (hero) hero.alt = getHeroName();
     const closeMenuBtn = $('pipe3CloseMenuBtn');
     if (!stage || !board || !valveBtn || !hero || !ogreZone || !ogre || !banana) return;
 
@@ -3803,7 +3819,7 @@
           if (resultText) hide(resultText);
           if (resultExtraImage) {
             resultExtraImage.src = IMG.feedBanana;
-            resultExtraImage.alt = 'Sir Nervus unter einem Berg Bananen';
+            resultExtraImage.alt = `${getHeroName()} unter einem Berg Bananen`;
             show(resultExtraImage);
           }
         } else {
@@ -3917,6 +3933,7 @@
     const menu = $('touch4Menu');
     const countdownSegmentEls = () => Array.from(document.querySelectorAll('.touch4-v60-countdown-segment'));
     if (!stage || !grid || !bridge) return;
+    if (hero) hero.alt = getHeroName();
 
     const TOUCH4_CARD_BACK = assetUrl('assets/images/minigame4/card_back.png');
     const TOUCH4_HERO_IDLE = assetUrl('assets/images/minigame4/knight_idle.png');
@@ -4324,14 +4341,14 @@
           resultDetail.alt = '';
         } else {
           resultDetail.src = TOUCH4_GAMEOVER_ART;
-          resultDetail.alt = 'Sir Nervus wurde kindgerecht von spitzen Gegenständen gepikst';
+          resultDetail.alt = `${getHeroName()} wurde kindgerecht von spitzen Gegenständen gepikst`;
           show(resultDetail);
         }
       }
       resultTitle.textContent = won ? 'Gewonnen' : 'Verloren';
       resultText.textContent = won
-        ? 'Alle drei Brückenkarten waren weich. Sir Nervus konnte sicher über die Grube laufen.'
-        : 'Mindestens eine Brückenkarte war spitz. Sir Nervus wurde gepikst – das ist für die Haut ein Warnsignal.';
+        ? `Alle drei Brückenkarten waren weich. ${getHeroName()} konnte sicher über die Grube laufen.`
+        : `Mindestens eine Brückenkarte war spitz. ${getHeroName()} wurde gepikst – das ist für die Haut ein Warnsignal.`;
       playSound(won ? 'win' : 'lose');
       retryBtn.textContent = won ? 'Zurück zum Spielfeld' : 'Neuer Versuch';
       retryBtn.onclick = () => {
