@@ -188,30 +188,30 @@
   };
 
   const STORY_SLIDES = [
-    { image: 'assets/images/story/1.png', text: 'Hoch über den grünen Tälern lag das Königreich der Sinne, hell und friedlich unter blauem Himmel.' },
-    { image: 'assets/images/story/2.png', text: 'Im Schloss wurde gefeiert. Auf dem Tisch standen Speisen, Musik und Gelächter erfüllten den Saal.' },
-    { image: 'assets/images/story/3.png', text: 'Doch draußen lauerte ein dunkler Zauberer und beobachtete das fröhliche Fest durch das Fenster.' },
-    { image: 'assets/images/story/4.png', text: 'Der König ahnte nichts. Er genoss sein Essen und freute sich über den ruhigen Abend.' },
-    { image: 'assets/images/story/5.png', text: 'Satt und zufrieden lehnte sich der König zurück. Alles schien sicher und gemütlich.' },
-    { image: 'assets/images/story/6.png', text: 'Sogar die Burger dampften noch frisch. Niemand bemerkte, dass ein Fluch näherkam.' },
-    { image: 'assets/images/story/7.png', text: 'Blumen schmückten den Saal, und überall sah das Fest prächtig und freundlich aus.' },
-    { image: 'assets/images/story/8.png', text: 'Ein junger Barde spielte auf seiner Harfe und ließ die Gäste noch glücklicher werden.' },
-    { image: 'assets/images/story/9.png', text: 'Plötzlich krachte die Mauer auf. Der Zauberer brach in den Saal ein.' },
-    { image: 'assets/images/story/10.png', text: 'Violetter Nebel schoss durch den Raum. Die Sinne des Königreichs gerieten durcheinander.' },
-    { image: 'assets/images/story/11.png', text: 'Der Fluch breitete sich wie dunkler Staub aus und verschlang den Zauberer in seiner eigenen Magie.' },
-    { image: 'assets/images/story/12.png', text: 'Selbst die Musik verstummte. Der Barde starrte erschrocken auf seine Harfe.' },
-    { image: 'assets/images/story/13.png', text: 'Die Blumen verloren ihre Farben, als hätte ihnen jemand jeden Duft genommen.' },
-    { image: 'assets/images/story/14.png', text: 'Auch das Essen veränderte sich. Was eben noch lecker war, wurde plötzlich ungenießbar.' },
-    { image: 'assets/images/story/15.png', text: 'Der Thron wurde zur Falle. Der König spürte: Dieser Fluch traf alle Sinne zugleich.' },
-    { image: 'assets/images/story/16.png', text: 'Ein einziger Bissen konnte schon täuschen. Geschmack, Geruch und Gefühl spielten verrückt.' },
-    { image: 'assets/images/story/17.png', text: 'Im Saal herrschte Stille. Die Gäste waren traurig, und das Königreich brauchte Hilfe.' },
-    { image: 'assets/images/story/18.png', text: 'Zwischenzeitlich in der Speisekammer passierte etwas sehr Wichtiges.' },
-    { image: 'assets/images/story/19.png', text: 'Sir Nervus hatte sich dort mit Kuchen gestärkt und bekam vom Chaos zunächst nichts mit.' },
-    { image: 'assets/images/story/20.png', text: 'Als die Rufe lauter wurden, hielt er inne. Jetzt war keine Zeit mehr für Nachtisch.' },
-    { image: 'assets/images/story/21.png', text: 'Sir Nervus kam zurück in den Saal und sah, wie ernst die Lage geworden war.' },
-    { image: 'assets/images/story/22.png', text: 'Der König bat ihn um Hilfe. Nur Sir Nervus konnte die Sinne wieder ordnen.' },
-    { image: 'assets/images/story/23.png', text: 'Mit Mut, Schwert und Schild versprach Sir Nervus, das Königreich zu retten.' },
-    { image: 'assets/images/story/24.png', text: 'So begann die Reise durch alle Biome des Königreichs der Sinne.' }
+    { image: 'assets/images/story/1.png', text: 'Hoch über den grünen Tälern lag das Königreich der Sinne, hell, friedlich und voller Freude.' },
+    { image: 'assets/images/story/2.png', text: 'An diesem Tag genossen alle ein prächtiges Fest mit warmem Essen, Musik und fröhlichem Lachen.' },
+    { image: 'assets/images/story/3.png', text: 'Doch draußen stand ein böser Zauberer. Er war eifersüchtig, weil niemand ihn eingeladen hatte.' },
+    { image: 'assets/images/story/4.png', text: 'Durch das Fenster sah er, wie der König sich den saftigen Maiskolben schmecken ließ.' },
+    { image: 'assets/images/story/5.png', text: 'Er sah auch, wie gemütlich der König in seinem weichen Thron saß und den Tag genoss.' },
+    { image: 'assets/images/story/6.png', text: 'Der Duft der dampfenden Burger zog durch den Saal. Sogar draußen konnte man ihn fast riechen.' },
+    { image: 'assets/images/story/7.png', text: 'Überall standen schöne Blumen und festliche Dekorationen. Alles sah warm, bunt und freundlich aus.' },
+    { image: 'assets/images/story/8.png', text: 'Der Barde spielte eine helle Melodie, die wunderbar klang und den ganzen Saal erfüllte.' },
+    { image: 'assets/images/story/9.png', text: 'Da platzte der Zauberer vor Neid. Mit einem Krachen brach er in den Festsaal ein.' },
+    { image: 'assets/images/story/10.png', text: 'Der König stellte sich schützend vor seine Bürger, doch der Zauberer schleuderte lila Magie durch den Raum.' },
+    { image: 'assets/images/story/11.png', text: 'Dann verschwand der Zauberer in einem wirbelnden Nebel und ließ seinen Fluch zurück.' },
+    { image: 'assets/images/story/12.png', text: 'Plötzlich klang die Musik des Barden schrecklich verzerrt, als würden die Töne stolpern.' },
+    { image: 'assets/images/story/13.png', text: 'Die Blumen verwelkten, die Farben wurden matt, und nichts sah mehr schön aus.' },
+    { image: 'assets/images/story/14.png', text: 'Der köstliche Burgerduft wich einem grausamen Gestank, der allen den Appetit verdarb.' },
+    { image: 'assets/images/story/15.png', text: 'Auch der vorher so gemütliche Thron fühlte sich plötzlich hart, stachelig und unbequem an.' },
+    { image: 'assets/images/story/16.png', text: 'Der Maiskolben verlor seinen Geschmack. Was eben lecker war, war nun kaum noch genießbar.' },
+    { image: 'assets/images/story/17.png', text: 'Alle wurden traurig: Sie konnten kaum noch fühlen, riechen, schmecken, hören oder Schönes sehen.' },
+    { image: 'assets/images/story/18.png', text: 'Zwischenzeitlich in der Speisekammer: Nur einer blieb vom Fluch des bösen Magiers verschont.' },
+    { image: 'assets/images/story/19.png', text: 'Sir Nervus schlug sich gerade heimlich den Bauch voll und ahnte noch nichts vom Chaos im Saal.' },
+    { image: 'assets/images/story/20.png', text: 'Doch dann hielt er inne. Irgendetwas stimmte nicht, und plötzlich war Nachtisch nicht mehr wichtig.' },
+    { image: 'assets/images/story/21.png', text: 'Sir Nervus kehrte zurück und sah, wie still und traurig das ganze Fest geworden war.' },
+    { image: 'assets/images/story/22.png', text: 'Der König bat ihn um Hilfe. Nur Sir Nervus konnte die verlorenen Sinne wiederfinden.' },
+    { image: 'assets/images/story/23.png', text: 'Mit Schwert, Schild und vollem Magen versprach Sir Nervus, das Königreich zu retten.' },
+    { image: 'assets/images/story/24.png', text: 'So begann seine Reise durch alle Biome, um Sehen, Hören, Riechen, Schmecken und Fühlen zurückzubringen.' }
   ];
 
   function normalizeAssetPaths() {
@@ -651,6 +651,48 @@
       const img = new Image(); img.src = src;
     });
   }
+  function preloadImagesWithProgress(list, onProgress) {
+    const sources = list.filter(Boolean);
+    if (!sources.length) {
+      onProgress?.(1);
+      return Promise.resolve();
+    }
+    let done = 0;
+    const report = () => onProgress?.(done / sources.length);
+    report();
+    return new Promise(resolve => {
+      sources.forEach(src => {
+        const img = new Image();
+        const finish = () => {
+          done += 1;
+          report();
+          if (done >= sources.length) resolve();
+        };
+        img.onload = finish;
+        img.onerror = finish;
+        img.src = src;
+      });
+    });
+  }
+  function ensureIntroStoryLoader() {
+    let loader = $('introStoryLoader');
+    if (loader) return loader;
+    const intro = $('introScreen');
+    if (!intro) return null;
+    loader = document.createElement('div');
+    loader.id = 'introStoryLoader';
+    loader.className = 'intro-loading-panel';
+    loader.innerHTML = '<div class="intro-loading-title">Geschichte wird geladen</div><div class="intro-loading-track"><div id="introStoryLoadBar" class="intro-loading-bar"></div></div><div id="introStoryLoadPercent" class="intro-loading-percent">0%</div>';
+    intro.appendChild(loader);
+    return loader;
+  }
+  function setIntroStoryProgress(value) {
+    const percent = Math.round(clamp(value, 0, 1) * 100);
+    const bar = $('introStoryLoadBar');
+    const label = $('introStoryLoadPercent');
+    if (bar) bar.style.width = `${percent}%`;
+    if (label) label.textContent = `${percent}%`;
+  }
   function preloadBattleAssets(data, meta) {
     preloadAssets([ASSETS.hero, ASSETS.triumphHero, ASSETS.versus, ASSETS.text.kampf, ASSETS.text.richtig, ASSETS.text.falsch, ASSETS.text.gewonnen, ASSETS.text.verloren, data.enemy, data.defeated, ASSETS.loseHero, ASSETS.final, ...ASSETS.correct, ...ASSETS.wrong, bgForMeta(meta), popupBgForMeta(meta)]);
   }
@@ -684,12 +726,56 @@
     const images = STORY_SLIDES.map(slide => assetUrl(slide.image));
     const lastIndex = STORY_SLIDES.length - 1;
     let index = 0;
+    let textReady = false;
+    let revealTimers = [];
 
     const preloadAround = () => {
       const nearby = [index - 1, index, index + 1, index + 2]
         .filter(i => i >= 0 && i <= lastIndex)
         .map(i => images[i]);
       preloadAssets(nearby);
+    };
+
+    const clearRevealTimers = () => {
+      revealTimers.forEach(timer => window.clearTimeout(timer));
+      revealTimers = [];
+    };
+
+    const updateStoryControls = () => {
+      const isLast = index === lastIndex;
+      prevBtn.disabled = index === 0;
+      nextBtn.disabled = !textReady;
+      nextBtn.classList.toggle('hidden', isLast);
+      startBtn.classList.toggle('hidden', !isLast);
+      startBtn.classList.toggle('is-disabled', isLast && !textReady);
+      startBtn.setAttribute('aria-disabled', String(isLast && !textReady));
+    };
+
+    const finishTextReveal = () => {
+      clearRevealTimers();
+      text.querySelectorAll('.story-word').forEach(word => word.classList.add('visible'));
+      textReady = true;
+      updateStoryControls();
+    };
+
+    const revealStoryText = rawText => {
+      clearRevealTimers();
+      textReady = false;
+      const words = String(rawText || '').split(/\s+/).filter(Boolean);
+      text.innerHTML = words.map(word => `<span class="story-word">${esc(word)}</span>`).join(' ');
+      updateStoryControls();
+      const spans = [...text.querySelectorAll('.story-word')];
+      if (!spans.length) {
+        finishTextReveal();
+        return;
+      }
+      spans.forEach((span, i) => {
+        revealTimers.push(window.setTimeout(() => span.classList.add('visible'), 115 * i));
+      });
+      revealTimers.push(window.setTimeout(() => {
+        textReady = true;
+        updateStoryControls();
+      }, 115 * spans.length + 180));
     };
 
     const render = () => {
@@ -703,11 +789,8 @@
       if (image.complete) window.setTimeout(finishImageSwap, 80);
       else image.onload = finishImageSwap;
 
-      text.textContent = slide.text;
       counter.textContent = `${index + 1} / ${STORY_SLIDES.length}`;
-      prevBtn.disabled = index === 0;
-      nextBtn.classList.toggle('hidden', isLast);
-      startBtn.classList.toggle('hidden', !isLast);
+      revealStoryText(slide.text);
       preloadAround();
     };
 
@@ -718,23 +801,34 @@
 
     const beginAdventure = ev => {
       ev?.preventDefault?.();
+      if (!textReady) {
+        finishTextReveal();
+        return;
+      }
       const state = getState();
       state.started = true;
       state.introUsed = true;
       setState(state);
-      location.href = pageUrl('index.html?board=1');
+      try { sessionStorage.setItem('koenigreichSinneV4StartMusic', '1'); } catch (_) {}
+      playSound('background', { loop:true, restart:true });
+      window.setTimeout(() => { location.href = pageUrl('index.html?board=1&music=1'); }, 120);
     };
 
     prevBtn.addEventListener('click', () => goTo(index - 1));
-    nextBtn.addEventListener('click', () => goTo(index + 1));
+    nextBtn.addEventListener('click', () => { if (textReady) goTo(index + 1); });
     startBtn.addEventListener('click', beginAdventure);
     card?.addEventListener('click', ev => {
       if (ev.target.closest('button,a')) return;
+      if (!textReady) { finishTextReveal(); return; }
       if (index < lastIndex) goTo(index + 1);
     });
     document.addEventListener('keydown', ev => {
       if (ev.key === 'ArrowLeft') { ev.preventDefault(); goTo(index - 1); }
-      if (ev.key === 'ArrowRight') { ev.preventDefault(); goTo(index + 1); }
+      if (ev.key === 'ArrowRight') {
+        ev.preventDefault();
+        if (!textReady) finishTextReveal();
+        else goTo(index + 1);
+      }
       if ((ev.key === 'Enter' || ev.key === ' ') && index === lastIndex) beginAdventure(ev);
     });
 
@@ -748,6 +842,9 @@
     addSpeaker();
     resetBoardViewport();
     const state = getState();
+    const shouldForceBoardMusic = qs('music') === '1' || (() => {
+      try { return sessionStorage.getItem('koenigreichSinneV4StartMusic') === '1'; } catch (_) { return false; }
+    })();
     if (qs('board') === '1') {
       state.started = true;
       state.introUsed = true;
@@ -756,17 +853,30 @@
     }
     hide($('outroScreen'));
     if (state.started) { showBoard(false); } else { show($('introScreen')); hide($('boardScreen')); hide($('openBoardMenuBtn')); hide($('belowBoard')); }
+    if (shouldForceBoardMusic) {
+      try { sessionStorage.removeItem('koenigreichSinneV4StartMusic'); } catch (_) {}
+      window.setTimeout(() => playSound('background', { loop:true, restart:false }), 180);
+    }
     let introTransitioning = false;
-    const startGame = () => {
+    const startGame = async () => {
       if (introTransitioning) return;
       introTransitioning = true;
       const intro = $('introScreen');
       const startBtn = $('startGameBtn');
-      intro?.classList.add('intro-leaving');
+      ensureIntroStoryLoader();
+      setIntroStoryProgress(0);
+      intro?.classList.add('is-loading');
       startBtn?.setAttribute('disabled', 'disabled');
+      const storyImages = STORY_SLIDES.map(slide => assetUrl(slide.image));
+      await Promise.all([
+        preloadImagesWithProgress(storyImages, setIntroStoryProgress),
+        sleep(520)
+      ]);
+      setIntroStoryProgress(1);
       window.setTimeout(() => {
-        location.href = pageUrl('Geschichte.html');
-      }, 760);
+        intro?.classList.add('intro-leaving');
+        window.setTimeout(() => { location.href = pageUrl('Geschichte.html'); }, 620);
+      }, 160);
     };
     $('startGameBtn')?.addEventListener('click', startGame);
     $('introScreen')?.addEventListener('click', (ev) => { if (ev.target.closest('#startGameBtn')) return; startGame(); });
