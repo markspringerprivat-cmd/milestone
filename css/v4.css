@@ -7052,3 +7052,8 @@ body[data-page="board"] .magic-castle-board-btn:active{
   font-size:clamp(2rem,7vw,3.4rem)!important;
   color:#2b1a08!important;
 }
+
+/* v109 story start slide */
+body[data-page="story"] #storyNextBtn{
+  min-width:clamp(180px,34vw,260px);
+}

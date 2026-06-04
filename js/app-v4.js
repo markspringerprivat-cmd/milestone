@@ -755,13 +755,12 @@
     const nameBox = $('storyHeroNameBox');
     const nameInput = $('storyHeroNameInput');
     const card = document.querySelector('.story-card');
-    const onceModal = $('storyOnceModal');
-    const onceBtn = $('storyOnceBtn');
     if (!image || !text || !counter || !prevBtn || !nextBtn || !startBtn) return;
 
     const images = STORY_SLIDES.map(slide => assetUrl(slide.image));
     const lastIndex = STORY_SLIDES.length - 1;
-    let index = 0;
+    const START_STORY_SLIDE = { image: 'assets/images/ui/intro.webp', text: 'Bereit für die Geschichte?', isStoryStart:true };
+    let index = qs('slide') ? clamp(Number(qs('slide')), 0, lastIndex) : -1;
     let textReady = false;
     let revealTimers = [];
 
@@ -778,11 +777,14 @@
     };
 
     const updateStoryControls = () => {
+      const isStartSlide = index < 0;
       const isLast = index === lastIndex;
-      const needsName = Boolean(STORY_SLIDES[index]?.requiresHeroName);
+      const currentSlide = isStartSlide ? START_STORY_SLIDE : STORY_SLIDES[index];
+      const needsName = Boolean(!isStartSlide && currentSlide?.requiresHeroName);
       const nameReady = !needsName || Boolean(cleanHeroName(nameInput?.value));
-      prevBtn.disabled = index === 0;
-      nextBtn.disabled = !textReady || !nameReady;
+      prevBtn.disabled = index <= 0;
+      nextBtn.textContent = isStartSlide ? 'Geschichte starten' : 'Weiter';
+      nextBtn.disabled = isStartSlide ? false : (!textReady || !nameReady);
       nextBtn.classList.toggle('hidden', isLast);
       startBtn.classList.toggle('hidden', !isLast);
       startBtn.classList.toggle('is-disabled', isLast && (!textReady || !nameReady));
@@ -817,19 +819,19 @@
     };
 
     const render = () => {
-      const slide = STORY_SLIDES[index];
+      const slide = index < 0 ? START_STORY_SLIDE : STORY_SLIDES[index];
       const isLast = index === lastIndex;
-      const needsName = Boolean(slide.requiresHeroName);
+      const needsName = Boolean(index >= 0 && slide.requiresHeroName);
 
       image.classList.add('is-changing');
-      image.src = images[index];
-      image.alt = `Geschichte ${index + 1}`;
+      image.src = index < 0 ? assetUrl(START_STORY_SLIDE.image) : images[index];
+      image.alt = index < 0 ? 'Geschichte starten' : `Geschichte ${index + 1}`;
       const finishImageSwap = () => image.classList.remove('is-changing');
       if (image.complete) window.setTimeout(finishImageSwap, 80);
       else image.onload = finishImageSwap;
 
-      counter.textContent = `${index + 1} / ${STORY_SLIDES.length}`;
-      nameBox?.classList.toggle('hidden', !needsName);
+      counter.textContent = index < 0 ? 'Start' : `${index + 1} / ${STORY_SLIDES.length}`;
+      nameBox?.classList.toggle('hidden', !(index >= 0 && needsName));
       if (needsName && nameInput && !cleanHeroName(nameInput.value)) {
         const existing = getHeroName();
         nameInput.value = existing === DEFAULT_HERO_NAME ? '' : existing;
@@ -839,9 +841,10 @@
     };
 
     const goTo = nextIndex => {
-      const previousSlide = STORY_SLIDES[index];
+      const previousSlide = index < 0 ? START_STORY_SLIDE : STORY_SLIDES[index];
       const targetIndex = clamp(nextIndex, 0, lastIndex);
-      if (STORY_SLIDES[index]?.requiresHeroName) setHeroName(nameInput?.value);
+      if (index >= 0 && STORY_SLIDES[index]?.requiresHeroName) setHeroName(nameInput?.value);
+      if (index < 0 && targetIndex === 0) playStoryMood('happy');
       if (targetIndex > index && previousSlide?.image?.includes('/4-8.')) playStoryMood('bad');
       if (targetIndex > index && previousSlide?.image?.includes('/22.')) playStoryMood('happy');
       index = targetIndex;
@@ -854,7 +857,7 @@
         finishTextReveal();
         return;
       }
-      if (STORY_SLIDES[index]?.requiresHeroName && !cleanHeroName(nameInput?.value)) {
+      if (index >= 0 && STORY_SLIDES[index]?.requiresHeroName && !cleanHeroName(nameInput?.value)) {
         nameInput?.focus();
         updateStoryControls();
         return;
@@ -880,7 +883,7 @@
       if (ev.target.closest('button,a,input,label')) return;
       if (!textReady) { finishTextReveal(); return; }
       if (nextBtn.disabled) {
-        if (STORY_SLIDES[index]?.requiresHeroName) nameInput?.focus();
+        if (index >= 0 && STORY_SLIDES[index]?.requiresHeroName) nameInput?.focus();
         return;
       }
       if (index < lastIndex) goTo(index + 1);
@@ -891,19 +894,10 @@
         ev.preventDefault();
         if (!textReady) finishTextReveal();
         else if (!nextBtn.disabled) goTo(index + 1);
-        else if (STORY_SLIDES[index]?.requiresHeroName) nameInput?.focus();
+        else if (index >= 0 && STORY_SLIDES[index]?.requiresHeroName) nameInput?.focus();
       }
       if ((ev.key === 'Enter' || ev.key === ' ') && index === lastIndex) beginAdventure(ev);
     });
-
-    onceBtn?.addEventListener('click', () => { hide(onceModal); playStoryMood('happy'); });
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden || onceModal?.classList.contains('hidden') === false) return;
-      playStoryMood(storyMoodForIndex(index));
-    }, { passive:true });
-
-    render();
-    show(onceModal);
     const preloadAll = () => preloadAssets(images);
     if ('requestIdleCallback' in window) window.requestIdleCallback(preloadAll);
     else window.setTimeout(preloadAll, 400);
