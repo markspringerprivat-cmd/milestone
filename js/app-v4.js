@@ -191,27 +191,27 @@
   };
 
   const STORY_SLIDES = [
-    { image: 'assets/images/story/1.png', text: 'Im Königreich der Sinne erhob sich ein wunderschönes Schloss über grünen Tälern, hellen Türmen und friedlichen Mauern.' },
-    { image: 'assets/images/story/2.png', text: 'Im großen Saal feierten König und Bürger ein fröhliches Fest. Alle lachten, aßen miteinander und genossen den Tag.' },
-    { image: 'assets/images/story/3.png', text: 'Draußen vor dem Fenster stand ein Magier. Er war eifersüchtig, denn alle feierten, nur er war nicht eingeladen.' },
-    { image: 'assets/images/story/4-8.png', text: 'Der böse Magier sah durch das Fenster, wie lecker das Essen schmeckte, wie gemütlich der König auf seinem Thron saß, wie herrlich die Burger dufteten, wie schön die Blumen aussahen und wie wunderbar die Harfe des Barden klang.' },
-    { image: 'assets/images/story/9.png', text: 'Der Magier ballte wütend die Hände. Er konnte es nicht ertragen, dass im Schloss alle Sinne so fröhlich zusammenwirkten.' },
-    { image: 'assets/images/story/10.png', text: 'Leise hob er seinen Zauberstab. Dunkle Funken sammelten sich um ihn und krochen wie Schatten über das Fenster.' },
-    { image: 'assets/images/story/11.png', text: 'Dann sprach er einen bösen Zauber. Mit einem Ruck wurden die Sinne des Königreichs verdreht und das fröhliche Fest geriet aus dem Gleichgewicht.' },
-    { image: 'assets/images/story/12-16.png', text: 'Plötzlich rochen die Burger unangenehm, der Thron wurde unbequem, der Maiskolben schmeckte seltsam, die Harfe klang schief und sogar die Blumen verwelkten. Überall im Schloss merkte man: Die Sinne waren verzaubert.' },
-    { image: 'assets/images/story/17.png', text: 'Die Menschen erschraken. Was eben noch fröhlich gewesen war, fühlte sich nun falsch, fremd und durcheinander an.' },
-    { image: 'assets/images/story/18.png', text: 'Der König rief nach Hilfe. Jemand musste herausfinden, was mit den Sinnen geschehen war.' },
-    { image: 'assets/images/story/19.png', text: 'Da trat ein tapferer Ritter hervor. Er wollte das Königreich retten und dem Magier die gestohlenen Sinne wieder abnehmen.' },
-    { image: 'assets/images/story/20.png', text: 'Der Ritter wusste: Um den Zauber zu brechen, musste er Hinweise finden und die einzelnen Sinneswelten bestehen.' },
-    { image: 'assets/images/story/21.png', text: 'Jede Sinneswelt bewachte einen Schlüssel. Nur wer die Aufgaben verstand, konnte einen Schlüssel zurückgewinnen.' },
-    { image: 'assets/images/story/22.png', text: 'Also machte sich der Ritter bereit. Vor ihm lag eine Reise durch Sehen, Hören, Riechen, Schmecken und Fühlen.' },
-    { image: 'assets/images/story/23.png', text: 'Auf seinem Weg würde er Gegner treffen, Rätsel lösen und lernen, wie die Sinnesorgane funktionieren.' },
-    { image: 'assets/images/story/24.png', text: 'Mit jedem gelösten Rätsel kam das Königreich der Sinne der Rettung ein Stück näher.' },
-    { image: 'assets/images/story/25.png', text: 'Die Bewohner hofften auf ihren Helden. Nur er konnte die verlorenen Schlüssel sammeln.' },
-    { image: 'assets/images/story/26.png', text: 'Am Ende wartete das Schloss des bösen Magiers. Dort mussten alle Schlüssel zusammenpassen.' },
-    { image: 'assets/images/story/27.png', text: 'Der Ritter atmete tief durch und nahm seinen Mut zusammen.' },
+    { image: 'assets/images/story/1.png', text: 'Hoch über dem Land stand das Schloss des Königreichs der Sinne – ein Ort voller Farben, Klänge und fröhlicher Feste.' },
+    { image: 'assets/images/story/2.png', text: 'Im großen Saal feierten König und Bürger gemeinsam ein fröhliches Fest und genossen das leckere Essen.' },
+    { image: 'assets/images/story/3.png', text: 'Doch draußen schaute ein böser Magier neidisch durch das Fenster und beobachtete das Fest im Schloss.' },
+    { image: 'assets/images/story/4-8.png', text: 'Er sah, wie lecker das Essen schmeckte, wie gemütlich der König in seinem Thron saß, wie herrlich die Burger dufteten, wie schön die Blumen aussahen und wie wunderbar die Harfe des Barden klang.' },
+    { image: 'assets/images/story/9.png', text: 'Wütend beschloss der Magier, das fröhliche Fest zu verderben.' },
+    { image: 'assets/images/story/10.png', text: 'Mit dunkler Magie schickte er seinen Zauber direkt in das Schloss.' },
+    { image: 'assets/images/story/11.png', text: 'Plötzlich gerieten Freude und Ordnung im Festsaal durcheinander.' },
+    { image: 'assets/images/story/12-16.png', text: 'Auf einmal rochen die Burger unangenehm, der Thron wurde unbequem, der Mais schmeckte seltsam, die Harfe klang schief und die schönen Blumen verwelkten.' },
+    { image: 'assets/images/story/17.png', text: 'Der Magier freute sich über sein Werk und zog sich mit seiner dunklen Zauberkraft zurück.' },
+    { image: 'assets/images/story/18.png', text: 'Sein Zauber breitete sich aus und brachte immer mehr Unruhe in das Königreich.' },
+    { image: 'assets/images/story/19.png', text: 'Überall warteten nun seltsame Gefahren auf alle, die das Königreich retten wollten.' },
+    { image: 'assets/images/story/20.png', text: 'Der Magier nahm fünf magische Schlüssel an sich und bewachte sie mit seinen finsteren Kräften.' },
+    { image: 'assets/images/story/21.png', text: 'Dann verschloss er sein Schloss mit fünf Vorhängeschlössern. Nur mit den passenden Schlüsseln konnte man hinein.' },
+    { image: 'assets/images/story/22.png', text: 'Im Schloss waren König und Bürger ratlos. Jemand musste ihnen helfen.' },
+    { image: 'assets/images/story/23.png', text: 'Zwischenzeitlich in der Speisekammer …' },
+    { image: 'assets/images/story/24.png', text: 'Dort entdeckte ein tapferer Ritter erste Hinweise und beschloss, sich auf die Suche zu machen.' },
+    { image: 'assets/images/story/25.png', text: 'Mutig verließ der Ritter die Speisekammer und machte sich auf den Weg zum König.' },
+    { image: 'assets/images/story/26.png', text: 'Der König und die Bürger hörten ihm aufmerksam zu und setzten ihre Hoffnung auf ihn.' },
+    { image: 'assets/images/story/27.png', text: 'Gemeinsam fassten sie neuen Mut: Der Ritter sollte das Königreich der Sinne retten.' },
     { image: 'assets/images/story/28.png', text: 'Wie soll der tapfere Held heißen?', requiresHeroName: true },
-    { image: 'assets/images/story/29.png', text: 'So begann die Reise durch alle Zonen des Königreichs, bis {heroName} den Magier finden und die Sinne zurückbringen konnte.' }
+    { image: 'assets/images/story/29.png', text: 'So begann die Reise von {heroName}: durch alle Zonen des Königreichs, auf der Suche nach den fünf Schlüsseln und dem Schloss des bösen Magiers.' }
   ];
 
   function normalizeAssetPaths() {
@@ -759,7 +759,7 @@
 
     const images = STORY_SLIDES.map(slide => assetUrl(slide.image));
     const lastIndex = STORY_SLIDES.length - 1;
-    const START_STORY_SLIDE = { image: 'assets/images/ui/intro.webp', text: 'Bereit für die Geschichte?', isStoryStart:true };
+    const START_STORY_SLIDE = { image: 'assets/images/story/story_bookcover.png', text: 'Willkommen bei "Geschichten aus dem Königreich der Sinne". Öffne das Buch und beginne die Reise durch das Königreich der Sinne.', isStoryStart:true };
     let index = qs('slide') ? clamp(Number(qs('slide')), 0, lastIndex) : -1;
     let textReady = false;
     let revealTimers = [];
@@ -782,7 +782,7 @@
       const currentSlide = isStartSlide ? START_STORY_SLIDE : STORY_SLIDES[index];
       const needsName = Boolean(!isStartSlide && currentSlide?.requiresHeroName);
       const nameReady = !needsName || Boolean(cleanHeroName(nameInput?.value));
-      prevBtn.disabled = index <= 0;
+      prevBtn.disabled = index < 0;
       nextBtn.textContent = isStartSlide ? 'Geschichte starten' : 'Weiter';
       nextBtn.disabled = isStartSlide ? false : (!textReady || !nameReady);
       nextBtn.classList.toggle('hidden', isLast);
@@ -842,7 +842,7 @@
 
     const goTo = nextIndex => {
       const previousSlide = index < 0 ? START_STORY_SLIDE : STORY_SLIDES[index];
-      const targetIndex = clamp(nextIndex, 0, lastIndex);
+      const targetIndex = Math.max(-1, Math.min(nextIndex, lastIndex));
       if (index >= 0 && STORY_SLIDES[index]?.requiresHeroName) setHeroName(nameInput?.value);
       if (index < 0 && targetIndex === 0) playStoryMood('happy');
       if (targetIndex > index && previousSlide?.image?.includes('/4-8.')) playStoryMood('bad');
@@ -876,7 +876,7 @@
     nextBtn.addEventListener('click', () => { if (!nextBtn.disabled) goTo(index + 1); });
     startBtn.addEventListener('click', beginAdventure);
     nameInput?.addEventListener('input', () => {
-      if (STORY_SLIDES[index]?.requiresHeroName) setHeroName(nameInput.value);
+      if (index >= 0 && STORY_SLIDES[index]?.requiresHeroName) setHeroName(nameInput.value);
       updateStoryControls();
     });
     card?.addEventListener('click', ev => {
@@ -898,6 +898,7 @@
       }
       if ((ev.key === 'Enter' || ev.key === ' ') && index === lastIndex) beginAdventure(ev);
     });
+    render();
     const preloadAll = () => preloadAssets(images);
     if ('requestIdleCallback' in window) window.requestIdleCallback(preloadAll);
     else window.setTimeout(preloadAll, 400);
