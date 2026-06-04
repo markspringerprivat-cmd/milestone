@@ -746,7 +746,7 @@
   }
 
   function initStory() {
-    const image = $('storyImage');
+    const card = document.querySelector('.story-card');
     const text = $('storyText');
     const counter = $('storyCounter');
     const prevBtn = $('storyPrevBtn');
@@ -754,114 +754,130 @@
     const startBtn = $('storyStartBtn');
     const nameBox = $('storyHeroNameBox');
     const nameInput = $('storyHeroNameInput');
-    const card = document.querySelector('.story-card');
-    if (!image || !text || !counter || !prevBtn || !nextBtn || !startBtn) return;
+    if (!card || !text || !counter || !prevBtn || !nextBtn || !startBtn) return;
 
-    const images = STORY_SLIDES.map(slide => assetUrl(slide.image));
-    const lastIndex = STORY_SLIDES.length - 1;
-    const START_STORY_SLIDE = { image: 'assets/images/story/story_bookcover.png', text: 'Willkommen bei "Geschichten aus dem Königreich der Sinne". Öffne das Buch und beginne die Reise durch das Königreich der Sinne.', isStoryStart:true };
-    let index = qs('slide') ? clamp(Number(qs('slide')), 0, lastIndex) : -1;
-    let textReady = false;
-    let revealTimers = [];
-
-    const preloadAround = () => {
-      const nearby = [index - 1, index, index + 1, index + 2]
-        .filter(i => i >= 0 && i <= lastIndex)
-        .map(i => images[i]);
-      preloadAssets(nearby);
+    const START_STORY_SLIDE = {
+      image: 'assets/images/story/story_bookcover.png',
+      text: 'Willkommen bei "Geschichten aus dem Königreich der Sinne". Gleich blättert die Geschichte von selbst weiter.',
+      isStoryStart:true
     };
+    const slides = [START_STORY_SLIDE, ...STORY_SLIDES];
+    const images = slides.map(slide => assetUrl(slide.image));
+    const lastIndex = slides.length - 1;
+    const slideDuration = 4000;
 
-    const clearRevealTimers = () => {
-      revealTimers.forEach(timer => window.clearTimeout(timer));
-      revealTimers = [];
-    };
+    card.classList.add('story-autoplay-card');
+    nameBox?.classList.add('hidden');
 
-    const updateStoryControls = () => {
-      const isStartSlide = index < 0;
-      const isLast = index === lastIndex;
-      const currentSlide = isStartSlide ? START_STORY_SLIDE : STORY_SLIDES[index];
-      const needsName = Boolean(!isStartSlide && currentSlide?.requiresHeroName);
-      const nameReady = !needsName || Boolean(cleanHeroName(nameInput?.value));
-      prevBtn.disabled = index < 0;
-      nextBtn.textContent = isStartSlide ? 'Geschichte starten' : 'Weiter';
-      nextBtn.disabled = isStartSlide ? false : (!textReady || !nameReady);
-      nextBtn.classList.toggle('hidden', isLast);
-      startBtn.classList.toggle('hidden', !isLast);
-      startBtn.classList.toggle('is-disabled', isLast && (!textReady || !nameReady));
-      startBtn.setAttribute('aria-disabled', String(isLast && (!textReady || !nameReady)));
-    };
+    const oldWrap = card.querySelector('.story-image-wrap');
+    const trackWrap = document.createElement('div');
+    trackWrap.className = 'story-autoplay-window';
+    const track = document.createElement('div');
+    track.className = 'story-autoplay-track';
+    trackWrap.appendChild(track);
 
-    const finishTextReveal = () => {
-      clearRevealTimers();
-      text.querySelectorAll('.story-word').forEach(word => word.classList.add('visible'));
-      textReady = true;
-      updateStoryControls();
-    };
+    slides.forEach((slide, i) => {
+      const panel = document.createElement('figure');
+      panel.className = 'story-autoplay-panel';
+      const img = document.createElement('img');
+      img.src = images[i];
+      img.alt = i === 0 ? 'Geschichte starten' : `Geschichte ${i}`;
+      img.loading = i < 3 ? 'eager' : 'lazy';
+      panel.appendChild(img);
+      track.appendChild(panel);
+    });
+    oldWrap?.replaceWith(trackWrap);
 
-    const revealStoryText = rawText => {
-      clearRevealTimers();
-      textReady = false;
-      const words = heroText(rawText, cleanHeroName(nameInput?.value) || getHeroName()).split(/\s+/).filter(Boolean);
-      text.innerHTML = words.map(word => `<span class="story-word">${esc(word)}</span>`).join(' ');
-      updateStoryControls();
-      const spans = [...text.querySelectorAll('.story-word')];
-      if (!spans.length) {
-        finishTextReveal();
+    let index = 0;
+    let timer = 0;
+    let finished = false;
+    let currentMood = '';
+
+    function stopAuto() {
+      if (timer) window.clearTimeout(timer);
+      timer = 0;
+    }
+
+    function setTrackPosition(instant=false) {
+      track.classList.toggle('is-instant', instant);
+      track.style.transform = `translateX(${-index * 100}%)`;
+      if (instant) window.setTimeout(() => track.classList.remove('is-instant'), 40);
+    }
+
+    function showText(rawText) {
+      const rendered = heroText(rawText, cleanHeroName(nameInput?.value) || getHeroName());
+      text.classList.remove('is-visible');
+      window.setTimeout(() => {
+        text.innerHTML = rendered
+          .split(/\s+/)
+          .filter(Boolean)
+          .map(word => `<span class="story-word visible">${esc(word)}</span>`)
+          .join(' ');
+        text.classList.add('is-visible');
+      }, 170);
+    }
+
+    function updateMood() {
+      if (index === 0) return;
+      const mood = storyMoodForIndex(index - 1);
+      if (mood !== currentMood) {
+        playStoryMood(mood);
+        currentMood = mood;
+      }
+    }
+
+    function updateControls() {
+      counter.textContent = index === 0 ? 'Start' : `${index} / ${STORY_SLIDES.length}`;
+      prevBtn.disabled = index <= 0;
+      nextBtn.classList.add('hidden');
+      startBtn.classList.toggle('hidden', index !== lastIndex);
+      startBtn.classList.toggle('is-disabled', false);
+      startBtn.setAttribute('aria-disabled', 'false');
+    }
+
+    function render(instant=false) {
+      setTrackPosition(instant);
+      showText(slides[index].text);
+      updateMood();
+      updateControls();
+    }
+
+    function nextAuto() {
+      if (finished) return;
+      if (index >= lastIndex) {
+        finished = true;
+        stopAuto();
+        render(false);
         return;
       }
-      spans.forEach((span, i) => {
-        revealTimers.push(window.setTimeout(() => span.classList.add('visible'), 115 * i));
-      });
-      revealTimers.push(window.setTimeout(() => {
-        textReady = true;
-        updateStoryControls();
-      }, 115 * spans.length + 180));
-    };
-
-    const render = () => {
-      const slide = index < 0 ? START_STORY_SLIDE : STORY_SLIDES[index];
-      const isLast = index === lastIndex;
-      const needsName = Boolean(index >= 0 && slide.requiresHeroName);
-
-      image.classList.add('is-changing');
-      image.src = index < 0 ? assetUrl(START_STORY_SLIDE.image) : images[index];
-      image.alt = index < 0 ? 'Geschichte starten' : `Geschichte ${index + 1}`;
-      const finishImageSwap = () => image.classList.remove('is-changing');
-      if (image.complete) window.setTimeout(finishImageSwap, 80);
-      else image.onload = finishImageSwap;
-
-      counter.textContent = index < 0 ? 'Start' : `${index + 1} / ${STORY_SLIDES.length}`;
-      nameBox?.classList.toggle('hidden', !(index >= 0 && needsName));
-      if (needsName && nameInput && !cleanHeroName(nameInput.value)) {
-        const existing = getHeroName();
-        nameInput.value = existing === DEFAULT_HERO_NAME ? '' : existing;
+      index += 1;
+      render(false);
+      if (index >= lastIndex) {
+        finished = true;
+        stopAuto();
+        return;
       }
-      revealStoryText(slide.text);
-      preloadAround();
-    };
+      stopAuto();
+      timer = window.setTimeout(nextAuto, slideDuration);
+    }
 
-    const goTo = nextIndex => {
-      const previousSlide = index < 0 ? START_STORY_SLIDE : STORY_SLIDES[index];
-      const targetIndex = Math.max(-1, Math.min(nextIndex, lastIndex));
-      if (index >= 0 && STORY_SLIDES[index]?.requiresHeroName) setHeroName(nameInput?.value);
-      if (index < 0 && targetIndex === 0) playStoryMood('happy');
-      if (targetIndex > index && previousSlide?.image?.includes('/4-8.')) playStoryMood('bad');
-      if (targetIndex > index && previousSlide?.image?.includes('/22.')) playStoryMood('happy');
-      index = targetIndex;
-      render();
-    };
+    function startAuto() {
+      playStoryMood('happy');
+      currentMood = 'happy';
+      stopAuto();
+      timer = window.setTimeout(nextAuto, slideDuration);
+    }
 
-    const beginAdventure = ev => {
+    prevBtn.addEventListener('click', () => {
+      stopAuto();
+      index = Math.max(0, index - 1);
+      finished = false;
+      render(false);
+      timer = window.setTimeout(nextAuto, slideDuration);
+    });
+
+    startBtn.addEventListener('click', ev => {
       ev?.preventDefault?.();
-      if (!textReady) {
-        finishTextReveal();
-        return;
-      }
-      if (index >= 0 && STORY_SLIDES[index]?.requiresHeroName && !cleanHeroName(nameInput?.value)) {
-        nameInput?.focus();
-        updateStoryControls();
-        return;
-      }
       if (nameInput) setHeroName(nameInput.value);
       const state = getState();
       state.started = true;
@@ -870,38 +886,22 @@
       try { sessionStorage.setItem(BOARD_WELCOME_STORE, '1'); } catch (_) {}
       stopStoryMusic();
       window.setTimeout(() => { location.href = pageUrl('index.html?board=1&welcome=1'); }, 120);
-    };
-
-    prevBtn.addEventListener('click', () => goTo(index - 1));
-    nextBtn.addEventListener('click', () => { if (!nextBtn.disabled) goTo(index + 1); });
-    startBtn.addEventListener('click', beginAdventure);
-    nameInput?.addEventListener('input', () => {
-      if (index >= 0 && STORY_SLIDES[index]?.requiresHeroName) setHeroName(nameInput.value);
-      updateStoryControls();
     });
-    card?.addEventListener('click', ev => {
-      if (ev.target.closest('button,a,input,label')) return;
-      if (!textReady) { finishTextReveal(); return; }
-      if (nextBtn.disabled) {
-        if (index >= 0 && STORY_SLIDES[index]?.requiresHeroName) nameInput?.focus();
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        stopAuto();
         return;
       }
-      if (index < lastIndex) goTo(index + 1);
-    });
-    document.addEventListener('keydown', ev => {
-      if (ev.key === 'ArrowLeft') { ev.preventDefault(); goTo(index - 1); }
-      if (ev.key === 'ArrowRight') {
-        ev.preventDefault();
-        if (!textReady) finishTextReveal();
-        else if (!nextBtn.disabled) goTo(index + 1);
-        else if (index >= 0 && STORY_SLIDES[index]?.requiresHeroName) nameInput?.focus();
+      if (!finished) {
+        updateMood();
+        timer = window.setTimeout(nextAuto, slideDuration);
       }
-      if ((ev.key === 'Enter' || ev.key === ' ') && index === lastIndex) beginAdventure(ev);
-    });
-    render();
-    const preloadAll = () => preloadAssets(images);
-    if ('requestIdleCallback' in window) window.requestIdleCallback(preloadAll);
-    else window.setTimeout(preloadAll, 400);
+    }, { passive:true });
+
+    preloadAssets(images);
+    render(true);
+    startAuto();
   }
 
   function initBoard() {
