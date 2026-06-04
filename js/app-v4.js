@@ -187,7 +187,7 @@
     background: 'assets/audio/background.mp3', battle_background: 'assets/audio/battle_background.mp3', minigame_background: 'assets/audio/minigame_background.mp3',
     levelstart: 'assets/audio/levelstart.mp3', levelunlocked: 'assets/audio/levelunlocked.mp3', fight: 'assets/audio/fight.mp3', win: 'assets/audio/win.mp3', lose: 'assets/audio/lose.mp3',
     final: 'assets/audio/final.mp3', hurt: 'assets/audio/hurt.mp3', glass_break: 'assets/audio/glass_break.mp3', collect: 'assets/audio/collect.mp3',
-    story_main: 'assets/audio/story_main.mp3', story_wallbreak: 'assets/audio/wallbreak.mp3', story_spell: 'assets/audio/spell.mp3',
+    story_wallbreak: 'assets/audio/wallbreak.mp3', story_spell: 'assets/audio/spell.mp3',
     flip: 'assets/audio/flip.mp3', pair: 'assets/audio/pair.mp3', richtig: 'assets/audio/richtig.mp3',
     richtig_1: 'assets/audio/richtig_1.mp3', richtig_2: 'assets/audio/richtig_2.mp3', richtig_3: 'assets/audio/richtig_3.mp3', spray: 'assets/audio/spray.mp3', throw: 'assets/audio/throw.mp3',
     falsch_1: 'assets/audio/falsch_1.mp3', falsch_2: 'assets/audio/falsch_2.mp3', falsch_3: 'assets/audio/falsch_3.mp3'
@@ -267,7 +267,6 @@
     if (key === 'background') return .045;
     if (key === 'battle_background') return .22;
     if (key === 'minigame_background') return .24;
-    if (key === 'story_main') return .18;
     if (key === 'story_spell') return .70;
     if (key === 'story_wallbreak') return .82;
     if (key === 'collect') return .82;
@@ -770,19 +769,65 @@
   }
 
   function stopStoryMusic() {
-    stopSound('story_main');
+    stopSound('story_wallbreak');
+    stopSound('story_spell');
     stopSound('story_happy');
     stopSound('story_bad');
   }
 
   function playStoryMood() {
-    stopSound('story_happy');
-    stopSound('story_bad');
-    playSound('story_main', { loop:true, restart:false });
+    // Keine Story-Hintergrundmusik; nur Effekt-Sounds auf einzelnen Bildern.
   }
 
   function storyMoodForIndex() {
     return 'story';
+  }
+
+  function enableStorySoundFromGesture() {
+    muted = false;
+    localStorage.setItem(SOUND_STORE, '0');
+    const speaker = $('globalSpeakerBtn');
+    if (speaker) speaker.textContent = String.fromCodePoint(0x1f50a);
+    ['story_wallbreak', 'story_spell'].forEach(key => {
+      const cue = getAudio(key);
+      if (!cue) return;
+      try {
+        cue.pause();
+        cue.currentTime = 0;
+        cue.muted = true;
+        cue.volume = 0;
+        const played = cue.play();
+        Promise.resolve(played).then(() => {
+          try { cue.pause(); cue.currentTime = 0; } catch (_) {}
+          cue.muted = false;
+          cue.volume = audioVolumeForKey(key);
+        }).catch(() => {
+          cue.muted = false;
+          cue.volume = audioVolumeForKey(key);
+        });
+      } catch (_) {
+        cue.muted = false;
+        cue.volume = audioVolumeForKey(key);
+      }
+    });
+  }
+
+  async function playStoryEffect(key) {
+    if (muted || !AUDIO_FILES[key]) return;
+    let cue = null;
+    try {
+      cue = new Audio(AUDIO_FILES[key]);
+      cue.preload = 'auto';
+      cue.volume = audioVolumeForKey(key);
+      activeOneShotAudio.add(cue);
+      cue.addEventListener('ended', () => activeOneShotAudio.delete(cue), { once:true });
+      cue.addEventListener('error', () => activeOneShotAudio.delete(cue), { once:true });
+      cue.currentTime = 0;
+      await cue.play();
+    } catch (_) {
+      if (cue) activeOneShotAudio.delete(cue);
+      playSound(key, { loop:false, restart:true });
+    }
   }
 
   function initStory() {
@@ -900,11 +945,11 @@
       const image = slides[index]?.image || '';
       if (image.includes('/9.') && !playedStoryFx.has('9')) {
         playedStoryFx.add('9');
-        playSound('story_wallbreak', { loop:false, restart:true });
+        playStoryEffect('story_wallbreak');
       }
       if (image.includes('/10.') && !playedStoryFx.has('10')) {
         playedStoryFx.add('10');
-        playSound('story_spell', { loop:false, restart:true });
+        playStoryEffect('story_spell');
       }
     }
 
@@ -957,7 +1002,7 @@
         return;
       }
       saveProfileFromForm();
-      playStoryMood('story');
+      enableStorySoundFromGesture();
       currentMood = 'story';
       running = true;
       finished = false;
@@ -1078,7 +1123,7 @@
     $('launchLevelBtn')?.addEventListener('click', handleLaunchLevel);
     $('encounterBackBtn')?.addEventListener('click', handleEncounterBack);
     $('levelUnlockedContinueBtn')?.addEventListener('click', handleLevelUnlockedContinue);
-    $('magicCastleBtn')?.addEventListener('click', () => { location.href = pageUrl('magieschloss.html'); });
+    $('magicCastleBtn')?.addEventListener('click', showMagicCastleModal);
     $('boardGuide')?.addEventListener('click', startIntroHeroJourney);
     $('boardGuide')?.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); startIntroHeroJourney(); } });
     window.addEventListener('resize', () => { resetBoardViewport(); updateMapGeometry(); }, { passive:true });
@@ -1094,6 +1139,22 @@
     updateMapGeometry(); renderBoard();
     startMagicCastleBoardFloat();
     if (playMusic) playSound('background', { loop:true, restart:!firstStart });
+  }
+
+  function showMagicCastleModal(ev) {
+    ev?.preventDefault?.();
+    const modal = $('magicCastleModal');
+    if (!modal) return;
+    show(modal);
+    document.body.classList.add('magic-castle-modal-open');
+    initMagicCastle();
+    window.__refreshMagicCastleLocks?.();
+  }
+
+  function hideMagicCastleModal() {
+    const modal = $('magicCastleModal');
+    hide(modal);
+    document.body.classList.remove('magic-castle-modal-open');
   }
 
   let magicCastleBoardFloatRaf = 0;
@@ -1375,7 +1436,7 @@
       key.style.left = `${pos.x}%`;
       key.style.top = `${pos.y}%`;
       key.innerHTML = `<img src="${assetUrl(BIOME_BY_SENSE[id].key)}" alt="${esc(BIOME_BY_SENSE[id].label + '-Schlüssel')}">`;
-      key.addEventListener('click', () => { location.href = pageUrl('magieschloss.html'); });
+      key.addEventListener('click', () => { location.href = pageUrl('index.html?board=1'); });
       inner.appendChild(key);
     });
 
@@ -4532,6 +4593,8 @@
 
   function initMagicCastle() {
     addSpeaker();
+    const root = $('magicCastleModal') || document.body;
+    const alreadyBound = root?.dataset?.magicCastleReady === '1';
     const hero = $('magicCastleHero');
     if (hero) hero.alt = `${getHeroName()} auf der Brücke`;
     const keyBar = $('magicCastleKeyBar');
@@ -4560,6 +4623,17 @@
         lock.disabled = opened;
       });
     };
+    window.__refreshMagicCastleLocks = renderLocks;
+    if (alreadyBound) {
+      renderLocks();
+      return;
+    }
+    if (root?.dataset) root.dataset.magicCastleReady = '1';
+    $('magicCastlePopupBack')?.addEventListener('click', hideMagicCastleModal);
+    $('magicCastleModal')?.addEventListener('click', ev => {
+      if (ev.target === $('magicCastleModal')) hideMagicCastleModal();
+    });
+
     const flyKeyToLock = (id, lock) => {
       if (magicUnlockingId) return;
       const state = getState();
