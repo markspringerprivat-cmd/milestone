@@ -184,6 +184,7 @@
     background: 'assets/audio/background.mp3', battle_background: 'assets/audio/battle_background.mp3', minigame_background: 'assets/audio/minigame_background.mp3',
     levelstart: 'assets/audio/levelstart.mp3', levelunlocked: 'assets/audio/levelunlocked.mp3', fight: 'assets/audio/fight.mp3', win: 'assets/audio/win.mp3', lose: 'assets/audio/lose.mp3',
     final: 'assets/audio/final.mp3', hurt: 'assets/audio/hurt.mp3', glass_break: 'assets/audio/glass_break.mp3', collect: 'assets/audio/collect.mp3',
+    story_happy: 'assets/audio/happy.mp3', story_bad: 'assets/audio/bad.mp3',
     flip: 'assets/audio/flip.mp3', pair: 'assets/audio/pair.mp3', richtig: 'assets/audio/richtig.mp3',
     richtig_1: 'assets/audio/richtig_1.mp3', richtig_2: 'assets/audio/richtig_2.mp3', richtig_3: 'assets/audio/richtig_3.mp3', spray: 'assets/audio/spray.mp3', throw: 'assets/audio/throw.mp3',
     falsch_1: 'assets/audio/falsch_1.mp3', falsch_2: 'assets/audio/falsch_2.mp3', falsch_3: 'assets/audio/falsch_3.mp3'
@@ -193,31 +194,23 @@
     { image: 'assets/images/story/1.png', text: 'Im Königreich der Sinne erhob sich ein wunderschönes Schloss über grünen Tälern, hellen Türmen und friedlichen Mauern.' },
     { image: 'assets/images/story/2.png', text: 'Im großen Saal feierten König und Bürger ein fröhliches Fest. Alle lachten, aßen miteinander und genossen den Tag.' },
     { image: 'assets/images/story/3.png', text: 'Draußen vor dem Fenster stand ein Magier. Er war eifersüchtig, denn alle feierten, nur er war nicht eingeladen.' },
-    { image: 'assets/images/story/4.png', text: 'Der Magier sah, wie der König den Maiskolben genoss. Jeder Bissen schien ihm köstlich zu schmecken.' },
-    { image: 'assets/images/story/5.png', text: 'Dann bemerkte er den weichen Thron. Der König saß so gemütlich, als könnte ihm nichts auf der Welt passieren.' },
-    { image: 'assets/images/story/6.png', text: 'Auch der Duft der dampfenden Burger zog durch den Saal. Alles roch warm, würzig und unglaublich lecker.' },
-    { image: 'assets/images/story/7.png', text: 'Überall standen frische Blumen und festliche Dekorationen. Der ganze Saal sah bunt, freundlich und wunderschön aus.' },
-    { image: 'assets/images/story/8.png', text: 'Der Barde spielte auf seiner Harfe. Die Melodie klang wohltuend und machte das Fest noch friedlicher.' },
-    { image: 'assets/images/story/9.png', text: 'Da konnte sich der Magier vor Neid nicht mehr halten. Wütend brach er in den Festsaal ein.' },
-    { image: 'assets/images/story/10.png', text: 'Mit lila Magie belegte er alle mit einem Fluch. Der Zauber kroch durch den Raum und griff nach den Sinnen.' },
-    { image: 'assets/images/story/11.png', text: 'Alle sahen sich schockiert an. Sofort merkten sie, dass etwas nicht stimmte, während der Magier im Nebel verschwand.' },
-    { image: 'assets/images/story/12.png', text: 'Aus der Harfe kamen plötzlich nur noch schiefe, kratzende Klänge. Was eben schön war, tat nun fast weh.' },
-    { image: 'assets/images/story/13.png', text: 'Die Blumen verwelkten und die Dekoration verlor ihren Glanz. Nichts sah mehr hell und festlich aus.' },
-    { image: 'assets/images/story/14.png', text: 'Der köstliche Burgerduft verwandelte sich in einen schrecklichen Gestank. Niemand wollte mehr davon essen.' },
-    { image: 'assets/images/story/15.png', text: 'Der bequemste Stuhl im Schloss fühlte sich plötzlich hart, spitz und furchtbar unbequem an.' },
-    { image: 'assets/images/story/16.png', text: 'Auch das Essen verlor seinen Geschmack. Was vorher lecker war, schmeckte nun fade und ungenießbar.' },
-    { image: 'assets/images/story/17.png', text: 'Der Magier hatte die Sinne des Königreichs gestohlen und in seinem Stab gespeichert.' },
-    { image: 'assets/images/story/18.png', text: 'Damit niemand ihn aufhalten konnte, fasste er einen neuen Plan: Er suchte Tiere tief im Wald auf.' },
-    { image: 'assets/images/story/19.png', text: 'Mit dunkler Magie verwandelte er die Tiere in mächtige Gegner, die ihn von nun an beschützen sollten.' },
-    { image: 'assets/images/story/20.png', text: 'Jedem verwandelten Gegner gab der Magier einen Schlüssel, den er bewachen und verteidigen sollte.' },
-    { image: 'assets/images/story/21.png', text: 'Dann versteckte sich der Magier in seinem Schloss. Am Tor hingen fünf Schlösser, die nur mit diesen Schlüsseln geöffnet werden konnten.' },
-    { image: 'assets/images/story/22.png', text: 'Zurück im Palast waren alle vom Fluch betroffen. Niemand konnte noch Freude am Fühlen, Riechen, Schmecken, Hören oder Sehen empfinden.' },
-    { image: 'assets/images/story/23.png', text: 'Zwischenzeitlich in der Speisekammer stellte sich eine wichtige Frage: War wirklich jeder im Königreich vom Fluch betroffen?' },
-    { image: 'assets/images/story/24.png', text: 'Nein! Ein tapferer Ritter hatte sich während des Vorfalls heimlich den Bauch mit Kuchen vollgeschlagen.', requiresHeroName: true },
-    { image: 'assets/images/story/25.png', text: 'Plötzlich hörte der Ritter neben seinem eigenen Schmatzen ein leises Wimmern aus dem Festsaal und wurde aufmerksam.' },
-    { image: 'assets/images/story/26.png', text: '{heroName} betrat den Saal und sah, wie betrübt König und Bürger am Tisch saßen.' },
-    { image: 'assets/images/story/27.png', text: 'Der König stützte sich auf {heroName} und bat ihn, die gestohlenen Sinne der Bürger zurückzubeschaffen.' },
-    { image: 'assets/images/story/28.png', text: '{heroName} erklärte sich bereit, hinaus ins Land zu ziehen, den Magier zu finden und die Sinne zurückzuholen.' },
+    { image: 'assets/images/story/4-8.png', text: 'Der böse Magier sah durch das Fenster, wie lecker das Essen schmeckte, wie gemütlich der König auf seinem Thron saß, wie herrlich die Burger dufteten, wie schön die Blumen aussahen und wie wunderbar die Harfe des Barden klang.' },
+    { image: 'assets/images/story/9.png', text: 'Der Magier ballte wütend die Hände. Er konnte es nicht ertragen, dass im Schloss alle Sinne so fröhlich zusammenwirkten.' },
+    { image: 'assets/images/story/10.png', text: 'Leise hob er seinen Zauberstab. Dunkle Funken sammelten sich um ihn und krochen wie Schatten über das Fenster.' },
+    { image: 'assets/images/story/11.png', text: 'Dann sprach er einen bösen Zauber. Mit einem Ruck wurden die Sinne des Königreichs verdreht und das fröhliche Fest geriet aus dem Gleichgewicht.' },
+    { image: 'assets/images/story/12-16.png', text: 'Plötzlich rochen die Burger unangenehm, der Thron wurde unbequem, der Maiskolben schmeckte seltsam, die Harfe klang schief und sogar die Blumen verwelkten. Überall im Schloss merkte man: Die Sinne waren verzaubert.' },
+    { image: 'assets/images/story/17.png', text: 'Die Menschen erschraken. Was eben noch fröhlich gewesen war, fühlte sich nun falsch, fremd und durcheinander an.' },
+    { image: 'assets/images/story/18.png', text: 'Der König rief nach Hilfe. Jemand musste herausfinden, was mit den Sinnen geschehen war.' },
+    { image: 'assets/images/story/19.png', text: 'Da trat ein tapferer Ritter hervor. Er wollte das Königreich retten und dem Magier die gestohlenen Sinne wieder abnehmen.' },
+    { image: 'assets/images/story/20.png', text: 'Der Ritter wusste: Um den Zauber zu brechen, musste er Hinweise finden und die einzelnen Sinneswelten bestehen.' },
+    { image: 'assets/images/story/21.png', text: 'Jede Sinneswelt bewachte einen Schlüssel. Nur wer die Aufgaben verstand, konnte einen Schlüssel zurückgewinnen.' },
+    { image: 'assets/images/story/22.png', text: 'Also machte sich der Ritter bereit. Vor ihm lag eine Reise durch Sehen, Hören, Riechen, Schmecken und Fühlen.' },
+    { image: 'assets/images/story/23.png', text: 'Auf seinem Weg würde er Gegner treffen, Rätsel lösen und lernen, wie die Sinnesorgane funktionieren.' },
+    { image: 'assets/images/story/24.png', text: 'Mit jedem gelösten Rätsel kam das Königreich der Sinne der Rettung ein Stück näher.' },
+    { image: 'assets/images/story/25.png', text: 'Die Bewohner hofften auf ihren Helden. Nur er konnte die verlorenen Schlüssel sammeln.' },
+    { image: 'assets/images/story/26.png', text: 'Am Ende wartete das Schloss des bösen Magiers. Dort mussten alle Schlüssel zusammenpassen.' },
+    { image: 'assets/images/story/27.png', text: 'Der Ritter atmete tief durch und nahm seinen Mut zusammen.' },
+    { image: 'assets/images/story/28.png', text: 'Wie soll der tapfere Held heißen?', requiresHeroName: true },
     { image: 'assets/images/story/29.png', text: 'So begann die Reise durch alle Zonen des Königreichs, bis {heroName} den Magier finden und die Sinne zurückbringen konnte.' }
   ];
 
@@ -269,6 +262,7 @@
     if (key === 'background') return .045;
     if (key === 'battle_background') return .22;
     if (key === 'minigame_background') return .24;
+    if (key === 'story_happy' || key === 'story_bad') return .16;
     if (key === 'collect') return .82;
     if (key === 'flip') return .70;
     if (key === 'pair') return .82;
@@ -730,6 +724,27 @@
     window.scrollTo(0, 0);
   }
 
+  function stopStoryMusic() {
+    stopSound('story_happy');
+    stopSound('story_bad');
+  }
+
+  function playStoryMood(mood) {
+    if (mood === 'bad') {
+      stopSound('story_happy');
+      playSound('story_bad', { loop:true, restart:true });
+      return;
+    }
+    stopSound('story_bad');
+    playSound('story_happy', { loop:true, restart:true });
+  }
+
+  function storyMoodForIndex(index) {
+    const image = STORY_SLIDES[index]?.image || '';
+    if (image.includes('/9.') || image.includes('/10.') || image.includes('/11.') || image.includes('/12-16.') || image.includes('/17.') || image.includes('/18.') || image.includes('/19.') || image.includes('/20.') || image.includes('/21.') || image.includes('/22.')) return 'bad';
+    return 'happy';
+  }
+
   function initStory() {
     const image = $('storyImage');
     const text = $('storyText');
@@ -740,6 +755,8 @@
     const nameBox = $('storyHeroNameBox');
     const nameInput = $('storyHeroNameInput');
     const card = document.querySelector('.story-card');
+    const onceModal = $('storyOnceModal');
+    const onceBtn = $('storyOnceBtn');
     if (!image || !text || !counter || !prevBtn || !nextBtn || !startBtn) return;
 
     const images = STORY_SLIDES.map(slide => assetUrl(slide.image));
@@ -822,8 +839,12 @@
     };
 
     const goTo = nextIndex => {
+      const previousSlide = STORY_SLIDES[index];
+      const targetIndex = clamp(nextIndex, 0, lastIndex);
       if (STORY_SLIDES[index]?.requiresHeroName) setHeroName(nameInput?.value);
-      index = clamp(nextIndex, 0, lastIndex);
+      if (targetIndex > index && previousSlide?.image?.includes('/4-8.')) playStoryMood('bad');
+      if (targetIndex > index && previousSlide?.image?.includes('/22.')) playStoryMood('happy');
+      index = targetIndex;
       render();
     };
 
@@ -844,6 +865,7 @@
       state.introUsed = true;
       setState(state);
       try { sessionStorage.setItem(BOARD_WELCOME_STORE, '1'); } catch (_) {}
+      stopStoryMusic();
       window.setTimeout(() => { location.href = pageUrl('index.html?board=1&welcome=1'); }, 120);
     };
 
@@ -874,7 +896,14 @@
       if ((ev.key === 'Enter' || ev.key === ' ') && index === lastIndex) beginAdventure(ev);
     });
 
+    onceBtn?.addEventListener('click', () => { hide(onceModal); playStoryMood('happy'); });
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden || onceModal?.classList.contains('hidden') === false) return;
+      playStoryMood(storyMoodForIndex(index));
+    }, { passive:true });
+
     render();
+    show(onceModal);
     const preloadAll = () => preloadAssets(images);
     if ('requestIdleCallback' in window) window.requestIdleCallback(preloadAll);
     else window.setTimeout(preloadAll, 400);
