@@ -8,7 +8,7 @@
   const SOUND_STORE = 'koenigreichSinneV4Muted';
   const BOARD_WELCOME_STORE = 'koenigreichSinneV4PendingBoardWelcome';
   const DEFAULT_HERO_NAME = 'Sir Nervus';
-  const HERO_GENDER_OPTIONS = ['male', 'female', 'nonbinary'];
+  const HERO_GENDER_OPTIONS = ['male', 'female'];
   const DEFAULT_HERO_GENDER = 'male';
   const DEFAULT_HERO_PRONOUN = 'er';
   const STATE_VERSION = 'v4_76_stable_village_layout';
@@ -187,34 +187,34 @@
     background: 'assets/audio/background.mp3', battle_background: 'assets/audio/battle_background.mp3', minigame_background: 'assets/audio/minigame_background.mp3',
     levelstart: 'assets/audio/levelstart.mp3', levelunlocked: 'assets/audio/levelunlocked.mp3', fight: 'assets/audio/fight.mp3', win: 'assets/audio/win.mp3', lose: 'assets/audio/lose.mp3',
     final: 'assets/audio/final.mp3', hurt: 'assets/audio/hurt.mp3', glass_break: 'assets/audio/glass_break.mp3', collect: 'assets/audio/collect.mp3',
-    story_happy: 'assets/audio/happy.mp3', story_bad: 'assets/audio/bad.mp3',
+    story_main: 'assets/audio/story_main.mp3', story_wallbreak: 'assets/audio/wallbreak.mp3', story_spell: 'assets/audio/spell.mp3',
     flip: 'assets/audio/flip.mp3', pair: 'assets/audio/pair.mp3', richtig: 'assets/audio/richtig.mp3',
     richtig_1: 'assets/audio/richtig_1.mp3', richtig_2: 'assets/audio/richtig_2.mp3', richtig_3: 'assets/audio/richtig_3.mp3', spray: 'assets/audio/spray.mp3', throw: 'assets/audio/throw.mp3',
     falsch_1: 'assets/audio/falsch_1.mp3', falsch_2: 'assets/audio/falsch_2.mp3', falsch_3: 'assets/audio/falsch_3.mp3'
   };
 
   const STORY_SLIDES = [
-    { image: 'assets/images/story/1.png', text: 'Hoch über dem Land stand das Schloss der Sinne...' },
-    { image: 'assets/images/story/2.png', text: 'Im Saal feierten alle ein fröhliches Fest...' },
-    { image: 'assets/images/story/3.png', text: 'Doch ein böser Magier sah neidisch durchs Fenster...' },
-    { image: 'assets/images/story/4-8.png', text: 'Er sah Essen, Blumen, Burger, Thron und Harfe voller Zauber...' },
-    { image: 'assets/images/story/9.png', text: 'Da wurde der Magier wütend...' },
-    { image: 'assets/images/story/10.png', text: 'Er hob seinen Zauberstab...' },
-    { image: 'assets/images/story/11.png', text: 'Dunkle Magie traf den Festsaal...' },
-    { image: 'assets/images/story/12-16.png', text: 'Plötzlich stank es, klang schief und fühlte sich falsch an...' },
-    { image: 'assets/images/story/17.png', text: 'Zufrieden verschwand der Magier in der Nacht...' },
-    { image: 'assets/images/story/18.png', text: 'Sein Zauber breitete sich über das Königreich aus...' },
-    { image: 'assets/images/story/19.png', text: 'Überall warteten nun seltsame Gefahren...' },
-    { image: 'assets/images/story/20.png', text: 'Der Magier versteckte fünf magische Schlüssel...' },
-    { image: 'assets/images/story/21.png', text: 'Sein Schloss blieb mit fünf Vorhängeschlössern verschlossen...' },
-    { image: 'assets/images/story/22.png', text: 'Im Festsaal suchten alle nach Hilfe...' },
-    { image: 'assets/images/story/23.png', text: 'Zwischenzeitlich lag in der Speisekammer ein Hinweis...' },
-    { image: 'assets/images/story/24.png', text: '{heroName} entdeckte den Hinweis und wurde mutig...' },
-    { image: 'assets/images/story/25.png', text: '{HeroNom} machte sich auf den Weg zum König...' },
-    { image: 'assets/images/story/26.png', text: 'Der König vertraute {heroDat} die Rettung an...' },
-    { image: 'assets/images/story/27.png', text: 'Nun sollte {heroName} das Königreich retten...' },
-    { image: 'assets/images/story/28.png', text: 'Mit Mut und Namen begann die Reise...' },
-    { image: 'assets/images/story/29.png', text: 'So suchte {heroName} die Schlüssel des Königreichs...' }
+    { image: 'assets/images/story/1.png', text: 'Hoch über dem Land schwebte das Schloss der Sinne...' },
+    { image: 'assets/images/story/2.png', text: 'Dort feierten König und Hof ein fröhliches Fest...' },
+    { image: 'assets/images/story/3.png', text: 'Doch draußen beobachtete ein böser Magier alles heimlich...' },
+    { image: 'assets/images/story/4-8.png', text: 'Er sah leckeres Essen, schöne Blumen, weiche Sitze und hörte herrliche Harfenklänge...' },
+    { image: 'assets/images/story/9.png', text: 'Vor Wut ließ er die Mauer bersten...' },
+    { image: 'assets/images/story/10.png', text: 'Dann wirkte er einen finsteren Zauber...' },
+    { image: 'assets/images/story/11.png', text: 'Dunkle Magie raste durch den Festsaal...' },
+    { image: 'assets/images/story/12-16.png', text: 'Plötzlich stank, kratzte und klang vieles ganz falsch...' },
+    { image: 'assets/images/story/17.png', text: 'Zufrieden zog sich der Magier in sein Schloss zurück...' },
+    { image: 'assets/images/story/18.png', text: 'Sein Fluch legte sich über das ganze Königreich...' },
+    { image: 'assets/images/story/19.png', text: 'Überall warteten nun rätselhafte Prüfungen...' },
+    { image: 'assets/images/story/20.png', text: 'Fünf magische Schlüssel wurden im ganzen Land versteckt...' },
+    { image: 'assets/images/story/21.png', text: 'Und fünf Vorhängeschlösser verriegelten das Tor des Magiers...' },
+    { image: 'assets/images/story/22.png', text: 'Im Schloss hofften nun alle auf Hilfe...' },
+    { image: 'assets/images/story/23.png', text: 'Da tauchte in der Speisekammer ein wichtiger Hinweis auf...' },
+    { image: 'assets/images/story/24.png', text: 'Dort entdeckte {heroName} die entscheidende Spur...' },
+    { image: 'assets/images/story/25.png', text: '{HeroNom} eilte sofort damit zum König...' },
+    { image: 'assets/images/story/26.png', text: 'Der König bat {heroAcc}, das Königreich zu retten...' },
+    { image: 'assets/images/story/27.png', text: 'Also machte sich {heroName} mutig auf den Weg...' },
+    { image: 'assets/images/story/28.png', text: 'Mit viel Mut begann nun die Reise...' },
+    { image: 'assets/images/story/29.png', text: 'Jetzt sucht {heroName} die fünf Schlüssel des Königreichs...' }
   ];
 
   function normalizeAssetPaths() {
@@ -267,7 +267,9 @@
     if (key === 'background') return .045;
     if (key === 'battle_background') return .22;
     if (key === 'minigame_background') return .24;
-    if (key === 'story_happy' || key === 'story_bad') return .16;
+    if (key === 'story_main') return .18;
+    if (key === 'story_spell') return .70;
+    if (key === 'story_wallbreak') return .82;
     if (key === 'collect') return .82;
     if (key === 'flip') return .70;
     if (key === 'pair') return .82;
@@ -575,7 +577,7 @@
     const state = { ...base, ...(raw || {}) };
     state.heroName = cleanHeroName(raw?.heroName) || DEFAULT_HERO_NAME;
     state.heroGender = HERO_GENDER_OPTIONS.includes(raw?.heroGender) ? raw.heroGender : DEFAULT_HERO_GENDER;
-    state.heroPronoun = state.heroGender === 'nonbinary' ? (cleanHeroPronoun(raw?.heroPronoun) || 'they') : (state.heroGender === 'female' ? 'sie' : 'er');
+    state.heroPronoun = state.heroGender === 'female' ? 'sie' : 'er';
     const oldSlots = Array.isArray(raw?.slots) ? raw.slots : [];
     const oldCompleted = Array.isArray(raw?.completed) ? raw.completed : [];
     state.slots = Array.from({ length: LEVEL_COUNT }, (_, i) => oldSlots[i] || null);
@@ -612,20 +614,18 @@
   function getHeroName() { return getState().heroName || DEFAULT_HERO_NAME; }
   function getHeroProfile(state = getState()) {
     const gender = HERO_GENDER_OPTIONS.includes(state.heroGender) ? state.heroGender : DEFAULT_HERO_GENDER;
-    const custom = cleanHeroPronoun(state.heroPronoun) || 'they';
     const sets = {
       male: { gender:'male', nom:'er', acc:'ihn', dat:'ihm', poss:'sein', title:'Ritter', role:'Held' },
-      female: { gender:'female', nom:'sie', acc:'sie', dat:'ihr', poss:'ihr', title:'Ritterin', role:'Heldin' },
-      nonbinary: { gender:'nonbinary', nom:custom, acc:custom, dat:custom, poss:custom, title:'Ritterfigur', role:'Held*in' }
+      female: { gender:'female', nom:'sie', acc:'sie', dat:'ihr', poss:'ihr', title:'Ritterin', role:'Heldin' }
     };
     return { name: cleanHeroName(state.heroName) || DEFAULT_HERO_NAME, ...sets[gender] };
   }
-  function setHeroProfile({ name, gender, pronoun } = {}) {
+  function setHeroProfile({ name, gender } = {}) {
     const state = getState();
     const nextGender = HERO_GENDER_OPTIONS.includes(gender) ? gender : DEFAULT_HERO_GENDER;
     state.heroName = cleanHeroName(name) || DEFAULT_HERO_NAME;
     state.heroGender = nextGender;
-    state.heroPronoun = nextGender === 'nonbinary' ? (cleanHeroPronoun(pronoun) || 'they') : (nextGender === 'female' ? 'sie' : 'er');
+    state.heroPronoun = nextGender === 'female' ? 'sie' : 'er';
     setState(state);
     return getHeroProfile(state);
   }
@@ -770,24 +770,19 @@
   }
 
   function stopStoryMusic() {
+    stopSound('story_main');
     stopSound('story_happy');
     stopSound('story_bad');
   }
 
-  function playStoryMood(mood) {
-    if (mood === 'bad') {
-      stopSound('story_happy');
-      playSound('story_bad', { loop:true, restart:true });
-      return;
-    }
+  function playStoryMood() {
+    stopSound('story_happy');
     stopSound('story_bad');
-    playSound('story_happy', { loop:true, restart:true });
+    playSound('story_main', { loop:true, restart:false });
   }
 
-  function storyMoodForIndex(index) {
-    const image = STORY_SLIDES[index]?.image || '';
-    if (image.includes('/9.') || image.includes('/10.') || image.includes('/11.') || image.includes('/12-16.') || image.includes('/17.') || image.includes('/18.') || image.includes('/19.') || image.includes('/20.') || image.includes('/21.') || image.includes('/22.')) return 'bad';
-    return 'happy';
+  function storyMoodForIndex() {
+    return 'story';
   }
 
   function initStory() {
@@ -798,12 +793,11 @@
     const nextBtn = $('storyNextBtn');
     const startBtn = $('storyStartBtn');
     const nameBox = $('storyHeroNameBox');
-    const nameInput = $('storyHeroNameInput');
-    if (!card || !text || !counter || !prevBtn || !nextBtn || !startBtn || !nameBox || !nameInput) return;
+    if (!card || !text || !counter || !prevBtn || !nextBtn || !startBtn || !nameBox) return;
 
     const START_STORY_SLIDE = {
       image: 'assets/images/story/story_bookcover.png',
-      text: 'Gib Name und Pronomen ein und starte die Geschichte...',
+      text: 'Gib den Namen ein, wähle männlich oder weiblich und starte die Geschichte...',
       isStoryStart:true
     };
     const slides = [START_STORY_SLIDE, ...STORY_SLIDES];
@@ -816,21 +810,16 @@
     nameBox.classList.remove('hidden');
     const profile = getHeroProfile();
     nameBox.innerHTML = `
-      <label for="storyHeroNameInput">Name der Spielfigur</label>
-      <input id="storyHeroNameInput" name="storyHeroNameInput" autocomplete="off" maxlength="28" placeholder="z. B. Alex" value="${esc(profile.name === DEFAULT_HERO_NAME ? '' : profile.name)}">
-      <fieldset class="story-gender-box" aria-label="Geschlecht der Spielfigur">
+      <label for="storyHeroNameInput">Name des Ritters</label>
+      <input id="storyHeroNameInput" name="storyHeroNameInput" autocomplete="off" maxlength="28" placeholder="z. B. Leo" value="${esc(profile.name === DEFAULT_HERO_NAME ? '' : profile.name)}">
+      <fieldset class="story-gender-box" aria-label="Geschlecht des Ritters">
         <legend>Geschlecht</legend>
         <label><input type="radio" name="storyHeroGender" value="male" ${profile.gender === 'male' ? 'checked' : ''}> männlich</label>
         <label><input type="radio" name="storyHeroGender" value="female" ${profile.gender === 'female' ? 'checked' : ''}> weiblich</label>
-        <label><input type="radio" name="storyHeroGender" value="nonbinary" ${profile.gender === 'nonbinary' ? 'checked' : ''}> non-binär</label>
       </fieldset>
-      <label id="storyHeroPronounLabel" class="story-pronoun-label" for="storyHeroPronounInput">Eigenes Pronomen</label>
-      <input id="storyHeroPronounInput" class="story-pronoun-input" name="storyHeroPronounInput" autocomplete="off" maxlength="24" placeholder="z. B. dey" value="${profile.gender === 'nonbinary' ? esc(profile.nom) : ''}">
-      <p id="storyProfileHint" class="story-profile-hint">Diese Angaben werden für die Geschichte und das Spiel gespeichert.</p>
+      <p id="storyProfileHint" class="story-profile-hint">Name und Geschlecht werden für die ganze Geschichte und das Spiel gespeichert.</p>
     `;
     const liveNameInput = $('storyHeroNameInput');
-    const pronounInput = $('storyHeroPronounInput');
-    const pronounLabel = $('storyHeroPronounLabel');
     const genderInputs = [...document.querySelectorAll('input[name="storyHeroGender"]')];
 
     const oldWrap = card.querySelector('.story-image-wrap');
@@ -857,23 +846,19 @@
     let finished = false;
     let running = false;
     let currentMood = '';
+    const playedStoryFx = new Set();
 
     const selectedGender = () => genderInputs.find(input => input.checked)?.value || DEFAULT_HERO_GENDER;
-    const customPronounRequired = () => selectedGender() === 'nonbinary';
-    const formReady = () => Boolean(cleanHeroName(liveNameInput?.value) && (!customPronounRequired() || cleanHeroPronoun(pronounInput?.value)));
+    const formReady = () => Boolean(cleanHeroName(liveNameInput?.value));
 
     function syncProfileForm() {
-      const needsPronoun = customPronounRequired();
-      pronounInput?.classList.toggle('hidden', !needsPronoun);
-      pronounLabel?.classList.toggle('hidden', !needsPronoun);
       nextBtn.disabled = index === 0 ? !formReady() : true;
     }
 
     function saveProfileFromForm() {
       return setHeroProfile({
         name: liveNameInput?.value,
-        gender: selectedGender(),
-        pronoun: pronounInput?.value
+        gender: selectedGender()
       });
     }
 
@@ -910,6 +895,19 @@
       }
     }
 
+    function playStorySlideFx() {
+      if (index === 0) return;
+      const image = slides[index]?.image || '';
+      if (image.includes('/9.') && !playedStoryFx.has('9')) {
+        playedStoryFx.add('9');
+        playSound('story_wallbreak', { loop:false, restart:true });
+      }
+      if (image.includes('/10.') && !playedStoryFx.has('10')) {
+        playedStoryFx.add('10');
+        playSound('story_spell', { loop:false, restart:true });
+      }
+    }
+
     function updateControls() {
       counter.textContent = index === 0 ? 'Start' : `${index} / ${STORY_SLIDES.length}`;
       prevBtn.classList.toggle('hidden', index === 0);
@@ -927,6 +925,7 @@
       setTrackPosition(instant);
       showText(slides[index].text);
       updateMood();
+      playStorySlideFx();
       updateControls();
     }
 
@@ -958,8 +957,8 @@
         return;
       }
       saveProfileFromForm();
-      playStoryMood('happy');
-      currentMood = 'happy';
+      playStoryMood('story');
+      currentMood = 'story';
       running = true;
       finished = false;
       index = 1;
@@ -970,7 +969,6 @@
 
     nextBtn.addEventListener('click', startAuto);
     liveNameInput?.addEventListener('input', syncProfileForm);
-    pronounInput?.addEventListener('input', syncProfileForm);
     genderInputs.forEach(input => input.addEventListener('change', syncProfileForm));
 
     prevBtn.addEventListener('click', () => {
