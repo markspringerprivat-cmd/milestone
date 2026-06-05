@@ -162,9 +162,13 @@
       <div class="encounter-text board-welcome-text">
         <span class="kicker">Willkommen</span>
         <h2 id="boardWelcomeTitle">Willkommen im Königreich der Sinne</h2>
-        <p id="boardWelcomeMessage">Deine Spielfigur begibt sich auf die Suche nach den Schlüsseln, um das Schloss des bösen Magiers zu öffnen. Dafür muss er Hinweise finden: Steckbriefe. Drücke unten links am Marktplatz auf die Tafel, scanne einen Steckbrief ein und beginne dein Abenteuer.</p>
+        <p id="boardWelcomeMessage">Tippe auf die Startinsel. Dort findest du das Marktbrett und kannst Steckbriefe per QR-Code scannen oder einen zufälligen Gegner wählen. Jede gescannte Karte erschafft eine neue Insel. Der Ritter läuft über die Pfade von Insel zu Insel. Tippe die schwebende Insel erneut an, um das dazugehörige Level zu starten.</p>
         <div class="button-line center">
-          <button id="boardWelcomeContinueBtn" class="game-btn primary" type="button">Fertig</button>
+          <button id="boardWelcomeContinueBtn" class="game-btn primary" type="button">Spiel starten</button>
+          <div id="boardWelcomeLoader" class="board-welcome-loader hidden" aria-live="polite">
+            <div class="intro-loading-track"><div id="boardWelcomeLoadBar" class="intro-loading-bar"></div></div>
+            <div id="boardWelcomeLoadPercent" class="intro-loading-percent">0%</div>
+          </div>
         </div>
       </div>
     </div>

@@ -1073,7 +1073,10 @@
     addSpeaker();
     resetBoardViewport();
     const state = getState();
-    const pendingBoardWelcome = qs('welcome') === '1' || (() => {
+    const firstBoardWelcome = (() => {
+      try { return localStorage.getItem(BOARD_ONBOARDING_STORE) !== '1'; } catch (_) { return true; }
+    })();
+    const pendingBoardWelcome = qs('welcome') === '1' || firstBoardWelcome || (() => {
       try { return sessionStorage.getItem(BOARD_WELCOME_STORE) === '1'; } catch (_) { return false; }
     })();
     const shouldForceBoardMusic = !pendingBoardWelcome && (qs('music') === '1');
@@ -1085,7 +1088,7 @@
     }
     hide($('outroScreen'));
     if (state.started) { showBoard(false, { playMusic: !pendingBoardWelcome }); } else { show($('introScreen')); hide($('boardScreen')); hide($('openBoardMenuBtn')); hide($('belowBoard')); }
-    if (pendingBoardWelcome) {
+    if (pendingBoardWelcome && state.started) {
       window.setTimeout(showBoardWelcomeModal, 220);
     }
     if (shouldForceBoardMusic) {
@@ -1120,7 +1123,7 @@
       }, 160);
     };
     $('startGameBtn')?.addEventListener('click', startGame);
-    $('boardWelcomeContinueBtn')?.addEventListener('click', () => closeBoardWelcomeModal(true));
+    $('boardWelcomeContinueBtn')?.addEventListener('click', startBoardAfterWelcome);
     $('boardWelcomeModal')?.addEventListener('click', ev => { if (ev.target === $('boardWelcomeModal')) closeBoardWelcomeModal(true); });
     $('introScreen')?.addEventListener('click', (ev) => { if (ev.target.closest('#startGameBtn')) return; startGame(); });
     $('outroContinueBtn')?.addEventListener('click', () => { hide($('outroScreen')); showBoard(false); });
@@ -1190,6 +1193,71 @@
     };
     magicCastleBoardFloatRaf = requestAnimationFrame(tick);
   }
+
+
+  function boardPreloadAssetList() {
+    const list = [
+      JOURNEY_BOARD_BG,
+      ...Object.values(JOURNEY_ISLAND_IMAGES || {}),
+      ASSETS.hero,
+      ASSETS.winHero,
+      ASSETS.triumphHero,
+      ASSETS.versus,
+      ASSETS.text?.kampf,
+      ASSETS.text?.richtig,
+      ASSETS.text?.falsch,
+      ASSETS.text?.gewonnen,
+      ASSETS.text?.verloren,
+      assetUrl('assets/images/ui/market_board.png'),
+      assetUrl('assets/images/magiccastle/magieschloss_background.png'),
+      assetUrl('assets/images/magiccastle/eisschloss.png'),
+      assetUrl('assets/images/magiccastle/grasschloss.png'),
+      assetUrl('assets/images/magiccastle/lavaschloss.png'),
+      assetUrl('assets/images/magiccastle/wolkenschloss.png'),
+      assetUrl('assets/images/magiccastle/wuestenschloss.png')
+    ];
+    Object.values(BIOME_BY_SENSE || {}).forEach(entry => {
+      list.push(entry.enemy, entry.defeated, entry.key, entry.bg, entry.popupBg);
+    });
+    Object.values(SENSES || {}).forEach(entry => {
+      list.push(entry.enemy, entry.defeated);
+    });
+    return [...new Set(list.filter(Boolean))];
+  }
+
+  function setBoardWelcomeLoadProgress(value) {
+    const percent = Math.round(clamp(value, 0, 1) * 100);
+    const bar = $('boardWelcomeLoadBar');
+    const label = $('boardWelcomeLoadPercent');
+    if (bar) bar.style.width = `${percent}%`;
+    if (label) label.textContent = `${percent}%`;
+  }
+
+  let boardWelcomeLoading = false;
+  async function startBoardAfterWelcome() {
+    if (boardWelcomeLoading) return;
+    boardWelcomeLoading = true;
+    const btn = $('boardWelcomeContinueBtn');
+    const loader = $('boardWelcomeLoader');
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Lädt ...';
+    }
+    loader?.classList.remove('hidden');
+    setBoardWelcomeLoadProgress(0);
+    if (!muted) playSound('background', { loop:true, restart:true });
+    try {
+      await Promise.all([
+        preloadImagesWithProgress(boardPreloadAssetList(), setBoardWelcomeLoadProgress),
+        sleep(520)
+      ]);
+    } catch (_) {}
+    setBoardWelcomeLoadProgress(1);
+    try { localStorage.setItem(BOARD_ONBOARDING_STORE, '1'); } catch (_) {}
+    boardWelcomeLoading = false;
+    closeBoardWelcomeModal(false);
+  }
+
 
   function closeBoardWelcomeModal(startMusic=false) {
     const modal = $('boardWelcomeModal');
@@ -1415,12 +1483,12 @@
 
   /* === 2026-06-05 journey-board overrides === */
   const JOURNEY_NODE_POINTS = {
-    start: { x: 18.0, y: 90.5 },
-    1: { x: 60.0, y: 87.5 },
-    2: { x: 82.0, y: 69.0 },
-    3: { x: 28.0, y: 69.0 },
-    4: { x: 18.0, y: 47.0 },
-    5: { x: 73.0, y: 45.5 },
+    start: { x: 24.0, y: 89.0 },
+    1: { x: 66.5, y: 88.0 },
+    2: { x: 84.0, y: 68.0 },
+    3: { x: 27.0, y: 67.0 },
+    4: { x: 18.0, y: 45.0 },
+    5: { x: 74.0, y: 43.0 },
     6: { x: 50.0, y: 18.5 }
   };
   const JOURNEY_BOARD_BG = assetUrl('assets/images/board/universe_bg.png');
@@ -1665,7 +1733,7 @@
     btn.dataset.node = String(node);
     btn.style.left = `${pos.x}%`;
     btn.style.top = `${pos.y}%`;
-    const floating = !boardTravel && String(currentBoardNode(state)) === String(node);
+    const floating = !boardTravel && !(pendingJourneyReveal?.phase === 'move') && String(currentBoardNode(state)) === String(node);
     if (floating) btn.classList.add('is-current');
     if (pendingJourneyReveal && String(pendingJourneyReveal.to) === String(node) && pendingJourneyReveal.phase === 'reveal') btn.classList.add('is-newly-revealed');
     const shouldShowRider = !boardTravel && floating && !(pendingJourneyReveal && pendingJourneyReveal.phase === 'move');
@@ -1686,6 +1754,10 @@
           travelHeroToBoardNode('start');
           return;
         }
+        if (String(currentBoardNode(live)) !== 'start') {
+          travelHeroToBoardNode('start');
+          return;
+        }
         if (allLevelsDone(live)) { showOutro(); return; }
         if (live.activeBiome && Number.isInteger(activeBoardSlot(live))) return;
         openScan();
@@ -1696,7 +1768,6 @@
       const ready = finalBridgeUnlocked(state) || state.activeBiome === 'boss' || state.bossCompleted;
       if (ready && String(currentBoardNode(state)) === '6') btn.classList.add('is-quest-target');
       btn.setAttribute('aria-label', 'Magieschloss');
-      btn.classList.add('is-always-floating');
       btn.innerHTML = `
         <img src="${JOURNEY_ISLAND_IMAGES.boss}" alt="Magieschloss">
         ${riderMarkup}`;

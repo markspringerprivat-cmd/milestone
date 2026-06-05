@@ -7576,3 +7576,50 @@ body[data-page="board"] .board-island-rider .hero-token{
     height:clamp(44px,10vw,72px) !important;
   }
 }
+
+
+/* === 2026-06-05 clickable onboarding + final board tuning === */
+body[data-page="board"] .map-inner{
+  pointer-events:none !important;
+}
+body[data-page="board"] .board-island{
+  pointer-events:auto !important;
+  z-index:20 !important;
+  touch-action:manipulation;
+}
+body[data-page="board"] .board-island *{
+  pointer-events:none !important;
+}
+body[data-page="board"] .board-island--start,
+body[data-page="board"] .board-island--sense,
+body[data-page="board"] .board-island--castle{
+  width:clamp(265px, 46vw, 455px) !important;
+}
+body[data-page="board"] .board-island--castle:not(.is-current){
+  animation:none !important;
+}
+body[data-page="board"] .board-island--castle.is-current{
+  animation:journeyIslandFloat 3.9s ease-in-out infinite !important;
+}
+body[data-page="board"] .board-island-rider{
+  left:50% !important;
+  top:50% !important;
+}
+body[data-page="board"] .board-welcome-loader{
+  width:min(100%,360px);
+  margin:12px auto 0;
+}
+@media (max-width:900px){
+  body[data-page="board"] .board-island--start,
+  body[data-page="board"] .board-island--sense,
+  body[data-page="board"] .board-island--castle{
+    width:clamp(225px, 49vw, 360px) !important;
+  }
+}
+@media (max-width:640px){
+  body[data-page="board"] .board-island--start,
+  body[data-page="board"] .board-island--sense,
+  body[data-page="board"] .board-island--castle{
+    width:clamp(190px, 50vw, 286px) !important;
+  }
+}
