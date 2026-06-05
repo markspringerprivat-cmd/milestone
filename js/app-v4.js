@@ -5087,6 +5087,30 @@
     }, 650);
   }
 
+  function jumpCarouselToLatest() {
+    if (boardSlideTransition) return;
+    const state = getState();
+    const nodes = getCarouselNodes(state);
+    if (nodes.length <= 2) return;
+    const current = currentBoardNode(state);
+    const fromIndex = Math.max(0, nodes.indexOf(current));
+    const toIndex = nodes.length - 1;
+    if (fromIndex === toIndex) return;
+    const fromNode = nodes[fromIndex];
+    const toNode = nodes[toIndex];
+    boardSlideTransition = { from:fromNode, to:toNode, direction:1 };
+    renderBoard();
+    clearBoardSlideTimer();
+    boardSlideTimer = window.setTimeout(() => {
+      const live = getState();
+      live.boardCurrentNode = toNode;
+      setState(live);
+      boardSlideTransition = null;
+      clearBoardSlideTimer();
+      renderBoard();
+    }, 650);
+  }
+
   function renderBoard() {
     const inner = $('mapInner');
     if (!inner) return;
@@ -5100,6 +5124,11 @@
     const nodes = getCarouselNodes(state);
     const current = currentBoardNode(state);
     const currentIndex = Math.max(0, nodes.indexOf(current));
+
+    const worldBar = document.createElement('div');
+    worldBar.className = 'board-world-topbar';
+    worldBar.textContent = 'Königreich der Sinne';
+    inner.appendChild(worldBar);
 
     const status = document.createElement('div');
     status.className = 'board-journey-status board-carousel-status';
@@ -5136,7 +5165,26 @@
       right.textContent = '›';
       right.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); moveCarousel(1); });
       inner.appendChild(right);
+      if (nodes.length > 2 && currentIndex < nodes.length - 1) {
+        const latest = document.createElement('button');
+        latest.type = 'button';
+        latest.className = 'board-carousel-arrow board-carousel-arrow-latest';
+        latest.setAttribute('aria-label', 'Zur neuesten Insel springen');
+        latest.textContent = '»';
+        latest.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); jumpCarouselToLatest(); });
+        inner.appendChild(latest);
+      }
     }
+
+    const marketBar = document.createElement('div');
+    marketBar.className = 'board-market-bottombar';
+    const marketBtn = document.createElement('button');
+    marketBtn.type = 'button';
+    marketBtn.className = 'game-btn primary board-market-open-btn';
+    marketBtn.textContent = 'Marktbrett öffnen';
+    marketBtn.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); openScan(); });
+    marketBar.appendChild(marketBtn);
+    inner.appendChild(marketBar);
 
     renderGuide(state);
   }

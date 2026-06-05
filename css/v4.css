@@ -7894,3 +7894,95 @@ body[data-page="board"] .board-carousel-arrow:hover{
     padding:9px 12px;
   }
 }
+
+
+/* === 2026-06-05 v10 larger carousel + world/market bars === */
+body[data-page="board"] .board-world-topbar{
+  position:absolute;
+  left:0;
+  right:0;
+  top:0;
+  height:clamp(42px,7vh,64px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:80;
+  pointer-events:none;
+  color:#eef8ff;
+  font-weight:900;
+  letter-spacing:.05em;
+  font-size:clamp(1rem,3vw,1.55rem);
+  text-shadow:0 2px 8px rgba(0,0,0,.42);
+  background:linear-gradient(180deg, rgba(83,105,126,.92), rgba(56,76,101,.78));
+  border-bottom:1px solid rgba(224,242,255,.24);
+  box-shadow:0 8px 20px rgba(0,0,0,.24);
+  backdrop-filter:blur(7px);
+}
+body[data-page="board"] .board-market-bottombar{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  min-height:clamp(64px,10vh,92px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:10px max(14px, env(safe-area-inset-left)) calc(10px + env(safe-area-inset-bottom, 0px));
+  box-sizing:border-box;
+  z-index:82;
+  background:linear-gradient(0deg, rgba(30,45,65,.92), rgba(48,66,88,.74));
+  border-top:1px solid rgba(224,242,255,.22);
+  box-shadow:0 -8px 24px rgba(0,0,0,.26);
+  backdrop-filter:blur(7px);
+}
+body[data-page="board"] .board-market-open-btn{
+  min-width:min(84vw,310px);
+  font-size:clamp(.92rem,2.6vw,1.08rem);
+}
+body[data-page="board"] .board-carousel-status{
+  top:calc(clamp(42px,7vh,64px) + 10px)!important;
+  z-index:78!important;
+}
+body[data-page="board"] .board-carousel-island{
+  top:56%!important;
+  width:clamp(495px,93vw,900px)!important;
+}
+body[data-page="board"] .board-island-rider .hero-token{
+  width:clamp(86px,14vw,150px)!important;
+  height:clamp(86px,14vw,150px)!important;
+}
+body[data-page="board"] .board-island-key-floating{
+  width:clamp(62px,11vw,104px)!important;
+  height:clamp(62px,11vw,104px)!important;
+}
+body[data-page="board"] .board-carousel-arrow{
+  z-index:85!important;
+}
+body[data-page="board"] .board-carousel-arrow-latest{
+  right:2.2%;
+  top:70%;
+  font-size:clamp(2rem,6vw,3.4rem);
+  width:clamp(52px,11vw,84px);
+  height:clamp(56px,13vw,94px);
+}
+@media(max-width:640px){
+  body[data-page="board"] .board-carousel-island{
+    top:56%!important;
+    width:clamp(405px,118vw,560px)!important;
+  }
+  body[data-page="board"] .board-carousel-arrow-latest{
+    right:1%;
+    top:70%;
+    width:50px;
+    height:66px;
+    font-size:2.45rem;
+  }
+  body[data-page="board"] .board-island-rider .hero-token{
+    width:clamp(70px,18vw,104px)!important;
+    height:clamp(70px,18vw,104px)!important;
+  }
+  body[data-page="board"] .board-island-key-floating{
+    width:clamp(52px,13vw,82px)!important;
+    height:clamp(52px,13vw,82px)!important;
+  }
+}
