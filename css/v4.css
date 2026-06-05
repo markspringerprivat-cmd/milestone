@@ -7698,3 +7698,199 @@ body[data-page="biome"]{
   .biome-level-field{width:112px;min-height:76px;border-radius:19px;}
   .biome-page-panel{padding:14px 14px;}
 }
+
+
+/* === 2026-06-05 single-island carousel board === */
+body[data-page="board"] .magic-castle-board-btn,
+body[data-page="board"] #boardGuide{
+  display:none !important;
+}
+body[data-page="board"] .board-screen{
+  background:#050713 !important;
+}
+body[data-page="board"] .board-image{
+  object-fit:cover !important;
+  object-position:center center !important;
+}
+body[data-page="board"] .map-inner{
+  z-index:3 !important;
+  pointer-events:auto !important;
+  overflow:hidden !important;
+}
+body[data-page="board"] .board-carousel-status{
+  position:absolute;
+  left:50%;
+  top:4%;
+  transform:translateX(-50%);
+  min-width:min(86vw,420px);
+  max-width:min(90vw,560px);
+  padding:10px 16px;
+  border-radius:18px;
+  background:rgba(8,17,54,.62);
+  border:1px solid rgba(201,230,255,.22);
+  box-shadow:0 10px 26px rgba(0,0,0,.28);
+  color:#f5fbff;
+  font-size:clamp(.72rem,1.8vw,.95rem);
+  text-align:center;
+  backdrop-filter:blur(6px);
+  pointer-events:none;
+  z-index:40;
+}
+body[data-page="board"] .board-carousel-stage{
+  position:absolute;
+  inset:0;
+  z-index:20;
+  pointer-events:none;
+}
+body[data-page="board"] .board-carousel-island{
+  position:absolute;
+  left:50%;
+  top:56%;
+  width:clamp(330px,62vw,600px);
+  transform:translate(-50%,-50%);
+  border:0;
+  background:transparent;
+  padding:0;
+  margin:0;
+  cursor:pointer;
+  pointer-events:auto !important;
+  z-index:25;
+  touch-action:manipulation;
+  overflow:visible;
+  animation:singleIslandFloat 4.1s ease-in-out infinite;
+}
+body[data-page="board"] .board-carousel-island *{
+  pointer-events:none !important;
+}
+body[data-page="board"] .board-carousel-island img{
+  display:block;
+  width:100%;
+  height:auto;
+  background:transparent !important;
+  filter:drop-shadow(0 20px 30px rgba(0,0,0,.38));
+}
+body[data-page="board"] .board-carousel-island:hover img{
+  filter:drop-shadow(0 0 22px rgba(255,245,169,.62)) drop-shadow(0 20px 30px rgba(0,0,0,.38));
+}
+body[data-page="board"] .board-carousel-island.is-exiting-left{
+  animation:slideIslandOutLeft .65s cubic-bezier(.22,1,.36,1) forwards !important;
+}
+body[data-page="board"] .board-carousel-island.is-exiting-right{
+  animation:slideIslandOutRight .65s cubic-bezier(.22,1,.36,1) forwards !important;
+}
+body[data-page="board"] .board-carousel-island.is-entering-right{
+  animation:slideIslandInRight .65s cubic-bezier(.22,1,.36,1) forwards !important;
+}
+body[data-page="board"] .board-carousel-island.is-entering-left{
+  animation:slideIslandInLeft .65s cubic-bezier(.22,1,.36,1) forwards !important;
+}
+body[data-page="board"] .board-island-rider{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  z-index:8;
+  pointer-events:none;
+}
+body[data-page="board"] .board-island-rider .hero-token{
+  width:clamp(62px,10vw,108px) !important;
+  height:clamp(62px,10vw,108px) !important;
+  object-fit:contain !important;
+  animation:none !important;
+  filter:drop-shadow(0 10px 14px rgba(0,0,0,.4)) !important;
+}
+body[data-page="board"] .board-island-key-floating{
+  position:absolute;
+  left:62%;
+  bottom:42%;
+  transform:translateX(-50%);
+  width:clamp(44px,8vw,72px);
+  height:clamp(44px,8vw,72px);
+  z-index:7;
+  animation:journeyKeyFloat 2.8s ease-in-out infinite;
+  filter:drop-shadow(0 8px 12px rgba(0,0,0,.3));
+}
+body[data-page="board"] .board-island-key-floating img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  filter:none !important;
+}
+body[data-page="board"] .board-carousel-arrow{
+  position:absolute;
+  top:55%;
+  transform:translateY(-50%);
+  z-index:45;
+  width:clamp(54px,12vw,88px);
+  height:clamp(76px,18vw,126px);
+  border:2px solid rgba(255,255,255,.25);
+  border-radius:999px;
+  background:rgba(8,17,54,.66);
+  color:#fff7c7;
+  font-size:clamp(3rem,12vw,5rem);
+  line-height:1;
+  cursor:pointer;
+  box-shadow:0 14px 28px rgba(0,0,0,.3);
+  backdrop-filter:blur(6px);
+}
+body[data-page="board"] .board-carousel-arrow-left{left:2.2%;}
+body[data-page="board"] .board-carousel-arrow-right{right:2.2%;}
+body[data-page="board"] .board-carousel-arrow:hover{
+  background:rgba(30,50,110,.82);
+}
+.island-unlocked-card{
+  max-width:min(92vw,440px) !important;
+  text-align:center !important;
+}
+.island-unlocked-card img{
+  width:min(72vw,260px);
+  max-height:260px;
+  object-fit:contain;
+  display:block;
+  margin:4px auto 14px;
+  filter:drop-shadow(0 15px 22px rgba(0,0,0,.28));
+}
+@keyframes singleIslandFloat{
+  0%{transform:translate(-50%,-50%) translateY(0);}
+  50%{transform:translate(-50%,-50%) translateY(-12px);}
+  100%{transform:translate(-50%,-50%) translateY(0);}
+}
+@keyframes slideIslandOutLeft{
+  0%{transform:translate(-50%,-50%) translateX(0);opacity:1;}
+  100%{transform:translate(-50%,-50%) translateX(-118vw);opacity:.15;}
+}
+@keyframes slideIslandOutRight{
+  0%{transform:translate(-50%,-50%) translateX(0);opacity:1;}
+  100%{transform:translate(-50%,-50%) translateX(118vw);opacity:.15;}
+}
+@keyframes slideIslandInRight{
+  0%{transform:translate(-50%,-50%) translateX(118vw);opacity:.25;}
+  100%{transform:translate(-50%,-50%) translateX(0);opacity:1;}
+}
+@keyframes slideIslandInLeft{
+  0%{transform:translate(-50%,-50%) translateX(-118vw);opacity:.25;}
+  100%{transform:translate(-50%,-50%) translateX(0);opacity:1;}
+}
+@keyframes journeyKeyFloat{
+  0%{transform:translateX(-50%) translateY(0px);}
+  50%{transform:translateX(-50%) translateY(-8px);}
+  100%{transform:translateX(-50%) translateY(0px);}
+}
+@media(max-width:640px){
+  body[data-page="board"] .board-carousel-island{
+    top:57%;
+    width:clamp(285px,84vw,360px);
+  }
+  body[data-page="board"] .board-carousel-arrow{
+    width:50px;
+    height:82px;
+    font-size:3.1rem;
+  }
+  body[data-page="board"] .board-carousel-arrow-left{left:1%;}
+  body[data-page="board"] .board-carousel-arrow-right{right:1%;}
+  body[data-page="board"] .board-carousel-status{
+    top:3%;
+    font-size:.68rem;
+    padding:9px 12px;
+  }
+}
