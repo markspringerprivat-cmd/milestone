@@ -8147,3 +8147,96 @@ body[data-page="board"] .board-carousel-island img{
     }
   }
 }
+
+
+/* === 2026-06-06 v14 seamless island switching + centered hero === */
+body[data-page="board"]{
+  --journey-island-center-y: calc(50% + clamp(18px, 3vh, 30px));
+}
+body[data-page="board"] .board-carousel-stage{
+  overflow:hidden !important;
+}
+body[data-page="board"] .board-carousel-island{
+  top:var(--journey-island-center-y) !important;
+  width:100vw !important;
+  max-width:none !important;
+  left:50% !important;
+  margin:0 !important;
+  transform:translate(-50%, -50%) !important;
+  will-change:transform !important;
+}
+body[data-page="board"] .board-carousel-island img{
+  width:100% !important;
+  max-width:none !important;
+  height:auto !important;
+  object-fit:contain !important;
+  background:transparent !important;
+}
+body[data-page="board"] .board-carousel-island.is-active{
+  animation:singleIslandFloat 4.1s ease-in-out infinite !important;
+}
+body[data-page="board"] .board-carousel-island.is-exiting-left{
+  animation:slideIslandOutLeft .56s cubic-bezier(.22,1,.36,1) forwards !important;
+}
+body[data-page="board"] .board-carousel-island.is-exiting-right{
+  animation:slideIslandOutRight .56s cubic-bezier(.22,1,.36,1) forwards !important;
+}
+body[data-page="board"] .board-carousel-island.is-entering-right{
+  animation:slideIslandInRight .56s cubic-bezier(.22,1,.36,1) forwards !important;
+}
+body[data-page="board"] .board-carousel-island.is-entering-left{
+  animation:slideIslandInLeft .56s cubic-bezier(.22,1,.36,1) forwards !important;
+}
+body[data-page="board"] .board-stage-hero{
+  position:absolute !important;
+  left:50% !important;
+  top:var(--journey-island-center-y) !important;
+  transform:translate(-50%, -50%) !important;
+  z-index:72 !important;
+  pointer-events:none !important;
+}
+body[data-page="board"] .board-stage-hero .hero-token{
+  display:block !important;
+  width:clamp(78px, 13vw, 138px) !important;
+  height:clamp(78px, 13vw, 138px) !important;
+  object-fit:contain !important;
+  filter:drop-shadow(0 10px 14px rgba(0,0,0,.42)) !important;
+}
+body[data-page="board"] .board-island-key-floating{
+  z-index:68 !important;
+}
+@supports (width: 100dvw) {
+  body[data-page="board"] .board-carousel-island{
+    width:100dvw !important;
+  }
+}
+@keyframes singleIslandFloat{
+  0%{transform:translate(-50%,-50%) translateY(0);}
+  50%{transform:translate(-50%,-50%) translateY(-10px);}
+  100%{transform:translate(-50%,-50%) translateY(0);}
+}
+@keyframes slideIslandOutLeft{
+  0%{transform:translate(-50%,-50%) translateX(0);}
+  100%{transform:translate(-50%,-50%) translateX(-100%);}
+}
+@keyframes slideIslandOutRight{
+  0%{transform:translate(-50%,-50%) translateX(0);}
+  100%{transform:translate(-50%,-50%) translateX(100%);}
+}
+@keyframes slideIslandInRight{
+  0%{transform:translate(-50%,-50%) translateX(100%);}
+  100%{transform:translate(-50%,-50%) translateX(0);}
+}
+@keyframes slideIslandInLeft{
+  0%{transform:translate(-50%,-50%) translateX(-100%);}
+  100%{transform:translate(-50%,-50%) translateX(0);}
+}
+@media (max-width: 640px){
+  body[data-page="board"]{
+    --journey-island-center-y: calc(50% + clamp(16px, 2.6vh, 24px));
+  }
+  body[data-page="board"] .board-stage-hero .hero-token{
+    width:clamp(68px, 18vw, 102px) !important;
+    height:clamp(68px, 18vw, 102px) !important;
+  }
+}

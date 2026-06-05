@@ -5039,9 +5039,8 @@
     btn.className = `board-carousel-island board-island--${entry.type === 'start' ? 'start' : (entry.type === 'boss' ? 'castle' : 'sense')} ${carouselSlideClass(entry.node, role)}`;
     btn.dataset.node = String(entry.node);
     btn.dataset.type = String(entry.type);
-    const riderMarkup = `<span class="board-island-rider"><img class="hero-token" src="${ASSETS.hero}" alt="${esc(getHeroName())}"></span>`;
     const keyMarkup = state.keysFound?.[entry.type] ? islandKeyBadge(entry.type) : '';
-    btn.innerHTML = `<img src="${entry.image}" alt="${esc(entry.title)}">${keyMarkup}${riderMarkup}`;
+    btn.innerHTML = `<img src="${entry.image}" alt="${esc(entry.title)}">${keyMarkup}`;
     btn.addEventListener('click', ev => {
       ev.preventDefault();
       ev.stopPropagation();
@@ -5049,6 +5048,14 @@
       handleCarouselIslandClick(entry);
     });
     return btn;
+  }
+
+  function createBoardStageHero() {
+    const hero = document.createElement('div');
+    hero.className = 'board-stage-hero';
+    hero.setAttribute('aria-hidden', 'true');
+    hero.innerHTML = `<img class="hero-token" src="${ASSETS.hero}" alt="">`;
+    return hero;
   }
 
   function handleCarouselIslandClick(entry) {
@@ -5087,7 +5094,7 @@
       boardSlideTransition = null;
       clearBoardSlideTimer();
       renderBoard();
-    }, 650);
+    }, 560);
   }
 
   function jumpCarouselToLatest() {
@@ -5111,7 +5118,7 @@
       boardSlideTransition = null;
       clearBoardSlideTimer();
       renderBoard();
-    }, 650);
+    }, 560);
   }
 
   function removeBoardViewportBars() {
@@ -5146,6 +5153,7 @@
 
     const stage = document.createElement('div');
     stage.className = 'board-carousel-stage';
+    if (boardSlideTransition) stage.classList.add('is-sliding');
     if (boardSlideTransition) {
       const fromEntry = getCarouselEntry(boardSlideTransition.from, state);
       const toEntry = getCarouselEntry(boardSlideTransition.to, state);
@@ -5154,6 +5162,7 @@
     } else {
       if (currentEntry) stage.appendChild(createCarouselIsland(currentEntry, state, 'current'));
     }
+    stage.appendChild(createBoardStageHero());
     inner.appendChild(stage);
 
     if (currentIndex > 0) {
