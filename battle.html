@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Kampf · Königreich der Sinne</title>
+  <link rel="stylesheet" href="./css/style.css?v=v4_120_true_viewport_bars_20260605">
+  <link rel="stylesheet" href="./css/v4.css?v=v4_120_true_viewport_bars_20260605">
+  <script src="./js/app-v4.js?v=v4_120_true_viewport_bars_20260605" defer></script>
+</head>
+<body data-page="battle" data-battle-mode="intro">
+  <main class="battle-v84-page" aria-label="Kampfseite">
+    <section class="battle-v84-shell">
+      <section id="battleIntroScene" class="battle-v84-scene battle-v84-intro">
+        <img id="battleKampfText" class="battle-v84-kampf-title" src="./assets/images/battle/kampf_text.webp" alt="Kampf">
+        <div class="battle-v84-intro-actors" aria-hidden="true">
+          <div class="battle-v84-intro-side">
+            <img id="battleHero" class="battle-v84-intro-actor" src="./assets/images/characters/held.webp" alt="Ritter">
+            <div class="battle-v84-name">Ritter</div>
+          </div>
+          <div class="battle-v84-intro-side">
+            <img id="battleEnemy" class="battle-v84-intro-actor" alt="Gegner">
+            <div id="battleEnemyName" class="battle-v84-name">Gegner</div>
+          </div>
+        </div>
+        <div class="battle-v84-actions">
+          <button id="battleStartBtn" class="game-btn primary" type="button">Kampf starten</button>
+          <button id="battleBackBtn" class="game-btn secondary" type="button">Zurück</button>
+        </div>
+        <p id="battlePreloadStatus" class="battle-v84-preload">Kampf wird vorbereitet ...</p>
+      </section>
+
+      <section id="battleLoadingScene" class="battle-v84-scene battle-v84-loading hidden" aria-live="polite">
+        <img class="battle-v84-loading-title" src="./assets/images/battle/kampf_text.webp" alt="Kampf">
+        <div class="battle-v84-loader" aria-hidden="true"></div>
+        <p>Kampf wird vorbereitet ...</p>
+      </section>
+
+      <section id="battleSequenceScene" class="battle-v84-scene battle-v84-sequence hidden">
+        <div id="sequenceDots" class="battle-v84-dots" aria-hidden="true"></div>
+        <div id="sequenceLabel" class="sr-only">Frage 1</div>
+        <div id="sequenceStatus" class="sr-only"></div>
+
+        <div class="battle-v84-round-stage" aria-live="polite">
+          <img id="sequenceTextImage" class="battle-v84-hit-text hidden" alt="">
+          <img id="sequenceImage" class="battle-v84-answer-actor hidden" alt="">
+        </div>
+
+        <button id="finalHint" class="battle-v84-final-hint hidden" type="button">Tippe auf die Wolke</button>
+        <img id="finalCloudImage" class="battle-v84-final-cloud hidden" alt="Finale Wolke">
+
+        <div id="finalResultStage" class="battle-v84-result-stage hidden">
+          <img id="resultTextImage" class="battle-v84-result-title" alt="">
+          <div id="outcomeGroup" class="battle-v84-outcome-group">
+            <img id="victoryHeroImage" class="battle-v84-victory-hero hidden" alt="Ritter triumphiert">
+            <img id="outcomeImage" class="battle-v84-outcome" alt="Ergebnis">
+          </div>
+        </div>
+
+        <div id="battleAction" class="battle-v84-bottom-actions hidden"></div>
+      </section>
+    </section>
+  </main>
+</body>
+</html>
