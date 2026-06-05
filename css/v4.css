@@ -7523,3 +7523,56 @@ body[data-page="board"] .moving-hero-token.hidden{
   body[data-page="board"] .board-island-rider .hero-token,
   body[data-page="board"] .moving-hero-token .hero-token{width:clamp(42px,9vw,66px) !important;height:clamp(42px,9vw,66px) !important;}
 }
+
+
+/* === 2026-06-05 board scale + travel refinement === */
+body[data-page="board"] .board-island--start,
+body[data-page="board"] .board-island--sense,
+body[data-page="board"] .board-island--castle{
+  width:clamp(248px, 43vw, 430px) !important;
+}
+body[data-page="board"] .board-island.is-current{
+  animation:journeyIslandFloat 3.9s ease-in-out infinite !important;
+}
+body[data-page="board"] .board-island--castle.is-always-floating{
+  animation:journeyIslandFloat 3.9s ease-in-out infinite !important;
+}
+body[data-page="board"] .board-island.is-newly-revealed{
+  opacity:0;
+  animation:journeyIslandFadeIn .76s ease-out forwards !important;
+}
+body[data-page="board"] .board-island-key-floating{
+  left:62%;
+  bottom:42%;
+  width:clamp(38px,7vw,62px);
+  height:clamp(38px,7vw,62px);
+}
+body[data-page="board"] .board-island-rider{
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+}
+body[data-page="board"] .moving-hero-token .hero-token,
+body[data-page="board"] .board-island-rider .hero-token{
+  width:clamp(50px,8vw,86px) !important;
+  height:clamp(50px,8vw,86px) !important;
+}
+@media (max-width:900px){
+  body[data-page="board"] .board-island--start,
+  body[data-page="board"] .board-island--sense,
+  body[data-page="board"] .board-island--castle{
+    width:clamp(210px, 46vw, 340px) !important;
+  }
+}
+@media (max-width:640px){
+  body[data-page="board"] .board-island--start,
+  body[data-page="board"] .board-island--sense,
+  body[data-page="board"] .board-island--castle{
+    width:clamp(180px, 47vw, 260px) !important;
+  }
+  body[data-page="board"] .moving-hero-token .hero-token,
+  body[data-page="board"] .board-island-rider .hero-token{
+    width:clamp(44px,10vw,72px) !important;
+    height:clamp(44px,10vw,72px) !important;
+  }
+}
