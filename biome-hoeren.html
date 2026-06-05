@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Wüsteninsel · Königreich der Sinne</title>
+  <link rel="stylesheet" href="./css/style.css?v=v4_119_biome_pages_board_refine_20260605">
+  <link rel="stylesheet" href="./css/v4.css?v=v4_119_biome_pages_board_refine_20260605">
+  <script src="./js/app-v4.js?v=v4_119_biome_pages_board_refine_20260605" defer></script>
+</head>
+<body data-page="biome" data-biome="hoeren">
+  <main class="biome-page-shell">
+    <section class="biome-hero-area" aria-label="Wüsteninsel">
+      <div class="biome-island-visual" aria-hidden="true"></div>
+      <img id="biomeHero" class="biome-page-hero" src="./assets/images/characters/held.webp" alt="Ritter">
+      <section id="biomeStage" class="biome-level-stage hidden" aria-label="Levelfelder">
+        <button id="biomeMiniBtn" class="biome-level-field biome-level-mini" type="button"><span class="biome-level-title">Minispiel</span><span class="biome-level-state">bereit</span></button>
+        <button id="biomeQuizBtn" class="biome-level-field biome-level-quiz" type="button"><span class="biome-level-title">Quiz</span><span class="biome-level-state">erst Minispiel</span></button>
+      </section>
+    </section>
+    <article class="biome-page-panel">
+      <h1 id="biomeTitle">Wüsteninsel</h1>
+      <p id="biomeText"></p>
+      <p id="biomeHint" class="biome-hint"></p>
+      <div class="button-line"><button id="biomeRunAwayBtn" class="game-btn muted" type="button">Wegrennen</button><button id="biomeBackBoardBtn" class="game-btn secondary" type="button">Zum Spielbrett</button></div>
+    </article>
+  </main>
+  <div id="biomeIntroModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="biomeIntroTitle"><div class="modal-card biome-modal-card"><h2 id="biomeIntroTitle">Wüsteninsel</h2><p id="biomeIntroText"></p><button id="biomeIntroCloseBtn" class="game-btn primary" type="button">Insel betreten</button></div></div>
+  <div id="biomeLockedModal" class="modal hidden" role="dialog" aria-modal="true"><div class="modal-card biome-modal-card"><h2>Das Quiz ist noch verschlossen</h2><p>Schließe zuerst das Minispiel auf dieser Insel ab. Danach kann der Ritter zum Quiz-Feld laufen.</p><button id="biomeLockedOkBtn" class="game-btn primary" type="button">Verstanden</button></div></div>
+  <div id="biomeRunawayModal" class="modal hidden" role="dialog" aria-modal="true"><div class="modal-card biome-modal-card"><h2>Zurück zum Spielbrett?</h2><p>Der Ritter läuft vom Abenteuer zurück. Auf dem Spielbrett kannst du die Startinsel antippen und im Dorf einen neuen Steckbrief scannen.</p><div class="button-line"><button id="biomeRunawayCancelBtn" class="game-btn secondary" type="button">Bleiben</button><button id="biomeRunawayConfirmBtn" class="game-btn muted" type="button">Wegrennen</button></div></div></div>
+</body>
+</html>

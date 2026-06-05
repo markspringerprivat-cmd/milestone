@@ -1966,11 +1966,10 @@
   async function handleLevelUnlockedContinue() {
     hide($('levelUnlockedModal'));
     playSound('background', { loop:true, restart:true });
-    const fromSlot = pendingHomeFromSlot;
-    const viaSlot = pendingHomeViaSlot;
+    pendingUnlockedFromSlot = null;
     pendingHomeFromSlot = null;
     pendingHomeViaSlot = null;
-    if (Number.isInteger(fromSlot)) await animateHeroHome(fromSlot, viaSlot);
+    renderBoard();
   }
 
   function applyReturnModal() {
@@ -1981,16 +1980,16 @@
     const img = modal.querySelector('img'); const title=$('levelUnlockedTitle'); const kicker=$('levelUnlockedKicker'); const text=$('levelUnlockedText');
     stopSound('background');
     pendingUnlockedFromSlot = null;
-    pendingHomeFromSlot = data?.meta?.returnHome ? Number(data.meta.slot) : null;
-    pendingHomeViaSlot = Number.isInteger(data?.meta?.returnVia) ? Number(data.meta.returnVia) : null;
+    pendingHomeFromSlot = null;
+    pendingHomeViaSlot = null;
     if (data.type === 'escape') {
-      img.src=ASSETS.escapeHero; kicker.textContent=''; title.textContent='Du bist entkommen.'; text.textContent='Scanne am Marktbrett einen neuen QR-Code, um es erneut zu versuchen.';
+      img.src=ASSETS.escapeHero; kicker.textContent=''; title.textContent='Du bist entkommen.'; text.textContent='Du bist zurück auf dem Spielbrett. Tippe auf die Startinsel, um im Dorf einen neuen Steckbrief zu scannen.';
     }
     else if (data?.meta?.foundKey) {
       img.src = data.meta.foundKey.image;
       kicker.textContent = 'Belohnung';
       title.textContent = `${data.meta.foundKey.label}-Schlüssel gefunden`;
-      text.textContent = 'Der Schlüssel erscheint jetzt im Biom. Tippe danach oben auf das passende Schloss.';
+      text.textContent = 'Der Schlüssel schwebt nun vor der Insel. Scanne im Dorf auf der Startinsel den nächsten Steckbrief.';
       playSound('levelunlocked');
     }
     else {
@@ -2003,10 +2002,10 @@
         text.textContent = 'Der Weg zur Kronenplattform ist frei. Tippe auf die Krone, um den Roboter zu bekaempfen.';
       } else if (Number.isInteger(nextSlot)) {
         title.textContent = 'Fragen-Level sichtbar';
-        text.textContent = `${BIOME_BY_SENSE[senseId]?.label || 'Das Biom'} zeigt jetzt das Fragen-Level. Tippe auf das neue runde Feld im selben Biom.`;
+        text.textContent = 'Das Quiz ist nun auf der Insel freigeschaltet. Tippe die Insel erneut an, um die Biom-Seite mit Minispiel und Quiz zu öffnen.';
       } else {
         title.textContent = 'Zurück ins Dorf';
-        text.textContent = `${getHeroName()} läuft jetzt direkt ins Dorf zurück.`;
+        text.textContent = 'Scanne im Dorf auf der Startinsel einen neuen Steckbrief, um die nächste Insel freizuschalten. Tippe dazu auf die Startinsel.';
       }
       playSound('levelunlocked');
     }
@@ -4808,13 +4807,13 @@
 
   /* === 2026-06-04 Universe board rebuild with dynamic floating islands === */
   const JOURNEY_NODE_POINTS = {
-    start: { x: 26.0, y: 94.0 },
-    1: { x: 72.0, y: 90.5 },
-    2: { x: 80.0, y: 66.0 },
-    3: { x: 23.0, y: 66.0 },
-    4: { x: 18.0, y: 41.0 },
-    5: { x: 77.0, y: 39.0 },
-    6: { x: 50.0, y: 15.5 }
+    start: { x: 26.5, y: 91.5 },
+    1: { x: 71.0, y: 88.0 },
+    2: { x: 86.0, y: 65.5 },
+    3: { x: 22.0, y: 66.5 },
+    4: { x: 18.0, y: 42.0 },
+    5: { x: 75.0, y: 38.5 },
+    6: { x: 49.0, y: 15.0 }
   };
   const JOURNEY_BOARD_BG = assetUrl('assets/images/board/universe_bg.png');
   const JOURNEY_ISLAND_IMAGES = {
@@ -4835,6 +4834,21 @@
     schmecken: 'Vulkaninsel',
     boss: 'Magieschloss'
   };
+  const BIOME_PAGE_MAP = {
+    riechen: 'biome-riechen.html',
+    fuehlen: 'biome-fuehlen.html',
+    sehen: 'biome-sehen.html',
+    hoeren: 'biome-hoeren.html',
+    schmecken: 'biome-schmecken.html'
+  };
+  const BIOME_PAGE_STORIES = {
+    riechen: { title:'Die Grasinsel', text:'Auf der Grasinsel duftet alles nach Blumen, Moos und frischem Wind. Zwischen Bäumen und Wiesen wartet der erste Hinweis auf den Geruchssinn.' },
+    fuehlen: { title:'Die Eisinsel', text:'Die Eisinsel knistert vor Kälte. Glatte Kristalle, weicher Schnee und spitze Zapfen erzählen vom Tastsinn.' },
+    sehen: { title:'Die Wolkeninsel', text:'Die Wolkeninsel schwebt hell im Sternenlicht. Farben, Formen und Lichtspuren zeigen, wie wichtig gutes Sehen ist.' },
+    hoeren: { title:'Die Wüsteninsel', text:'Auf der Wüsteninsel trägt der Wind jedes Geräusch weit über den Sand. Wer genau hinhört, findet den nächsten Schlüssel.' },
+    schmecken: { title:'Die Vulkaninsel', text:'Die Vulkaninsel glüht warm zwischen Felsen und Lava. Dort warten feurige Aufgaben rund um den Geschmackssinn.' }
+  };
+  function biomePageUrl(id) { return pageUrl(BIOME_PAGE_MAP[id] || `biome-${id}.html`); }
   let pendingJourneyReveal = null;
   let journeyRevealTimer = null;
   let journeyPathTimer = null;
@@ -5118,7 +5132,10 @@
         travelHeroToBoardNode(node);
         return;
       }
-      if (Number.isInteger(slot)) onLevelNode(slot);
+      if (Number.isInteger(slot)) {
+        try { sessionStorage.setItem('koenigreich_sinne_biome_intro', type); } catch (_) {}
+        location.href = biomePageUrl(type);
+      }
     });
     return btn;
   }
@@ -5345,12 +5362,124 @@
     await sleep(Math.max(1, steps) * 1650 + 100);
   }
 
+
+  function minigameUrlForSlot(slot) {
+    if (slot === 1) return pageUrl(`minigame.html?slot=${slot}`);
+    if (slot === 3) return pageUrl(`minigame2.html?slot=${slot}`);
+    if (slot === 5) return pageUrl(`minigame3.html?slot=${slot}`);
+    if (slot === 7) return pageUrl(`minigame4.html?slot=${slot}`);
+    return null;
+  }
+
+  function initBiomePage() {
+    addSpeaker();
+    const senseId = document.body.dataset.biome || qs('sense') || 'riechen';
+    const story = BIOME_PAGE_STORIES[senseId] || BIOME_PAGE_STORIES.riechen;
+    const state = getState();
+    const plan = biomeLevelPlan(senseId);
+    const minigameSlot = plan.find(slot => isPlaceholderSlot(slot));
+    const quizSlot = plan.find(slot => !isPlaceholderSlot(slot));
+    const island = JOURNEY_ISLAND_IMAGES[senseId] || JOURNEY_ISLAND_IMAGES.start;
+    const meta = BIOME_BY_SENSE[senseId] || BIOME_BY_SENSE.riechen;
+
+    document.body.style.setProperty('--biome-island', `url("${island}")`);
+    document.body.style.setProperty('--biome-bg', `url("${assetUrl(POPUP_BACKGROUNDS[meta.stageIndex] || POPUP_BACKGROUNDS[0])}")`);
+    const title = $('biomeTitle');
+    const text = $('biomeText');
+    const introTitle = $('biomeIntroTitle');
+    const introText = $('biomeIntroText');
+    if (title) title.textContent = story.title;
+    if (text) text.textContent = story.text;
+    if (introTitle) introTitle.textContent = story.title;
+    if (introText) introText.textContent = story.text;
+
+    const hero = $('biomeHero');
+    const miniBtn = $('biomeMiniBtn');
+    const quizBtn = $('biomeQuizBtn');
+    const hint = $('biomeHint');
+
+    function slotDone(slot) { return Number.isInteger(slot) && Boolean(getState().completed[slot]); }
+    function currentStep() { return slotDone(minigameSlot) ? 'quiz' : 'mini'; }
+    function setHeroStep(step, instant=true) {
+      if (!hero) return;
+      const pos = step === 'quiz' ? { x:70, y:55 } : { x:30, y:55 };
+      hero.style.transition = instant ? 'none' : 'left .9s cubic-bezier(.22,1,.36,1), top .9s cubic-bezier(.22,1,.36,1)';
+      hero.style.left = `${pos.x}%`;
+      hero.style.top = `${pos.y}%`;
+    }
+    function updateButtons() {
+      const miniDone = slotDone(minigameSlot);
+      const quizDone = slotDone(quizSlot);
+      miniBtn?.classList.toggle('is-done', miniDone);
+      quizBtn?.classList.toggle('is-locked', !miniDone);
+      quizBtn?.classList.toggle('is-done', quizDone);
+      if (miniBtn) miniBtn.querySelector('.biome-level-state').textContent = miniDone ? 'geschafft' : 'bereit';
+      if (quizBtn) quizBtn.querySelector('.biome-level-state').textContent = !miniDone ? 'erst Minispiel' : (quizDone ? 'geschafft' : 'bereit');
+      if (hint) hint.textContent = miniDone ? 'Tippe auf das Quiz-Feld, um die Fragen zu starten.' : 'Starte zuerst das Minispiel. Danach wird das Quiz-Feld aktiv.';
+      setHeroStep(currentStep(), true);
+    }
+    function leaveToBoardWithPopup(type='escape') {
+      localStorage.setItem(RETURN_STORE, JSON.stringify({ type, meta:{ senseId, slot: slotDone(minigameSlot) ? quizSlot : minigameSlot } }));
+      location.href = pageUrl('index.html?board=1');
+    }
+    function moveThenGo(step, url) {
+      setHeroStep(step, false);
+      playSound('levelstart');
+      window.setTimeout(() => { location.href = url; }, 880);
+    }
+    miniBtn?.addEventListener('click', () => {
+      const url = minigameUrlForSlot(minigameSlot);
+      if (!url) {
+        completePlaceholder(minigameSlot);
+        updateButtons();
+        return;
+      }
+      const live = getState();
+      live.heroIndex = minigameSlot;
+      live.activeBiome = senseId;
+      live.slots[minigameSlot] = senseId;
+      live.boardCurrentNode = boardNodeForSenseId(senseId, live) || currentBoardNode(live);
+      setState(live);
+      moveThenGo('mini', url);
+    });
+    quizBtn?.addEventListener('click', () => {
+      if (!slotDone(minigameSlot)) {
+        show($('biomeLockedModal'));
+        return;
+      }
+      const live = getState();
+      live.heroIndex = quizSlot;
+      live.activeBiome = senseId;
+      live.slots[quizSlot] = senseId;
+      live.boardCurrentNode = boardNodeForSenseId(senseId, live) || currentBoardNode(live);
+      setState(live);
+      moveThenGo('quiz', pageUrl(`level.html?sense=${encodeURIComponent(senseId)}&slot=${quizSlot}`));
+    });
+    $('biomeRunAwayBtn')?.addEventListener('click', () => show($('biomeRunawayModal')));
+    $('biomeRunawayConfirmBtn')?.addEventListener('click', () => leaveToBoardWithPopup('escape'));
+    $('biomeRunawayCancelBtn')?.addEventListener('click', () => hide($('biomeRunawayModal')));
+    $('biomeBackBoardBtn')?.addEventListener('click', () => location.href = pageUrl('index.html?board=1'));
+    $('biomeIntroCloseBtn')?.addEventListener('click', () => {
+      hide($('biomeIntroModal'));
+      show($('biomeStage'));
+      updateButtons();
+      playSound('background', { loop:true, restart:false });
+    });
+    $('biomeLockedOkBtn')?.addEventListener('click', () => hide($('biomeLockedModal')));
+
+    hide($('biomeStage'));
+    show($('biomeIntroModal'));
+    updateButtons();
+    preloadAssets([island, ASSETS.hero, assetUrl(POPUP_BACKGROUNDS[meta.stageIndex] || POPUP_BACKGROUNDS[0])]);
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     const page = document.body.dataset.page;
     if (page === 'board') initBoard();
     else if (page === 'magiccastle') initMagicCastle();
     else if (page === 'story') initStory();
     else if (page === 'level') initLevel();
+    else if (page === 'biome') initBiomePage();
     else if (page === 'battle') initBattle();
     else if (page === 'minigame') initMiniGame();
     else if (page === 'minigame2') initMiniGame2();

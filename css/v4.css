@@ -7587,3 +7587,114 @@ body[data-page="board"] .board-welcome-loader{
     width:clamp(188px,49vw,278px)!important;
   }
 }
+
+
+/* === 2026-06-05 biome island pages + transparency/foreground fixes === */
+body[data-page="board"] .board-island{
+  pointer-events:auto!important;
+  z-index:22!important;
+  overflow:visible!important;
+}
+body[data-page="board"] .board-island *{pointer-events:none!important;}
+body[data-page="board"] .moving-hero-token{z-index:60!important;}
+body[data-page="board"] .board-island-rider{z-index:65!important;}
+body[data-page="board"] .board-island img{background:transparent!important;}
+body[data-page="board"] .board-island--start,
+body[data-page="board"] .board-island--sense,
+body[data-page="board"] .board-island--castle{width:clamp(250px,44vw,430px)!important;}
+body[data-page="board"] .board-island--castle:not(.is-current){animation:none!important;}
+body[data-page="board"] .board-island--castle.is-current{animation:journeyIslandFloat 3.9s ease-in-out infinite!important;}
+body[data-page="board"] .board-journey-status{top:2.7%!important;}
+body[data-page="biome"]{
+  min-height:100vh;
+  background:#071024 var(--biome-bg) center/cover no-repeat fixed;
+  color:#f8fbff;
+  overflow:hidden;
+}
+.biome-page-shell{
+  min-height:100vh;
+  display:grid;
+  grid-template-rows:1fr auto;
+  padding:clamp(16px,3vw,34px);
+  box-sizing:border-box;
+  position:relative;
+}
+.biome-hero-area{
+  position:relative;
+  min-height:62vh;
+  border-radius:28px;
+  background:radial-gradient(circle at 50% 44%, rgba(255,255,255,.15), rgba(4,9,32,.16) 48%, rgba(4,9,32,.48));
+  overflow:hidden;
+}
+.biome-island-visual{
+  position:absolute;
+  left:50%;
+  top:52%;
+  width:min(76vw,560px);
+  aspect-ratio:1/1;
+  transform:translate(-50%,-50%);
+  background:var(--biome-island) center/contain no-repeat;
+  filter:drop-shadow(0 22px 32px rgba(0,0,0,.34));
+  animation:journeyIslandFloat 4s ease-in-out infinite;
+  pointer-events:none;
+}
+.biome-page-hero{
+  position:absolute;
+  left:30%;
+  top:55%;
+  width:clamp(58px,10vw,94px);
+  height:auto;
+  transform:translate(-50%,-50%);
+  z-index:9;
+  filter:drop-shadow(0 10px 14px rgba(0,0,0,.42));
+}
+.biome-level-stage{
+  position:absolute;
+  inset:0;
+  z-index:7;
+}
+.biome-level-field{
+  position:absolute;
+  width:clamp(112px,18vw,170px);
+  min-height:clamp(74px,12vw,108px);
+  border:2px solid rgba(255,255,255,.44);
+  border-radius:24px;
+  color:#2b1a08;
+  background:linear-gradient(180deg, rgba(255,250,215,.96), rgba(232,183,83,.94));
+  box-shadow:0 18px 30px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.55);
+  display:grid;
+  align-content:center;
+  gap:6px;
+  font-weight:900;
+  cursor:pointer;
+}
+.biome-level-mini{left:30%;top:55%;transform:translate(-50%,-50%);}
+.biome-level-quiz{left:70%;top:55%;transform:translate(-50%,-50%);}
+.biome-level-field.is-locked{filter:grayscale(.5);opacity:.72;}
+.biome-level-field.is-done{background:linear-gradient(180deg, rgba(213,255,214,.96), rgba(90,196,112,.92));}
+.biome-level-title{font-size:clamp(1rem,2.5vw,1.35rem);}
+.biome-level-state{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;}
+.biome-page-panel{
+  position:relative;
+  z-index:10;
+  width:min(760px,92vw);
+  margin:12px auto 0;
+  padding:18px 22px;
+  border-radius:24px;
+  background:rgba(5,13,38,.72);
+  border:1px solid rgba(255,255,255,.16);
+  box-shadow:0 18px 38px rgba(0,0,0,.36);
+  text-align:center;
+  backdrop-filter:blur(8px);
+}
+.biome-page-panel h1{margin:.1em 0 .35em;font-size:clamp(1.6rem,5vw,2.6rem);}
+.biome-page-panel p{margin:.35em auto;max-width:62ch;}
+.biome-hint{color:#fff4b6;font-weight:800;}
+.biome-modal-card{text-align:center;max-width:min(90vw,520px);}
+@media(max-width:640px){
+  .biome-page-shell{padding:10px;}
+  .biome-hero-area{min-height:58vh;border-radius:22px;}
+  .biome-island-visual{width:96vw;}
+  .biome-level-field{width:112px;min-height:76px;border-radius:19px;}
+  .biome-page-panel{padding:14px 14px;}
+}
