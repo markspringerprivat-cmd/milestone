@@ -1573,23 +1573,28 @@
   }
 
   async function onLevelNode(index) {
+    if (boardIsBusy()) return;
     const state = getState();
     const completed = state.completed[index];
-    await animateHeroTo(index, { fromIntro: state.heroIndex === null });
-    const latest = getState();
-    const assigned = latest.slots[index];
+    const assigned = state.slots[index];
+    if (!assigned) return;
+    const targetNode = assigned === 'boss' ? 6 : (boardNodeForSenseId(assigned, state) || currentBoardNode(state));
+    if (String(currentBoardNode(state)) !== String(targetNode)) {
+      travelHeroToBoardNode(targetNode);
+      return;
+    }
     if (isPlaceholderSlot(index)) {
       if (completed && index !== 1 && index !== 3 && index !== 5 && index !== 7) return;
       showPlaceholder(index);
       return;
     }
     if (completed) {
-      if (!assigned) return;
-      location.href = pageUrl(assigned === 'boss' ? `level.html?type=boss&slot=${index}` : `level.html?sense=${encodeURIComponent(assigned)}&slot=${index}`);
+      location.href = pageUrl(assigned === 'boss'
+        ? `level.html?type=boss&slot=${index}`
+        : `level.html?sense=${encodeURIComponent(assigned)}&slot=${index}`);
       return;
     }
-    if (assigned) { showEncounter(assigned, index); return; }
-    return;
+    showEncounter(assigned, index);
   }
 
   let scanIndex = null, scanner = null, scanCloseTimer = null;
@@ -2233,9 +2238,15 @@
     const els = battleElements();
     resetBattleStage(els);
     setBattleMode('sequence');
+    if (els.sequence) {
+      els.sequence.classList.remove('hidden');
+      els.sequence.style.opacity = '1';
+      els.sequence.style.transform = 'none';
+    }
 
     const totalSteps = rounds.length + 1;
     if (els.dots) els.dots.innerHTML = '<span></span>'.repeat(totalSteps);
+    await sleep(340);
     for (const round of rounds) await playBattleRound(els, round, totalSteps);
 
     const wrong = payload.results.filter(v => !v).length;
@@ -2271,10 +2282,15 @@
     els.roundActor.className = 'battle-v84-answer-actor is-preparing';
     await Promise.all([waitForRenderable(els.roundText), waitForRenderable(els.roundActor)]);
 
+    els.roundText.getAnimations?.().forEach(animation => animation.cancel());
+    els.roundActor.getAnimations?.().forEach(animation => animation.cancel());
     void els.roundText.offsetWidth;
     void els.roundActor.offsetWidth;
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     els.roundText.className = 'battle-v84-hit-text is-in';
     els.roundActor.className = 'battle-v84-answer-actor is-in';
+    void els.roundText.offsetWidth;
+    void els.roundActor.offsetWidth;
     await new Promise(resolve => requestAnimationFrame(resolve));
     void playBattleCue(round.soundKey);
     await sleep(2150);
@@ -4790,16 +4806,15 @@
   }
 
 
-
-  /* === 2026-06-05 Clean universe island board rebuild === */
+  /* === 2026-06-04 Universe board rebuild with dynamic floating islands === */
   const JOURNEY_NODE_POINTS = {
-    start: { x: 24.0, y: 89.0 },
-    1: { x: 66.5, y: 88.0 },
-    2: { x: 84.0, y: 68.0 },
-    3: { x: 27.0, y: 67.0 },
-    4: { x: 18.0, y: 45.0 },
-    5: { x: 74.0, y: 43.0 },
-    6: { x: 50.0, y: 18.5 }
+    start: { x: 26.0, y: 94.0 },
+    1: { x: 72.0, y: 90.5 },
+    2: { x: 80.0, y: 66.0 },
+    3: { x: 23.0, y: 66.0 },
+    4: { x: 18.0, y: 41.0 },
+    5: { x: 77.0, y: 39.0 },
+    6: { x: 50.0, y: 15.5 }
   };
   const JOURNEY_BOARD_BG = assetUrl('assets/images/board/universe_bg.png');
   const JOURNEY_ISLAND_IMAGES = {
@@ -4820,7 +4835,6 @@
     schmecken: 'Vulkaninsel',
     boss: 'Magieschloss'
   };
-
   let pendingJourneyReveal = null;
   let journeyRevealTimer = null;
   let journeyPathTimer = null;
@@ -4829,7 +4843,6 @@
   let boardTravelTimer = null;
 
   function blankFlags() { return { sehen:false, hoeren:false, riechen:false, schmecken:false, fuehlen:false, boss:false }; }
-
   function clearJourneyRevealTimers() {
     if (journeyRevealTimer) window.clearTimeout(journeyRevealTimer);
     if (journeyPathTimer) window.clearTimeout(journeyPathTimer);
@@ -4867,7 +4880,6 @@
   function boardIsBusy() {
     return Boolean(pendingJourneyReveal || boardTravel);
   }
-
   function defaultState() {
     return {
       stateVersion:STATE_VERSION,
@@ -5052,7 +5064,6 @@
     const riderMarkup = floating
       ? `<span class="board-island-rider"><img class="hero-token" src="${ASSETS.hero}" alt="${esc(getHeroName())}"></span>`
       : '';
-
     if (type === 'start') {
       const canScan = !allLevelsDone(state) && !(state.activeBiome && Number.isInteger(activeBoardSlot(state)));
       btn.setAttribute('aria-label', 'Startinsel mit Marktbrett');
@@ -5073,7 +5084,6 @@
       });
       return btn;
     }
-
     if (type === 'boss') {
       const ready = finalBridgeUnlocked(state) || state.activeBiome === 'boss' || state.bossCompleted;
       if (ready && String(currentBoardNode(state)) === '6' && !boardIsBusy()) btn.classList.add('is-quest-target');
@@ -5092,7 +5102,6 @@
       });
       return btn;
     }
-
     const complete = biomeIsComplete(type, state);
     const active = state.activeBiome === type;
     const slot = boardSlotForSense(type, state);
@@ -5122,11 +5131,11 @@
       return;
     }
     if (state.activeBiome && Number.isInteger(activeSlot)) {
-      node.innerHTML = `<strong>Ziel:</strong> Tippe die schwebende ${esc(JOURNEY_LABELS[state.activeBiome] || BIOME_BY_SENSE[state.activeBiome]?.label || state.activeBiome)} an, um das Level zu starten.`;
+      node.innerHTML = `<strong>Ziel:</strong> ${esc(JOURNEY_LABELS[state.activeBiome] || BIOME_BY_SENSE[state.activeBiome]?.label || state.activeBiome)} · ${esc(levelTypeLabel(activeSlot))}`;
       return;
     }
     if (finalBridgeUnlocked(state)) {
-      node.innerHTML = '<strong>Ziel:</strong> Laufe zum Magieschloss und öffne das Tor.';
+      node.innerHTML = '<strong>Ziel:</strong> Tippe auf das Magieschloss bei 6.';
       return;
     }
     node.innerHTML = '<strong>Ziel:</strong> Tippe auf die Startinsel, um am Marktbrett einen Steckbrief zu scannen.';
@@ -5141,17 +5150,6 @@
     hero.style.top = `${pos.y}%`;
     hero.style.opacity = '1';
     hero.dataset.boardNode = String(node);
-  }
-
-  function setHeroAt(index, instant = true) {
-    const state = getState();
-    if (!Number.isInteger(index)) {
-      setHeroAtVisualNode(currentBoardNode(state), instant);
-      return;
-    }
-    const assigned = state.slots[index];
-    const node = assigned === 'boss' ? 6 : (boardNodeForSenseId(assigned, state) || currentBoardNode(state));
-    setHeroAtVisualNode(node, instant);
   }
 
   function finalizeBoardTravel(targetNode) {
@@ -5173,16 +5171,55 @@
     return true;
   }
 
-  function animateHeroTo(targetIndex, { fromIntro = false } = {}) {
+  function setHeroAt(index, instant = true) {
     const state = getState();
-    const targetNode = Number.isInteger(targetIndex)
-      ? (state.slots[targetIndex] === 'boss' ? 6 : (boardNodeForSenseId(state.slots[targetIndex], state) || currentBoardNode(state)))
-      : 'start';
-    if (String(currentBoardNode(state)) !== String(targetNode)) {
-      travelHeroToBoardNode(targetNode);
-      return sleep(1700 * Math.max(1, boardPathBetweenNodes(currentBoardNode(state), targetNode).length - 1));
+    if (!Number.isInteger(index)) {
+      setHeroAtVisualNode(currentBoardNode(state), instant);
+      return;
     }
-    return Promise.resolve();
+    const assigned = state.slots[index];
+    const node = assigned === 'boss' ? 6 : (boardNodeForSenseId(assigned, state) || currentBoardNode(state));
+    setHeroAtVisualNode(node, instant);
+  }
+
+  function animateHeroTo(targetIndex, { fromIntro = false } = {}) {
+    const hero = $('movingHero');
+    if (!hero) return Promise.resolve();
+    const state = getState();
+    const fromNode = Number.isInteger(state.heroIndex)
+      ? (state.slots[state.heroIndex] === 'boss' ? 6 : (boardNodeForSenseId(state.slots[state.heroIndex], state) || currentBoardNode(state)))
+      : currentBoardNode(state);
+    const toNode = Number.isInteger(targetIndex)
+      ? (state.slots[targetIndex] === 'boss' ? 6 : (boardNodeForSenseId(state.slots[targetIndex], state) || fromNode || 'start'))
+      : 'start';
+    if (!fromIntro && String(fromNode) === String(toNode)) {
+      setHeroAt(targetIndex, true);
+      const live = getState();
+      live.heroIndex = targetIndex;
+      live.boardCurrentNode = toNode;
+      setState(live);
+      return Promise.resolve();
+    }
+    return new Promise(resolve => {
+      hero.classList.remove('hidden');
+      hero.classList.add('is-travelling');
+      setHeroAtVisualNode(fromNode || 'start', true);
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        setHeroAtVisualNode(toNode, false);
+        playSound('levelstart');
+      }));
+      setTimeout(() => {
+        const live = getState();
+        live.heroIndex = targetIndex;
+        live.introUsed = true;
+        live.boardCurrentNode = toNode;
+        setState(live);
+        hero.classList.remove('is-travelling');
+        setHeroAtVisualNode(toNode, true);
+        renderBoard();
+        resolve();
+      }, 1600);
+    });
   }
 
   function renderBoard() {
@@ -5196,8 +5233,8 @@
       boardImage.src = JOURNEY_BOARD_BG;
       boardImage.alt = 'Weltraum-Spielbrett';
     }
-
     inner.innerHTML = '';
+
     const status = document.createElement('div');
     status.className = 'board-journey-status';
     updateBoardStatusText(status, state);
@@ -5273,31 +5310,6 @@
     }
 
     renderGuide(state);
-  }
-
-  async function onLevelNode(index) {
-    if (boardIsBusy()) return;
-    const state = getState();
-    const completed = state.completed[index];
-    const assigned = state.slots[index];
-    if (!assigned) return;
-    const targetNode = assigned === 'boss' ? 6 : (boardNodeForSenseId(assigned, state) || currentBoardNode(state));
-    if (String(currentBoardNode(state)) !== String(targetNode)) {
-      travelHeroToBoardNode(targetNode);
-      return;
-    }
-    if (isPlaceholderSlot(index)) {
-      if (completed && index !== 1 && index !== 3 && index !== 5 && index !== 7) return;
-      showPlaceholder(index);
-      return;
-    }
-    if (completed) {
-      location.href = pageUrl(assigned === 'boss'
-        ? `level.html?type=boss&slot=${index}`
-        : `level.html?sense=${encodeURIComponent(assigned)}&slot=${index}`);
-      return;
-    }
-    showEncounter(assigned, index);
   }
 
   async function unlockSense(id, index) {

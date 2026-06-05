@@ -7525,192 +7525,65 @@ body[data-page="board"] .moving-hero-token.hidden{
 }
 
 
-/* === 2026-06-05 clean clickable universe board === */
-body[data-page="board"] .magic-castle-board-btn,
-body[data-page="board"] #boardGuide{
-  display:none !important;
+/* === 2026-06-05 v7 board spacing + battle feedback fix === */
+body[data-page="battle"] .battle-v84-hit-text.is-preparing,
+body[data-page="battle"] .battle-v84-answer-actor.is-preparing,
+body[data-page="battle"] .battle-v84-hit-text.is-in,
+body[data-page="battle"] .battle-v84-answer-actor.is-in{
+  display:block!important;
+  visibility:visible!important;
 }
-body[data-page="board"] .board-screen{
-  background:#050713 !important;
-}
-body[data-page="board"] .board-image{
-  object-fit:cover !important;
-  object-position:center center !important;
+body[data-page="battle"] .battle-v84-sequence:not(.hidden){
+  opacity:1!important;
+  transform:none!important;
 }
 body[data-page="board"] .map-inner{
-  z-index:3 !important;
-  pointer-events:auto !important;
-}
-body[data-page="board"] .board-journey-paths{
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  pointer-events:none;
-  z-index:1;
-  overflow:visible;
-}
-body[data-page="board"] .journey-path{
-  stroke:rgba(210,240,255,.58);
-  stroke-width:1.35;
-  stroke-linecap:round;
-  stroke-dasharray:1.25 1.9;
-  filter:drop-shadow(0 0 8px rgba(166,233,255,.55));
-}
-body[data-page="board"] .journey-path--active{
-  stroke:#fff8c8;
-  stroke-width:1.8;
-  stroke-dasharray:none;
-  filter:drop-shadow(0 0 10px rgba(255,245,180,.95));
-}
-body[data-page="board"] .board-journey-status{
-  position:absolute;
-  left:50%;
-  top:3.5%;
-  transform:translateX(-50%);
-  min-width:min(86vw,420px);
-  max-width:min(90vw,560px);
-  padding:10px 16px;
-  border-radius:18px;
-  background:rgba(8,17,54,.58);
-  border:1px solid rgba(201,230,255,.22);
-  box-shadow:0 10px 26px rgba(0,0,0,.28);
-  color:#f5fbff;
-  font-size:clamp(.72rem,1.8vw,.95rem);
-  text-align:center;
-  backdrop-filter:blur(6px);
-  pointer-events:none;
-  z-index:6;
+  pointer-events:auto!important;
 }
 body[data-page="board"] .board-island{
-  position:absolute;
-  transform:translate(-50%,-50%);
-  border:0;
-  background:none;
-  padding:0;
-  margin:0;
-  cursor:pointer;
-  pointer-events:auto !important;
-  z-index:20 !important;
+  pointer-events:auto!important;
+  z-index:24!important;
   touch-action:manipulation;
-  overflow:visible;
-  transition:filter .22s ease, opacity .22s ease;
 }
 body[data-page="board"] .board-island *{
-  pointer-events:none !important;
-}
-body[data-page="board"] .board-island img{
-  display:block;
-  width:100%;
-  height:auto;
-  background:transparent !important;
-  filter:drop-shadow(0 16px 25px rgba(0,0,0,.34));
-}
-body[data-page="board"] .board-island:hover img{
-  filter:drop-shadow(0 0 18px rgba(255,245,169,.58)) drop-shadow(0 16px 25px rgba(0,0,0,.34));
+  pointer-events:none!important;
 }
 body[data-page="board"] .board-island--start,
 body[data-page="board"] .board-island--sense,
 body[data-page="board"] .board-island--castle{
-  width:clamp(265px,46vw,455px) !important;
+  width:clamp(250px,45vw,440px)!important;
+}
+body[data-page="board"] .board-island--castle:not(.is-current){
+  animation:none!important;
 }
 body[data-page="board"] .board-island.is-current{
-  animation:journeyIslandFloat 3.9s ease-in-out infinite !important;
+  animation:journeyIslandFloat 3.9s ease-in-out infinite!important;
 }
 body[data-page="board"] .board-island.is-newly-revealed{
   opacity:0;
-  animation:journeyIslandFadeIn .78s ease-out forwards !important;
-}
-body[data-page="board"] .board-island.is-quest-target img{
-  filter:drop-shadow(0 0 20px rgba(255,245,169,.72)) drop-shadow(0 16px 25px rgba(0,0,0,.34)) !important;
-}
-body[data-page="board"] .board-island-pill,
-body[data-page="board"] .board-island-caption,
-body[data-page="board"] .board-island-market,
-body[data-page="board"] .board-island-key-badge{
-  display:none !important;
+  animation:journeyIslandFadeIn .78s ease-out forwards!important;
 }
 body[data-page="board"] .board-island-key-floating{
-  position:absolute;
-  left:62%;
-  bottom:42%;
-  transform:translateX(-50%);
-  width:clamp(38px,7vw,62px);
-  height:clamp(38px,7vw,62px);
-  z-index:5;
-  animation:journeyKeyFloat 2.8s ease-in-out infinite;
-  filter:drop-shadow(0 8px 12px rgba(0,0,0,.3));
-}
-body[data-page="board"] .board-island-key-floating img{
-  width:100%;
-  height:100%;
-  object-fit:contain;
-  filter:none !important;
-}
-body[data-page="board"] .board-island-rider{
-  position:absolute;
-  left:50%;
-  top:50%;
-  transform:translate(-50%,-50%);
-  z-index:6;
-  pointer-events:none;
-}
-body[data-page="board"] .board-island-rider .hero-token,
-body[data-page="board"] .moving-hero-token .hero-token{
-  width:clamp(50px,8vw,86px) !important;
-  height:clamp(50px,8vw,86px) !important;
-  object-fit:contain !important;
-  animation:none !important;
-  filter:drop-shadow(0 9px 13px rgba(0,0,0,.38)) !important;
-}
-body[data-page="board"] .moving-hero-token{
-  position:absolute;
-  z-index:30 !important;
-  pointer-events:none !important;
-  transform:translate(-50%,-50%);
-}
-body[data-page="board"] .moving-hero-token.hidden{
-  display:none !important;
+  left:62%!important;
+  bottom:42%!important;
+  width:clamp(38px,7vw,62px)!important;
+  height:clamp(38px,7vw,62px)!important;
 }
 body[data-page="board"] .board-welcome-loader{
   width:min(100%,360px);
   margin:12px auto 0;
 }
-@keyframes journeyIslandFloat{
-  0%{transform:translate(-50%,-50%) translateY(0px);}
-  50%{transform:translate(-50%,-50%) translateY(-10px);}
-  100%{transform:translate(-50%,-50%) translateY(0px);}
-}
-@keyframes journeyIslandFadeIn{
-  0%{opacity:0;}
-  100%{opacity:1;}
-}
-@keyframes journeyKeyFloat{
-  0%{transform:translateX(-50%) translateY(0px);}
-  50%{transform:translateX(-50%) translateY(-8px);}
-  100%{transform:translateX(-50%) translateY(0px);}
-}
-@media (max-width:900px){
+@media(max-width:900px){
   body[data-page="board"] .board-island--start,
   body[data-page="board"] .board-island--sense,
   body[data-page="board"] .board-island--castle{
-    width:clamp(225px,49vw,360px) !important;
+    width:clamp(218px,48vw,350px)!important;
   }
 }
-@media (max-width:640px){
-  body[data-page="board"] .board-journey-status{
-    top:3%;
-    font-size:.68rem;
-    padding:9px 12px;
-  }
+@media(max-width:640px){
   body[data-page="board"] .board-island--start,
   body[data-page="board"] .board-island--sense,
   body[data-page="board"] .board-island--castle{
-    width:clamp(190px,50vw,286px) !important;
-  }
-  body[data-page="board"] .board-island-rider .hero-token,
-  body[data-page="board"] .moving-hero-token .hero-token{
-    width:clamp(44px,10vw,72px) !important;
-    height:clamp(44px,10vw,72px) !important;
+    width:clamp(188px,49vw,278px)!important;
   }
 }
