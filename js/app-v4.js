@@ -5124,10 +5124,11 @@
     const nodes = getCarouselNodes(state);
     const current = currentBoardNode(state);
     const currentIndex = Math.max(0, nodes.indexOf(current));
+    const currentEntry = getCarouselEntry(current, state) || getCarouselEntry('start', state);
 
     const worldBar = document.createElement('div');
     worldBar.className = 'board-world-topbar';
-    worldBar.textContent = 'Königreich der Sinne';
+    worldBar.textContent = currentEntry?.title || 'Königreich der Sinne';
     inner.appendChild(worldBar);
 
     const status = document.createElement('div');
@@ -5143,8 +5144,7 @@
       if (fromEntry) stage.appendChild(createCarouselIsland(fromEntry, state, 'from'));
       if (toEntry) stage.appendChild(createCarouselIsland(toEntry, state, 'to'));
     } else {
-      const entry = getCarouselEntry(current, state) || getCarouselEntry('start', state);
-      if (entry) stage.appendChild(createCarouselIsland(entry, state, 'current'));
+      if (currentEntry) stage.appendChild(createCarouselIsland(currentEntry, state, 'current'));
     }
     inner.appendChild(stage);
 
@@ -5178,12 +5178,26 @@
 
     const marketBar = document.createElement('div');
     marketBar.className = 'board-market-bottombar';
+
+    const optionsBtn = document.createElement('button');
+    optionsBtn.type = 'button';
+    optionsBtn.className = 'board-bottom-options-btn';
+    optionsBtn.setAttribute('aria-label', 'Optionen öffnen');
+    optionsBtn.textContent = '⚙';
+    optionsBtn.addEventListener('click', ev => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      document.body.classList.add('board-menu-open');
+    });
+    marketBar.appendChild(optionsBtn);
+
     const marketBtn = document.createElement('button');
     marketBtn.type = 'button';
     marketBtn.className = 'game-btn primary board-market-open-btn';
-    marketBtn.textContent = 'Marktbrett öffnen';
+    marketBtn.textContent = 'Marktbrett';
     marketBtn.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); openScan(); });
     marketBar.appendChild(marketBtn);
+
     inner.appendChild(marketBar);
 
     renderGuide(state);

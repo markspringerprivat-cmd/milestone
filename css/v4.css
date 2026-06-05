@@ -7986,3 +7986,70 @@ body[data-page="board"] .board-carousel-arrow-latest{
     height:clamp(52px,13vw,82px)!important;
   }
 }
+
+
+/* === 2026-06-05 v11 fixed bars + integrated options button === */
+body[data-page="board"] #openBoardMenuBtn{
+  display:none!important;
+}
+body[data-page="board"] .board-world-topbar{
+  position:fixed!important;
+  top:0!important;
+  left:0!important;
+  right:0!important;
+  height:clamp(42px,7vh,64px)!important;
+  z-index:900!important;
+}
+body[data-page="board"] .board-market-bottombar{
+  position:fixed!important;
+  left:0!important;
+  right:0!important;
+  bottom:0!important;
+  min-height:clamp(48px,7.5vh,70px)!important;
+  justify-content:center!important;
+  gap:12px!important;
+  padding:8px max(12px, env(safe-area-inset-left)) calc(8px + env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-right))!important;
+  z-index:901!important;
+}
+body[data-page="board"] .board-bottom-options-btn{
+  width:clamp(42px,9vw,58px);
+  height:clamp(42px,9vw,58px);
+  border-radius:50%;
+  border:2px solid rgba(255,255,255,.35);
+  background:rgba(255,255,255,.92);
+  color:#223047;
+  display:inline-grid;
+  place-items:center;
+  font-size:clamp(1.15rem,4vw,1.55rem);
+  line-height:1;
+  cursor:pointer;
+  box-shadow:0 8px 18px rgba(0,0,0,.28);
+}
+body[data-page="board"] .board-bottom-options-btn:hover{
+  background:#fff;
+}
+body[data-page="board"] .board-market-open-btn{
+  min-width:0!important;
+  width:auto!important;
+  max-width:48vw!important;
+  padding:10px 18px!important;
+  min-height:clamp(42px,7.5vw,54px)!important;
+  font-size:clamp(.82rem,2.4vw,.98rem)!important;
+  white-space:nowrap!important;
+}
+body[data-page="board"] .board-carousel-status{
+  top:calc(clamp(42px,7vh,64px) + 8px)!important;
+}
+body[data-page="board"] .board-carousel-island{
+  top:55.5%!important;
+}
+@media(max-width:640px){
+  body[data-page="board"] .board-market-bottombar{
+    min-height:60px!important;
+    gap:10px!important;
+  }
+  body[data-page="board"] .board-market-open-btn{
+    max-width:54vw!important;
+    padding:9px 14px!important;
+  }
+}
