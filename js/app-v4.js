@@ -5111,9 +5111,14 @@
     }, 650);
   }
 
+  function removeBoardViewportBars() {
+    document.querySelectorAll('.board-world-topbar, .board-market-bottombar').forEach(el => el.remove());
+  }
+
   function renderBoard() {
     const inner = $('mapInner');
     if (!inner) return;
+    removeBoardViewportBars();
     const state = getState();
     const boardImage = $('boardImage');
     if (boardImage) {
@@ -5129,7 +5134,7 @@
     const worldBar = document.createElement('div');
     worldBar.className = 'board-world-topbar';
     worldBar.textContent = currentEntry?.title || 'Königreich der Sinne';
-    inner.appendChild(worldBar);
+    document.body.appendChild(worldBar);
 
     const status = document.createElement('div');
     status.className = 'board-journey-status board-carousel-status';
@@ -5198,7 +5203,7 @@
     marketBtn.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); openScan(); });
     marketBar.appendChild(marketBtn);
 
-    inner.appendChild(marketBar);
+    document.body.appendChild(marketBar);
 
     renderGuide(state);
   }

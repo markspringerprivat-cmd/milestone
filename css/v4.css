@@ -8053,3 +8053,64 @@ body[data-page="board"] .board-carousel-island{
     padding:9px 14px!important;
   }
 }
+
+
+/* === 2026-06-05 v12 true viewport bars, no bottom gap === */
+body[data-page="board"]{
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+}
+body[data-page="board"] .board-world-topbar{
+  position:fixed!important;
+  top:0!important;
+  left:0!important;
+  right:0!important;
+  width:100vw!important;
+  margin:0!important;
+  border-radius:0!important;
+  transform:none!important;
+}
+body[data-page="board"] .board-market-bottombar{
+  position:fixed!important;
+  left:0!important;
+  right:0!important;
+  bottom:0!important;
+  width:100vw!important;
+  margin:0!important;
+  border-radius:0!important;
+  transform:none!important;
+  box-sizing:border-box!important;
+  min-height:calc(54px + env(safe-area-inset-bottom, 0px))!important;
+  padding:6px 12px env(safe-area-inset-bottom, 0px) 12px!important;
+  align-items:center!important;
+  background:linear-gradient(0deg, rgba(30,45,65,.98), rgba(48,66,88,.9))!important;
+}
+body[data-page="board"] .board-market-bottombar::after{
+  content:"";
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  height:env(safe-area-inset-bottom, 0px);
+  background:rgba(30,45,65,.98);
+  pointer-events:none;
+  z-index:-1;
+}
+body[data-page="board"] .board-bottom-options-btn,
+body[data-page="board"] .board-market-open-btn{
+  position:relative;
+  z-index:1;
+}
+body[data-page="board"] .board-carousel-island{
+  top:54.5%!important;
+}
+@media(max-width:640px){
+  body[data-page="board"] .board-market-bottombar{
+    min-height:calc(56px + env(safe-area-inset-bottom, 0px))!important;
+    padding:6px 10px env(safe-area-inset-bottom, 0px) 10px!important;
+  }
+  body[data-page="board"] .board-carousel-island{
+    top:54.5%!important;
+  }
+}
