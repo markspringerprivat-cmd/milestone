@@ -846,7 +846,7 @@
 
     const START_STORY_SLIDE = {
       image: 'assets/images/story/story_bookcover.png',
-      text: 'Gib den Namen ein, wähle männlich oder weiblich und starte die Geschichte...',
+      text: 'Gib deinen Namen ein, wähle männlich oder weiblich und starte dann die Geschichte.',
       isStoryStart:true
     };
     const slides = [START_STORY_SLIDE, ...STORY_SLIDES];
@@ -865,7 +865,7 @@
         <input id="storyHeroNameInput" type="text" name="storyHeroNameInput" autocomplete="off" maxlength="28" placeholder="Name eingeben" value="${esc(profile.name === DEFAULT_HERO_NAME ? '' : profile.name)}">
       </div>
       <fieldset class="story-gender-box" aria-label="Geschlecht der Ritterfigur">
-        <legend>Auswahl</legend>
+        <legend>Geschlecht</legend>
         <label class="story-gender-option"><input type="radio" name="storyHeroGender" value="male" ${profile.gender === 'male' ? 'checked' : ''}> <span>Männlich</span></label>
         <label class="story-gender-option"><input type="radio" name="storyHeroGender" value="female" ${profile.gender === 'female' ? 'checked' : ''}> <span>Weiblich</span></label>
       </fieldset>
