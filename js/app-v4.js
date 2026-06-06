@@ -593,6 +593,7 @@
     const keyFlags = blankFlags();
     state.keysFound = { ...keyFlags, ...(raw?.keysFound || {}) };
     state.removedLocks = { ...keyFlags, ...(raw?.removedLocks || {}) };
+    state.seenIslandStories = { ...keyFlags, ...(raw?.seenIslandStories || {}) };
     const keySlots = { sehen:0, hoeren:2, riechen:4, schmecken:6, fuehlen:8 };
     Object.entries(keySlots).forEach(([id, slot]) => {
       if (state.completed[slot]) state.keysFound[id] = true;
@@ -832,6 +833,7 @@
   }
 
   function initStory() {
+    removeBoardViewportBars?.();
     const card = document.querySelector('.story-card');
     const text = $('storyText');
     const counter = $('storyCounter');
@@ -857,14 +859,15 @@
     nameBox.classList.remove('hidden');
     const profile = getHeroProfile();
     nameBox.innerHTML = `
-      <label for="storyHeroNameInput">Name des Ritters</label>
-      <input id="storyHeroNameInput" name="storyHeroNameInput" autocomplete="off" maxlength="28" placeholder="z. B. Leo" value="${esc(profile.name === DEFAULT_HERO_NAME ? '' : profile.name)}">
+      <div class="story-profile-title">Wer startet das Abenteuer?</div>
+      <label class="story-profile-label" for="storyHeroNameInput">Name</label>
+      <input id="storyHeroNameInput" type="text" name="storyHeroNameInput" autocomplete="off" maxlength="28" placeholder="z. B. Leo" value="${esc(profile.name === DEFAULT_HERO_NAME ? '' : profile.name)}">
       <fieldset class="story-gender-box" aria-label="Geschlecht des Ritters">
         <legend>Geschlecht</legend>
-        <label><input type="radio" name="storyHeroGender" value="male" ${profile.gender === 'male' ? 'checked' : ''}> männlich</label>
-        <label><input type="radio" name="storyHeroGender" value="female" ${profile.gender === 'female' ? 'checked' : ''}> weiblich</label>
+        <label><input type="radio" name="storyHeroGender" value="male" ${profile.gender === 'male' ? 'checked' : ''}> <span>Ritter</span></label>
+        <label><input type="radio" name="storyHeroGender" value="female" ${profile.gender === 'female' ? 'checked' : ''}> <span>Ritterin</span></label>
       </fieldset>
-      <p id="storyProfileHint" class="story-profile-hint">Name und Geschlecht werden für die ganze Geschichte und das Spiel gespeichert.</p>
+      <p id="storyProfileHint" class="story-profile-hint">Wird für Geschichte und Spiel übernommen.</p>
     `;
     const liveNameInput = $('storyHeroNameInput');
     const genderInputs = [...document.querySelectorAll('input[name="storyHeroGender"]')];
@@ -1147,7 +1150,7 @@
     $('boardGuide')?.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); startIntroHeroJourney(); } });
     window.addEventListener('resize', () => { resetBoardViewport(); updateMapGeometry(); }, { passive:true });
     window.visualViewport?.addEventListener?.('resize', () => { resetBoardViewport(); updateMapGeometry(); }, { passive:true });
-    window.addEventListener('pageshow', () => { resetBoardViewport(); updateMapGeometry(); renderBoard(); startMagicCastleBoardFloat(); }, { passive:true });
+    window.addEventListener('pageshow', () => { resetBoardViewport(); updateMapGeometry(); renderBoard(); startMagicCastleBoardFloat(); window.setTimeout(() => maybeShowIslandStoryForNode(currentBoardNode(getState())), 250); }, { passive:true });
     setTimeout(() => applyReturnModal(), 150);
   }
 
@@ -1157,6 +1160,9 @@
     resetBoardViewport();
     updateMapGeometry(); renderBoard();
     startMagicCastleBoardFloat();
+    window.setTimeout(() => {
+      if (!$('boardScreen')?.classList.contains('hidden')) maybeShowIslandStoryForNode(currentBoardNode(getState()));
+    }, 350);
     if (playMusic) playSound('background', { loop:true, restart:!firstStart });
   }
 
@@ -4821,21 +4827,21 @@
     boss: assetUrl('assets/images/board/final_island.png')
   };
   const JOURNEY_LABELS = {
-    start: 'Startinsel',
-    riechen: 'Grasinsel',
-    fuehlen: 'Eisinsel',
-    sehen: 'Wolkeninsel',
-    hoeren: 'Wüsteninsel',
-    schmecken: 'Vulkaninsel',
-    boss: 'Finale Insel'
+    start: 'Marktplatz des Königreichs',
+    riechen: 'Riechinsel',
+    fuehlen: 'Fühlinsel',
+    sehen: 'Sehinsel',
+    hoeren: 'Hörinsel',
+    schmecken: 'Schmeckinsel',
+    boss: 'Magieschloss'
   };
   const JOURNEY_INTROS = {
-    riechen: 'Die Grasinsel wurde freigeschaltet. Dort warten Aufgaben rund um Gerüche, Nase und Duftspuren.',
-    fuehlen: 'Die Eisinsel wurde freigeschaltet. Dort warten Aufgaben rund um Kälte, Druck und den Tastsinn.',
-    sehen: 'Die Wolkeninsel wurde freigeschaltet. Dort warten Aufgaben rund um Licht, Formen und das Sehen.',
-    hoeren: 'Die Wüsteninsel wurde freigeschaltet. Dort warten Aufgaben rund um Klänge, Schall und Hören.',
-    schmecken: 'Die Vulkaninsel wurde freigeschaltet. Dort warten Aufgaben rund um Geschmack, Zunge und Aromen.',
-    boss: 'Die finale Insel wurde freigeschaltet. Alle fünf Inseln sind geschafft – jetzt wartet das letzte Tor.'
+    riechen: 'Ein schwerer, grüner Nebel liegt über der Riechinsel. Zwischen morschen Bäumen und geheimen Duftspuren wartet der nächste Hinweis.',
+    fuehlen: 'Warmer Stein und rauer Sand führen über die Fühlinsel. Nur wer genau spürt, was sich verändert, findet den richtigen Weg.',
+    sehen: 'Auf der Sehinsel funkeln Kristalle und Spiegelportale im Eis. Dort muss {heroName} genau hinschauen, um Täuschung von Wahrheit zu unterscheiden.',
+    hoeren: 'Über der Hörinsel tragen Windbänder jeden Klang weiter. Wer lauscht, erkennt, welcher Ton den Weg zum nächsten Schlüssel öffnet.',
+    schmecken: 'Auf der Schmeckinsel glüht die Lava unter dem Markt der Aromen. Zwischen Feuerküchen und Gewürzen wartet eine heiße Prüfung.',
+    boss: 'Das Magieschloss erhebt sich aus violetter Zauberkraft. Jetzt führt der letzte Weg direkt zum Tor des bösen Magiers.'
   };
   let boardSlideTransition = null;
   let boardSlideTimer = null;
@@ -4864,7 +4870,8 @@
       removedLocks:blankFlags(),
       activeBiome:null,
       journeyOrder:[],
-      boardCurrentNode:'start'
+      boardCurrentNode:'start',
+      seenIslandStories:blankFlags()
     };
   }
 
@@ -4913,6 +4920,7 @@
     const keyFlags = blankFlags();
     state.keysFound = { ...keyFlags, ...(raw?.keysFound || {}) };
     state.removedLocks = { ...keyFlags, ...(raw?.removedLocks || {}) };
+    state.seenIslandStories = { ...keyFlags, ...(raw?.seenIslandStories || {}) };
     const keySlots = { sehen:0, hoeren:2, riechen:4, schmecken:6, fuehlen:8 };
     Object.entries(keySlots).forEach(([id, slot]) => {
       if (state.completed[slot]) state.keysFound[id] = true;
@@ -5008,8 +5016,19 @@
       image.src = JOURNEY_ISLAND_IMAGES[id] || JOURNEY_ISLAND_IMAGES.start;
       image.alt = JOURNEY_LABELS[id] || BIOME_BY_SENSE[id]?.label || 'Neue Insel';
     }
-    if (text) text.textContent = JOURNEY_INTROS[id] || 'Eine neue Insel wurde freigeschaltet. Nutze den Pfeil rechts, um sie ins Zentrum zu holen.';
+    if (text) text.textContent = heroText(JOURNEY_INTROS[id] || 'Eine neue Insel wurde freigeschaltet. Nutze den Pfeil rechts, um sie ins Zentrum zu holen.');
     show(modal);
+  }
+
+
+  function maybeShowIslandStoryForNode(node) {
+    const state = getState();
+    const entry = getCarouselEntry(node, state);
+    if (!entry || entry.type === 'start') return;
+    if (state.seenIslandStories?.[entry.type]) return;
+    state.seenIslandStories = { ...blankFlags(), ...(state.seenIslandStories || {}), [entry.type]: true };
+    setState(state);
+    showIslandUnlockedModal(entry.type);
   }
 
   function updateBoardStatusText(node, state) {
@@ -5028,7 +5047,9 @@
   }
 
   function carouselSlideClass(node, role) {
-    return (!boardSlideTransition && role === 'current') ? 'is-active' : '';
+    if (!boardSlideTransition) return 'is-active';
+    if (role === 'from') return boardSlideTransition.direction > 0 ? 'is-exiting-left' : 'is-exiting-right';
+    return boardSlideTransition.direction > 0 ? 'is-entering-right' : 'is-entering-left';
   }
 
   function createCarouselIsland(entry, state, role='current') {
@@ -5093,7 +5114,8 @@
       boardSlideTransition = null;
       clearBoardSlideTimer();
       renderBoard();
-    }, 1120);
+      maybeShowIslandStoryForNode(toNode);
+    }, 820);
   }
 
   function jumpCarouselToLatest() {
@@ -5117,7 +5139,8 @@
       boardSlideTransition = null;
       clearBoardSlideTimer();
       renderBoard();
-    }, 1120);
+      maybeShowIslandStoryForNode(toNode);
+    }, 820);
   }
 
   function removeBoardViewportBars() {
@@ -5152,15 +5175,12 @@
 
     const stage = document.createElement('div');
     stage.className = 'board-carousel-stage';
+    if (boardSlideTransition) stage.classList.add('is-sliding');
     if (boardSlideTransition) {
-      stage.classList.add('is-sliding', boardSlideTransition.direction > 0 ? 'slide-next' : 'slide-prev');
-      const track = document.createElement('div');
-      track.className = 'board-carousel-track';
       const fromEntry = getCarouselEntry(boardSlideTransition.from, state);
       const toEntry = getCarouselEntry(boardSlideTransition.to, state);
-      if (fromEntry) track.appendChild(createCarouselIsland(fromEntry, state, 'from'));
-      if (toEntry) track.appendChild(createCarouselIsland(toEntry, state, 'to'));
-      stage.appendChild(track);
+      if (fromEntry) stage.appendChild(createCarouselIsland(fromEntry, state, 'from'));
+      if (toEntry) stage.appendChild(createCarouselIsland(toEntry, state, 'to'));
     } else {
       if (currentEntry) stage.appendChild(createCarouselIsland(currentEntry, state, 'current'));
     }
@@ -5254,7 +5274,14 @@
     setState(state);
     renderBoard();
     playSound('levelunlocked');
-    showIslandUnlockedModal(id);
+    const modal = ensureIslandUnlockedModal();
+    const title = $('islandUnlockedTitle');
+    const image = $('islandUnlockedImage');
+    const text = $('islandUnlockedText');
+    if (title) title.textContent = `${JOURNEY_LABELS[id] || 'Neue Insel'} freigeschaltet`;
+    if (image) { image.src = JOURNEY_ISLAND_IMAGES[id] || JOURNEY_ISLAND_IMAGES.start; image.alt = JOURNEY_LABELS[id] || 'Neue Insel'; }
+    if (text) text.textContent = 'Eine neue Insel wurde freigeschaltet. Nutze den Pfeil rechts, um sie ins Zentrum zu holen.';
+    show(modal);
   }
 
   async function animateHeroHome(fromSlot, viaSlot = null) {
