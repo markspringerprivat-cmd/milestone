@@ -859,15 +859,17 @@
     nameBox.classList.remove('hidden');
     const profile = getHeroProfile();
     nameBox.innerHTML = `
-      <div class="story-profile-title">Wer startet das Abenteuer?</div>
-      <label class="story-profile-label" for="storyHeroNameInput">Name</label>
-      <input id="storyHeroNameInput" type="text" name="storyHeroNameInput" autocomplete="off" maxlength="28" placeholder="z. B. Leo" value="${esc(profile.name === DEFAULT_HERO_NAME ? '' : profile.name)}">
-      <fieldset class="story-gender-box" aria-label="Geschlecht des Ritters">
-        <legend>Geschlecht</legend>
-        <label><input type="radio" name="storyHeroGender" value="male" ${profile.gender === 'male' ? 'checked' : ''}> <span>Ritter</span></label>
-        <label><input type="radio" name="storyHeroGender" value="female" ${profile.gender === 'female' ? 'checked' : ''}> <span>Ritterin</span></label>
+      <div class="story-profile-title">Ritterfigur anlegen</div>
+      <div class="story-profile-row">
+        <label class="story-profile-label" for="storyHeroNameInput">Name</label>
+        <input id="storyHeroNameInput" type="text" name="storyHeroNameInput" autocomplete="off" maxlength="28" placeholder="Name eingeben" value="${esc(profile.name === DEFAULT_HERO_NAME ? '' : profile.name)}">
+      </div>
+      <fieldset class="story-gender-box" aria-label="Geschlecht der Ritterfigur">
+        <legend>Auswahl</legend>
+        <label class="story-gender-option"><input type="radio" name="storyHeroGender" value="male" ${profile.gender === 'male' ? 'checked' : ''}> <span>Männlich</span></label>
+        <label class="story-gender-option"><input type="radio" name="storyHeroGender" value="female" ${profile.gender === 'female' ? 'checked' : ''}> <span>Weiblich</span></label>
       </fieldset>
-      <p id="storyProfileHint" class="story-profile-hint">Wird für Geschichte und Spiel übernommen.</p>
+      <p id="storyProfileHint" class="story-profile-hint">Der Name wird in Geschichte und Spiel verwendet.</p>
     `;
     const liveNameInput = $('storyHeroNameInput');
     const genderInputs = [...document.querySelectorAll('input[name="storyHeroGender"]')];
@@ -1090,7 +1092,7 @@
       try { history.replaceState(null, '', pageUrl('index.html')); } catch (_) {}
     }
     hide($('outroScreen'));
-    if (state.started) { showBoard(false, { playMusic: !pendingBoardWelcome }); } else { show($('introScreen')); hide($('boardScreen')); hide($('openBoardMenuBtn')); hide($('belowBoard')); }
+    if (state.started) { showBoard(false, { playMusic: !pendingBoardWelcome }); } else { document.body.classList.remove('board-ui-active'); removeBoardViewportBars(); show($('introScreen')); hide($('boardScreen')); hide($('openBoardMenuBtn')); hide($('belowBoard')); }
     if (pendingBoardWelcome) {
       window.setTimeout(showBoardWelcomeModal, 220);
     }
@@ -1150,12 +1152,23 @@
     $('boardGuide')?.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); startIntroHeroJourney(); } });
     window.addEventListener('resize', () => { resetBoardViewport(); updateMapGeometry(); }, { passive:true });
     window.visualViewport?.addEventListener?.('resize', () => { resetBoardViewport(); updateMapGeometry(); }, { passive:true });
-    window.addEventListener('pageshow', () => { resetBoardViewport(); updateMapGeometry(); renderBoard(); startMagicCastleBoardFloat(); window.setTimeout(() => maybeShowIslandStoryForNode(currentBoardNode(getState())), 250); }, { passive:true });
+    window.addEventListener('pageshow', () => {
+      resetBoardViewport();
+      updateMapGeometry();
+      if (boardScreenIsVisible()) {
+        renderBoard();
+        startMagicCastleBoardFloat();
+        window.setTimeout(() => maybeShowIslandStoryForNode(currentBoardNode(getState())), 250);
+      } else {
+        removeBoardViewportBars();
+      }
+    }, { passive:true });
     setTimeout(() => applyReturnModal(), 150);
   }
 
   function showBoard(firstStart=false, options={}) {
     const { playMusic = true } = options;
+    document.body.classList.add('board-ui-active');
     hide($('introScreen')); show($('boardScreen')); show($('openBoardMenuBtn')); show($('belowBoard'));
     resetBoardViewport();
     updateMapGeometry(); renderBoard();
@@ -1910,6 +1923,8 @@
   }
   function showOutro() {
     stopSound('background');
+    document.body.classList.remove('board-ui-active');
+    removeBoardViewportBars();
     hide($('introScreen'));
     hide($('boardScreen'));
     hide($('belowBoard'));
@@ -5047,9 +5062,7 @@
   }
 
   function carouselSlideClass(node, role) {
-    if (!boardSlideTransition) return 'is-active';
-    if (role === 'from') return boardSlideTransition.direction > 0 ? 'is-exiting-left' : 'is-exiting-right';
-    return boardSlideTransition.direction > 0 ? 'is-entering-right' : 'is-entering-left';
+    return (!boardSlideTransition && role === 'current') ? 'is-active' : '';
   }
 
   function createCarouselIsland(entry, state, role='current') {
@@ -5115,7 +5128,7 @@
       clearBoardSlideTimer();
       renderBoard();
       maybeShowIslandStoryForNode(toNode);
-    }, 820);
+    }, 1050);
   }
 
   function jumpCarouselToLatest() {
@@ -5140,17 +5153,22 @@
       clearBoardSlideTimer();
       renderBoard();
       maybeShowIslandStoryForNode(toNode);
-    }, 820);
+    }, 1050);
   }
 
   function removeBoardViewportBars() {
     document.querySelectorAll('.board-world-topbar, .board-market-bottombar').forEach(el => el.remove());
   }
 
+  function boardScreenIsVisible() {
+    const board = $('boardScreen');
+    return Boolean(board && !board.classList.contains('hidden'));
+  }
+
   function renderBoard() {
     const inner = $('mapInner');
-    if (!inner) return;
     removeBoardViewportBars();
+    if (!inner || !boardScreenIsVisible()) return;
     const state = getState();
     const boardImage = $('boardImage');
     if (boardImage) {
@@ -5175,12 +5193,15 @@
 
     const stage = document.createElement('div');
     stage.className = 'board-carousel-stage';
-    if (boardSlideTransition) stage.classList.add('is-sliding');
     if (boardSlideTransition) {
+      stage.classList.add('is-sliding', boardSlideTransition.direction > 0 ? 'slide-next' : 'slide-prev');
+      const track = document.createElement('div');
+      track.className = 'board-carousel-track';
       const fromEntry = getCarouselEntry(boardSlideTransition.from, state);
       const toEntry = getCarouselEntry(boardSlideTransition.to, state);
-      if (fromEntry) stage.appendChild(createCarouselIsland(fromEntry, state, 'from'));
-      if (toEntry) stage.appendChild(createCarouselIsland(toEntry, state, 'to'));
+      if (fromEntry) track.appendChild(createCarouselIsland(fromEntry, state, 'from'));
+      if (toEntry) track.appendChild(createCarouselIsland(toEntry, state, 'to'));
+      stage.appendChild(track);
     } else {
       if (currentEntry) stage.appendChild(createCarouselIsland(currentEntry, state, 'current'));
     }
