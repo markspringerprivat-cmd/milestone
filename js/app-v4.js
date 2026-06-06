@@ -1093,7 +1093,7 @@
     }
     hide($('outroScreen'));
     if (state.started) { showBoard(false, { playMusic: !pendingBoardWelcome }); } else { document.body.classList.remove('board-ui-active'); removeBoardViewportBars(); show($('introScreen')); hide($('boardScreen')); hide($('openBoardMenuBtn')); hide($('belowBoard')); }
-    if (pendingBoardWelcome) {
+    if (pendingBoardWelcome && state.started) {
       window.setTimeout(showBoardWelcomeModal, 220);
     }
     if (shouldForceBoardMusic) {
@@ -1296,20 +1296,13 @@
 
   function updateMapGeometry() {
     const screen = $('boardScreen'), inner = $('mapInner'); if (!screen || !inner) return;
-    const w = screen.clientWidth, h = screen.clientHeight;
-    let imgW, imgH;
-    if (w / h > BOARD_RATIO) {
-      imgH = h;
-      imgW = h * BOARD_RATIO;
-    } else {
-      imgW = w;
-      imgH = w / BOARD_RATIO;
-    }
-    inner.style.width = `${imgW}px`;
-    inner.style.height = `${imgH}px`;
+    inner.style.width = '100vw';
+    inner.style.height = '100dvh';
+    inner.style.left = '0px';
     inner.style.top = '0px';
-    inner.style.transform = 'translateX(-50%)';
+    inner.style.transform = 'none';
   }
+
 
   function boardPos(index) { return boardPointForSlot(index); }
   function setHeroAt(index, instant=true) {
@@ -5128,7 +5121,7 @@
       clearBoardSlideTimer();
       renderBoard();
       maybeShowIslandStoryForNode(toNode);
-    }, 1050);
+    }, 1150);
   }
 
   function jumpCarouselToLatest() {
@@ -5153,7 +5146,7 @@
       clearBoardSlideTimer();
       renderBoard();
       maybeShowIslandStoryForNode(toNode);
-    }, 1050);
+    }, 1150);
   }
 
   function removeBoardViewportBars() {
