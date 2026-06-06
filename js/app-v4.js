@@ -5028,9 +5028,7 @@
   }
 
   function carouselSlideClass(node, role) {
-    if (!boardSlideTransition) return 'is-active';
-    if (role === 'from') return boardSlideTransition.direction > 0 ? 'is-exiting-left' : 'is-exiting-right';
-    return boardSlideTransition.direction > 0 ? 'is-entering-right' : 'is-entering-left';
+    return (!boardSlideTransition && role === 'current') ? 'is-active' : '';
   }
 
   function createCarouselIsland(entry, state, role='current') {
@@ -5039,6 +5037,7 @@
     btn.className = `board-carousel-island board-island--${entry.type === 'start' ? 'start' : (entry.type === 'boss' ? 'castle' : 'sense')} ${carouselSlideClass(entry.node, role)}`;
     btn.dataset.node = String(entry.node);
     btn.dataset.type = String(entry.type);
+    btn.dataset.role = String(role || 'current');
     const keyMarkup = state.keysFound?.[entry.type] ? islandKeyBadge(entry.type) : '';
     btn.innerHTML = `<img src="${entry.image}" alt="${esc(entry.title)}">${keyMarkup}`;
     btn.addEventListener('click', ev => {
@@ -5094,7 +5093,7 @@
       boardSlideTransition = null;
       clearBoardSlideTimer();
       renderBoard();
-    }, 560);
+    }, 1120);
   }
 
   function jumpCarouselToLatest() {
@@ -5118,7 +5117,7 @@
       boardSlideTransition = null;
       clearBoardSlideTimer();
       renderBoard();
-    }, 560);
+    }, 1120);
   }
 
   function removeBoardViewportBars() {
@@ -5153,12 +5152,15 @@
 
     const stage = document.createElement('div');
     stage.className = 'board-carousel-stage';
-    if (boardSlideTransition) stage.classList.add('is-sliding');
     if (boardSlideTransition) {
+      stage.classList.add('is-sliding', boardSlideTransition.direction > 0 ? 'slide-next' : 'slide-prev');
+      const track = document.createElement('div');
+      track.className = 'board-carousel-track';
       const fromEntry = getCarouselEntry(boardSlideTransition.from, state);
       const toEntry = getCarouselEntry(boardSlideTransition.to, state);
-      if (fromEntry) stage.appendChild(createCarouselIsland(fromEntry, state, 'from'));
-      if (toEntry) stage.appendChild(createCarouselIsland(toEntry, state, 'to'));
+      if (fromEntry) track.appendChild(createCarouselIsland(fromEntry, state, 'from'));
+      if (toEntry) track.appendChild(createCarouselIsland(toEntry, state, 'to'));
+      stage.appendChild(track);
     } else {
       if (currentEntry) stage.appendChild(createCarouselIsland(currentEntry, state, 'current'));
     }
