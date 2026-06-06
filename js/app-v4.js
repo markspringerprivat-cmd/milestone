@@ -4867,7 +4867,7 @@ const BOARD_UI_ASSETS = {
 const BOARD_DOCK_LABELS = {
   options: 'Optionen',
   qr: 'QR-Board',
-  treasure: 'Schatz'
+  treasure: ''
 };
 const BOARD_KEY_SUMMARY = [
   { id:'riechen', title:'Grasinsel', image: assetUrl('assets/images/ui/key_grass.png') },
@@ -5169,9 +5169,9 @@ function createDockButton(kind, imgSrc, label, onClick) {
   btn.className = 'board-dock-item';
   btn.dataset.kind = kind;
   btn.dataset.label = label;
-  btn.setAttribute('aria-label', label);
+  btn.setAttribute('aria-label', label || kind);
   btn.setAttribute('aria-pressed', boardDockSelection === kind ? 'true' : 'false');
-  btn.innerHTML = `<img src="${imgSrc}" alt="${esc(label)}"><span class="board-dock-label">${esc(label)}</span>`;
+  btn.innerHTML = `<img src="${imgSrc}" alt="${esc(label || kind)}">${label ? `<span class="board-dock-label">${esc(label)}</span>` : ''}`;
   btn.addEventListener('click', ev => {
     ev.preventDefault();
     ev.stopPropagation();
@@ -5258,15 +5258,6 @@ function renderBoard() {
     right.setAttribute('aria-label','Nächste Insel');
     right.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); moveCarousel(1); });
     inner.appendChild(right);
-    if (nodes.length > 2) {
-      const latest = document.createElement('button');
-      latest.type = 'button';
-      latest.className = 'board-carousel-arrow board-carousel-arrow-latest';
-      latest.textContent = '»';
-      latest.setAttribute('aria-label','Zur neuesten Insel');
-      latest.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); jumpCarouselToLatest(); });
-      inner.appendChild(latest);
-    }
   }
 
   document.body.appendChild(createBoardBottomDock());
