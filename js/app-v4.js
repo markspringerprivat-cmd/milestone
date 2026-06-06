@@ -4823,44 +4823,39 @@
 
 
 
-  /* === 2026-06-05 Single-island carousel board rebuild === */
+  /* === 2026-06-06 v19 rebuilt board island slider === */
   const JOURNEY_BOARD_BG = assetUrl('assets/images/board/universe_bg.png');
   const JOURNEY_ISLAND_IMAGES = {
     start: assetUrl('assets/images/board/start_island.png'),
     riechen: assetUrl('assets/images/board/grass_island.png'),
-    fuehlen: assetUrl('assets/images/board/ice_island.png'),
-    sehen: assetUrl('assets/images/board/cloud_island.png'),
     hoeren: assetUrl('assets/images/board/desert_island.png'),
+    sehen: assetUrl('assets/images/board/cloud_island.png'),
     schmecken: assetUrl('assets/images/board/lava_island.png'),
+    fuehlen: assetUrl('assets/images/board/ice_island.png'),
     boss: assetUrl('assets/images/board/final_island.png')
   };
   const JOURNEY_LABELS = {
-    start: 'Marktplatz des Königreichs',
-    riechen: 'Riechinsel',
-    fuehlen: 'Fühlinsel',
-    sehen: 'Sehinsel',
-    hoeren: 'Hörinsel',
-    schmecken: 'Schmeckinsel',
-    boss: 'Magieschloss'
+    start:'Marktplatz des Königreichs',
+    riechen:'Grasinsel',
+    hoeren:'Wüsteninsel',
+    sehen:'Wolkeninsel',
+    schmecken:'Lavainsel',
+    fuehlen:'Eisinsel',
+    boss:'Magieschloss'
   };
-  const JOURNEY_INTROS = {
-    riechen: 'Ein schwerer, grüner Nebel liegt über der Riechinsel. Zwischen morschen Bäumen und geheimen Duftspuren wartet der nächste Hinweis.',
-    fuehlen: 'Warmer Stein und rauer Sand führen über die Fühlinsel. Nur wer genau spürt, was sich verändert, findet den richtigen Weg.',
-    sehen: 'Auf der Sehinsel funkeln Kristalle und Spiegelportale im Eis. Dort muss {heroName} genau hinschauen, um Täuschung von Wahrheit zu unterscheiden.',
-    hoeren: 'Über der Hörinsel tragen Windbänder jeden Klang weiter. Wer lauscht, erkennt, welcher Ton den Weg zum nächsten Schlüssel öffnet.',
-    schmecken: 'Auf der Schmeckinsel glüht die Lava unter dem Markt der Aromen. Zwischen Feuerküchen und Gewürzen wartet eine heiße Prüfung.',
-    boss: 'Das Magieschloss erhebt sich aus violetter Zauberkraft. Jetzt führt der letzte Weg direkt zum Tor des bösen Magiers.'
+  const ISLAND_STORIES = {
+    riechen: 'Ein grüner Wind trägt den Duft von Moos, Blumen und frischem Gras heran. Auf der Grasinsel wartet der erste Hinweis zwischen Bäumen und alten Steinen.',
+    hoeren: 'Aus der Wüste weht ein leises Echo über Sand und Ruinen. Zwischen heißen Steinen muss genau hingehört werden, um den nächsten Schlüssel zu finden.',
+    sehen: 'Über den Wolken glitzern helle Pfade und leuchtende Kristalle. Wer genau hinsieht, erkennt dort die Spur des Magiers.',
+    schmecken: 'Auf der Lavainsel brodelt die Hitze. Zwischen Feuer, Rauch und glühendem Gestein verbirgt sich ein weiterer Hinweis.',
+    fuehlen: 'Die Eisinsel knistert vor Kälte. Glatte Kristalle, Schnee und frostige Wege prüfen, ob {heroName} mutig weitergeht.',
+    boss: 'Alle fünf Inseln sind geschafft. Der Weg zum Magieschloss liegt offen, und hinter dem Tor wartet die letzte Prüfung.',
+    start: 'Auf dem Marktplatz beginnt die Reise. Dort können neue Steckbriefe gescannt werden, um weitere Inseln freizuschalten.'
   };
   let boardSlideTransition = null;
-  let boardSlideTimer = null;
+  let boardSlideTimer = 0;
 
   function blankFlags() { return { sehen:false, hoeren:false, riechen:false, schmecken:false, fuehlen:false, boss:false }; }
-
-  function clearBoardSlideTimer() {
-    if (boardSlideTimer) window.clearTimeout(boardSlideTimer);
-    boardSlideTimer = null;
-  }
-
   function defaultState() {
     return {
       stateVersion:STATE_VERSION,
@@ -4882,30 +4877,21 @@
       seenIslandStories:blankFlags()
     };
   }
-
-  function sanitizeJourneyOrder(raw) {
-    const valid = [];
-    (Array.isArray(raw) ? raw : []).forEach(id => {
-      if (!KEY_ORDER.includes(id) || valid.includes(id)) return;
-      valid.push(id);
+  function sanitizeJourneyOrder(rawOrder = [], state = getStateSafe()) {
+    const out = [];
+    const valid = new Set(Object.values(state.slots || {}).filter(id => KEY_ORDER.includes(id)));
+    rawOrder.forEach(id => {
+      if (KEY_ORDER.includes(id) && valid.has(id) && !out.includes(id)) out.push(id);
     });
-    return valid.slice(0, 5);
-  }
-
-  function inferJourneyOrder(state) {
-    const order = [];
-    (Array.isArray(state?.slots) ? state.slots : []).forEach(id => {
-      if (!KEY_ORDER.includes(id) || order.includes(id)) return;
-      order.push(id);
+    (state.slots || []).forEach(id => {
+      if (KEY_ORDER.includes(id) && !out.includes(id)) out.push(id);
     });
-    if (state?.activeBiome && KEY_ORDER.includes(state.activeBiome) && !order.includes(state.activeBiome)) order.push(state.activeBiome);
-    return order.slice(0, 5);
+    if (state.activeBiome && KEY_ORDER.includes(state.activeBiome) && !out.includes(state.activeBiome)) out.push(state.activeBiome);
+    return out.slice(0, 5);
   }
-
   function finalBridgeUnlocked(state = getState()) {
     return KEY_ORDER.every(id => biomeIsComplete(id, state));
   }
-
   function normalizeState(raw) {
     const base = defaultState();
     if (!raw || raw.stateVersion !== STATE_VERSION) return base;
@@ -4918,164 +4904,136 @@
     state.slots = Array.from({ length: LEVEL_COUNT }, (_, i) => oldSlots[i] || null);
     state.completed = Array.from({ length: LEVEL_COUNT }, (_, i) => Boolean(oldCompleted[i]));
     if (!Number.isInteger(state.heroIndex) || state.heroIndex < 0 || state.heroIndex >= LEVEL_COUNT) state.heroIndex = null;
-    const inferredReveal = state.completed.every(Boolean)
-      ? LEVEL_COUNT - 1
-      : Math.max(0, Math.min(LEVEL_COUNT - 1, state.completed.findIndex(v => !v)));
-    state.revealedMax = Number.isInteger(state.revealedMax)
-      ? Math.max(0, Math.min(LEVEL_COUNT - 1, state.revealedMax))
-      : inferredReveal;
+    const inferredReveal = state.completed.every(Boolean) ? LEVEL_COUNT - 1 : Math.max(0, Math.min(LEVEL_COUNT - 1, state.completed.findIndex(v => !v)));
+    state.revealedMax = Number.isInteger(state.revealedMax) ? Math.max(0, Math.min(LEVEL_COUNT - 1, state.revealedMax)) : inferredReveal;
     if (state.revealedMax < inferredReveal) state.revealedMax = inferredReveal;
-    const keyFlags = blankFlags();
-    state.keysFound = { ...keyFlags, ...(raw?.keysFound || {}) };
-    state.removedLocks = { ...keyFlags, ...(raw?.removedLocks || {}) };
-    state.seenIslandStories = { ...keyFlags, ...(raw?.seenIslandStories || {}) };
+    state.keysFound = { ...blankFlags(), ...(raw?.keysFound || {}) };
+    state.removedLocks = { ...blankFlags(), ...(raw?.removedLocks || {}) };
+    state.seenIslandStories = { ...blankFlags(), ...(raw?.seenIslandStories || {}) };
     const keySlots = { sehen:0, hoeren:2, riechen:4, schmecken:6, fuehlen:8 };
-    Object.entries(keySlots).forEach(([id, slot]) => {
-      if (state.completed[slot]) state.keysFound[id] = true;
-    });
-    state.journeyOrder = sanitizeJourneyOrder(raw?.journeyOrder);
-    if (!state.journeyOrder.length) state.journeyOrder = inferJourneyOrder(state);
-    if (state.activeBiome && KEY_ORDER.includes(state.activeBiome) && !state.journeyOrder.includes(state.activeBiome)) {
-      state.journeyOrder = [...state.journeyOrder, state.activeBiome].slice(0, 5);
-    }
+    Object.entries(keySlots).forEach(([id, slot]) => { if (state.completed[slot]) state.keysFound[id] = true; });
     if (!state.activeBiome || !BIOME_LEVEL_PLAN[state.activeBiome] || BIOME_LEVEL_PLAN[state.activeBiome].every(slot => state.completed[slot])) state.activeBiome = null;
     if (!state.activeBiome && KEY_ORDER.every(id => state.removedLocks?.[id]) && !state.bossCompleted && !biomeIsComplete('boss', state)) {
       const bossSlot = nextSlotForBiome('boss', state);
-      if (Number.isInteger(bossSlot)) {
-        state.activeBiome = 'boss';
-        state.slots[bossSlot] = 'boss';
-      }
+      if (Number.isInteger(bossSlot)) { state.activeBiome = 'boss'; state.slots[bossSlot] = 'boss'; }
     }
-    const nodes = getCarouselNodes(state);
+    state.journeyOrder = sanitizeJourneyOrder(raw?.journeyOrder || [], state);
+    const nodes = ['start', ...state.journeyOrder, ...(finalBridgeUnlocked(state) ? ['boss'] : [])];
     state.boardCurrentNode = nodes.includes(raw?.boardCurrentNode) ? raw.boardCurrentNode : 'start';
     return state;
   }
+  function getStateSafe() {
+    try { return JSON.parse(localStorage.getItem(STORE)) || defaultState(); } catch (_) { return defaultState(); }
+  }
+  function getState() { try { return normalizeState(JSON.parse(localStorage.getItem(STORE)) || null); } catch (_) { return defaultState(); } }
+  function setState(state) { localStorage.setItem(STORE, JSON.stringify(normalizeState(state))); }
 
+  function boardSlotForSense(id, state = getState()) { return state.slots.findIndex(s => s === id); }
+  function boardNodeForSenseId(id, state = getState()) {
+    if (id === 'boss') return finalBridgeUnlocked(state) ? 'boss' : null;
+    const index = state.journeyOrder.indexOf(id);
+    return index >= 0 ? id : null;
+  }
   function getCarouselNodes(state = getState()) {
-    const nodes = ['start'];
-    sanitizeJourneyOrder(state?.journeyOrder).forEach((_, index) => nodes.push(index + 1));
-    if (finalBridgeUnlocked(state) || state?.activeBiome === 'boss' || state?.bossCompleted) nodes.push(6);
+    const nodes = ['start', ...state.journeyOrder];
+    if (finalBridgeUnlocked(state)) nodes.push('boss');
     return nodes;
   }
-
-  function getCarouselEntry(node, state = getState()) {
-    if (node === 'start') return { node:'start', type:'start', title:JOURNEY_LABELS.start, image:JOURNEY_ISLAND_IMAGES.start };
-    if (String(node) === '6') return { node:6, type:'boss', title:JOURNEY_LABELS.boss, image:JOURNEY_ISLAND_IMAGES.boss };
-    const index = Number(node) - 1;
-    const id = sanitizeJourneyOrder(state.journeyOrder)[index];
-    if (!id) return null;
-    return { node:Number(node), type:id, title:JOURNEY_LABELS[id] || BIOME_BY_SENSE[id]?.label || id, image:JOURNEY_ISLAND_IMAGES[id] };
-  }
-
-  function boardNodeForSenseId(id, state = getState()) {
-    if (id === 'boss') return 6;
-    const index = sanitizeJourneyOrder(state?.journeyOrder).indexOf(id);
-    return index >= 0 ? index + 1 : null;
-  }
-
   function currentBoardNode(state = getState()) {
     const nodes = getCarouselNodes(state);
-    return nodes.includes(state?.boardCurrentNode) ? state.boardCurrentNode : 'start';
+    return nodes.includes(state.boardCurrentNode) ? state.boardCurrentNode : 'start';
   }
-
-  function boardSlotForSense(id, state = getState()) {
-    if (id === 'boss') return nextSlotForBiome('boss', state) ?? questionSlotForBiome('boss') ?? firstSlotForBiome('boss');
-    return nextSlotForBiome(id, state) ?? questionSlotForBiome(id) ?? firstSlotForBiome(id);
+  function getCarouselEntry(node, state = getState()) {
+    if (node === 'start') return { node:'start', type:'start', title:JOURNEY_LABELS.start, image:JOURNEY_ISLAND_IMAGES.start };
+    if (node === 'boss') return { node:'boss', type:'boss', title:JOURNEY_LABELS.boss, image:JOURNEY_ISLAND_IMAGES.boss };
+    if (KEY_ORDER.includes(node)) return { node, type:node, title:JOURNEY_LABELS[node] || BIOME_BY_SENSE[node]?.label || node, image:JOURNEY_ISLAND_IMAGES[node] };
+    return null;
   }
+  function boardPointForSlot(index, state = getState()) { return { x:50, y:50 }; }
+  function boardScreenIsVisible() { const s = $('boardScreen'); return Boolean(s && !s.classList.contains('hidden')); }
 
-  function boardPointForSlot(index, state = getState()) {
-    const node = Number.isInteger(index) ? (state.slots[index] === 'boss' ? 6 : boardNodeForSenseId(state.slots[index], state)) : currentBoardNode(state);
-    return { x:50, y:55, node: node || 'start' };
+  function clearBoardSlideTimer() {
+    if (boardSlideTimer) window.clearTimeout(boardSlideTimer);
+    boardSlideTimer = 0;
   }
-
-  function islandKeyBadge(id) {
-    if (!id || id === 'boss' || !BIOME_BY_SENSE[id]?.key) return '';
-    return `<span class="board-island-key-floating"><img src="${assetUrl(BIOME_BY_SENSE[id].key)}" alt="${esc((JOURNEY_LABELS[id] || id) + '-Schlüssel')}"></span>`;
-  }
-
-  function ensureIslandUnlockedModal() {
-    let modal = $('islandUnlockedModal');
-    if (modal) return modal;
-    modal = document.createElement('div');
-    modal.id = 'islandUnlockedModal';
-    modal.className = 'modal hidden island-unlocked-modal';
-    modal.setAttribute('role', 'dialog');
-    modal.setAttribute('aria-modal', 'true');
-    modal.innerHTML = `
-      <div class="modal-card island-unlocked-card">
-        <h2 id="islandUnlockedTitle">Neue Insel freigeschaltet</h2>
-        <img id="islandUnlockedImage" alt="Neue Insel">
-        <p id="islandUnlockedText"></p>
-        <button id="islandUnlockedOkBtn" class="game-btn primary" type="button">Okay</button>
-      </div>`;
-    document.body.appendChild(modal);
-    modal.addEventListener('click', ev => { if (ev.target === modal) hide(modal); });
-    modal.querySelector('#islandUnlockedOkBtn')?.addEventListener('click', () => hide(modal));
-    return modal;
-  }
-
-  function showIslandUnlockedModal(id) {
-    const modal = ensureIslandUnlockedModal();
-    const title = $('islandUnlockedTitle');
-    const image = $('islandUnlockedImage');
-    const text = $('islandUnlockedText');
-    if (title) title.textContent = `${JOURNEY_LABELS[id] || BIOME_BY_SENSE[id]?.label || 'Neue Insel'} freigeschaltet`;
-    if (image) {
-      image.src = JOURNEY_ISLAND_IMAGES[id] || JOURNEY_ISLAND_IMAGES.start;
-      image.alt = JOURNEY_LABELS[id] || BIOME_BY_SENSE[id]?.label || 'Neue Insel';
-    }
-    if (text) text.textContent = heroText(JOURNEY_INTROS[id] || 'Eine neue Insel wurde freigeschaltet. Nutze den Pfeil rechts, um sie ins Zentrum zu holen.');
-    show(modal);
-  }
-
-
-  function maybeShowIslandStoryForNode(node) {
+  function setCurrentBoardNode(node) {
     const state = getState();
-    const entry = getCarouselEntry(node, state);
-    if (!entry || entry.type === 'start') return;
-    if (state.seenIslandStories?.[entry.type]) return;
-    state.seenIslandStories = { ...blankFlags(), ...(state.seenIslandStories || {}), [entry.type]: true };
+    state.boardCurrentNode = node;
     setState(state);
-    showIslandUnlockedModal(entry.type);
+  }
+  function moveCarousel(delta) {
+    if (boardSlideTransition || !delta) return;
+    const state = getState();
+    const nodes = getCarouselNodes(state);
+    const fromNode = currentBoardNode(state);
+    const fromIndex = Math.max(0, nodes.indexOf(fromNode));
+    const toIndex = Math.max(0, Math.min(nodes.length - 1, fromIndex + delta));
+    if (toIndex === fromIndex) return;
+    const toNode = nodes[toIndex];
+    boardSlideTransition = { from:fromNode, to:toNode, direction:delta > 0 ? 1 : -1 };
+    renderBoard();
+    clearBoardSlideTimer();
+    boardSlideTimer = window.setTimeout(() => {
+      setCurrentBoardNode(toNode);
+      boardSlideTransition = null;
+      renderBoard();
+      window.setTimeout(() => maybeShowIslandStoryForNode(toNode), 260);
+    }, 1120);
+  }
+  function jumpCarouselToLatest() {
+    if (boardSlideTransition) return;
+    const state = getState();
+    const nodes = getCarouselNodes(state);
+    const fromNode = currentBoardNode(state);
+    const toNode = nodes[nodes.length - 1];
+    if (!toNode || toNode === fromNode) return;
+    boardSlideTransition = { from:fromNode, to:toNode, direction:1 };
+    renderBoard();
+    clearBoardSlideTimer();
+    boardSlideTimer = window.setTimeout(() => {
+      setCurrentBoardNode(toNode);
+      boardSlideTransition = null;
+      renderBoard();
+      window.setTimeout(() => maybeShowIslandStoryForNode(toNode), 260);
+    }, 1120);
   }
 
-  function updateBoardStatusText(node, state) {
-    if (!node) return;
+  function ensureBoardShellAssets() {
+    const img = $('boardImage');
+    if (img) {
+      img.src = JOURNEY_BOARD_BG;
+      img.alt = 'Himmel über dem Königreich der Sinne';
+      img.decoding = 'async';
+    }
+    hide($('magicCastleBtn'));
+  }
+  function removeBoardViewportBars() {
+    document.querySelectorAll('.board-world-topbar, .board-market-bottombar').forEach(el => el.remove());
+    document.body.classList.remove('board-ui-active');
+  }
+  function updateBoardStatusText(status, state = getState()) {
+    if (!status) return;
+    const nodes = getCarouselNodes(state);
     const current = currentBoardNode(state);
-    const entry = getCarouselEntry(current, state);
-    if (current === 'start') {
-      node.innerHTML = '<strong>Startinsel:</strong> Tippe die Insel an, um am Marktbrett einen QR-Code zu scannen.';
-      return;
-    }
-    if (entry?.type === 'boss') {
-      node.innerHTML = '<strong>Magieschloss:</strong> Tippe die Insel an, um das Schloss zu öffnen.';
-      return;
-    }
-    node.innerHTML = `<strong>${esc(entry?.title || 'Insel')}:</strong> Tippe die Insel an, um das passende Level zu starten.`;
+    const idx = Math.max(0, nodes.indexOf(current));
+    status.textContent = `${idx + 1} / ${nodes.length}`;
   }
-
-  function carouselSlideClass(node, role) {
-    return (!boardSlideTransition && role === 'current') ? 'is-active' : '';
-  }
-
-  function createCarouselIsland(entry, state, role='current') {
+  function createIslandElement(entry, role) {
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.className = `board-carousel-island board-island--${entry.type === 'start' ? 'start' : (entry.type === 'boss' ? 'castle' : 'sense')} ${carouselSlideClass(entry.node, role)}`;
+    btn.className = 'board-carousel-island';
     btn.dataset.node = String(entry.node);
     btn.dataset.type = String(entry.type);
     btn.dataset.role = String(role || 'current');
-    const keyMarkup = state.keysFound?.[entry.type] ? islandKeyBadge(entry.type) : '';
-    btn.innerHTML = `<img src="${entry.image}" alt="${esc(entry.title)}">${keyMarkup}`;
+    if (role === 'current') btn.classList.add('is-active');
+    btn.innerHTML = `<img src="${entry.image}" alt="${esc(entry.title)}">`;
     btn.addEventListener('click', ev => {
       ev.preventDefault();
       ev.stopPropagation();
-      if (boardSlideTransition) return;
-      handleCarouselIslandClick(entry);
+      if (!boardSlideTransition) handleCarouselIslandClick(entry);
     });
     return btn;
   }
-
   function createBoardStageHero() {
     const hero = document.createElement('div');
     hero.className = 'board-stage-hero';
@@ -5083,101 +5041,32 @@
     hero.innerHTML = `<img class="hero-token" src="${ASSETS.hero}" alt="">`;
     return hero;
   }
-
   function handleCarouselIslandClick(entry) {
+    if (!entry) return;
     const state = getState();
-    if (entry.type === 'start') {
-      if (allLevelsDone(state)) { showOutro(); return; }
-      if (state.activeBiome && Number.isInteger(activeBoardSlot(state))) return;
-      openScan();
-      return;
-    }
-    if (entry.type === 'boss') {
-      showMagicCastleModal();
-      return;
-    }
-    const slot = boardSlotForSense(entry.type, state);
-    if (Number.isInteger(slot)) onLevelNode(slot);
+    if (entry.type === 'start') { openScan(); return; }
+    if (entry.type === 'boss') { onLevelNode(BOSS_SLOT, 'boss'); return; }
+    const slot = nextSlotForBiome(entry.type, state);
+    if (Number.isInteger(slot)) { onLevelNode(slot, entry.type); return; }
+    showVillageScanReminder();
   }
-
-  function moveCarousel(delta) {
-    if (boardSlideTransition) return;
-    const state = getState();
-    const nodes = getCarouselNodes(state);
-    const current = currentBoardNode(state);
-    const fromIndex = Math.max(0, nodes.indexOf(current));
-    const toIndex = Math.max(0, Math.min(nodes.length - 1, fromIndex + delta));
-    if (toIndex === fromIndex) return;
-    const fromNode = nodes[fromIndex];
-    const toNode = nodes[toIndex];
-    boardSlideTransition = { from:fromNode, to:toNode, direction:delta > 0 ? 1 : -1 };
-    renderBoard();
-    clearBoardSlideTimer();
-    boardSlideTimer = window.setTimeout(() => {
-      const live = getState();
-      live.boardCurrentNode = toNode;
-      setState(live);
-      boardSlideTransition = null;
-      clearBoardSlideTimer();
-      renderBoard();
-      maybeShowIslandStoryForNode(toNode);
-    }, 1150);
-  }
-
-  function jumpCarouselToLatest() {
-    if (boardSlideTransition) return;
-    const state = getState();
-    const nodes = getCarouselNodes(state);
-    if (nodes.length <= 2) return;
-    const current = currentBoardNode(state);
-    const fromIndex = Math.max(0, nodes.indexOf(current));
-    const toIndex = nodes.length - 1;
-    if (fromIndex === toIndex) return;
-    const fromNode = nodes[fromIndex];
-    const toNode = nodes[toIndex];
-    boardSlideTransition = { from:fromNode, to:toNode, direction:1 };
-    renderBoard();
-    clearBoardSlideTimer();
-    boardSlideTimer = window.setTimeout(() => {
-      const live = getState();
-      live.boardCurrentNode = toNode;
-      setState(live);
-      boardSlideTransition = null;
-      clearBoardSlideTimer();
-      renderBoard();
-      maybeShowIslandStoryForNode(toNode);
-    }, 1150);
-  }
-
-  function removeBoardViewportBars() {
-    document.querySelectorAll('.board-world-topbar, .board-market-bottombar').forEach(el => el.remove());
-  }
-
-  function boardScreenIsVisible() {
-    const board = $('boardScreen');
-    return Boolean(board && !board.classList.contains('hidden'));
-  }
-
   function renderBoard() {
     const inner = $('mapInner');
-    removeBoardViewportBars();
     if (!inner || !boardScreenIsVisible()) return;
+    document.body.classList.add('board-ui-active');
+    ensureBoardShellAssets();
+    document.querySelectorAll('.board-world-topbar, .board-market-bottombar').forEach(el => el.remove());
+    inner.replaceChildren();
     const state = getState();
-    const boardImage = $('boardImage');
-    if (boardImage) {
-      boardImage.src = JOURNEY_BOARD_BG;
-      boardImage.alt = 'Weltraum-Spielbrett';
-    }
-    inner.innerHTML = '';
     const nodes = getCarouselNodes(state);
     const current = currentBoardNode(state);
-    const currentIndex = Math.max(0, nodes.indexOf(current));
     const currentEntry = getCarouselEntry(current, state) || getCarouselEntry('start', state);
+    const currentIndex = Math.max(0, nodes.indexOf(current));
 
-    const worldBar = document.createElement('div');
-    worldBar.className = 'board-world-topbar';
-    worldBar.textContent = currentEntry?.title || 'Königreich der Sinne';
-    document.body.appendChild(worldBar);
+    const top = document.createElement('div');
+    top.className = 'board-world-topbar';
+    top.textContent = currentEntry?.title || 'Königreich der Sinne';
+    document.body.appendChild(top);
 
     const status = document.createElement('div');
     status.className = 'board-journey-status board-carousel-status';
@@ -5192,11 +5081,11 @@
       track.className = 'board-carousel-track';
       const fromEntry = getCarouselEntry(boardSlideTransition.from, state);
       const toEntry = getCarouselEntry(boardSlideTransition.to, state);
-      if (fromEntry) track.appendChild(createCarouselIsland(fromEntry, state, 'from'));
-      if (toEntry) track.appendChild(createCarouselIsland(toEntry, state, 'to'));
+      if (fromEntry) track.appendChild(createIslandElement(fromEntry, 'from'));
+      if (toEntry) track.appendChild(createIslandElement(toEntry, 'to'));
       stage.appendChild(track);
-    } else {
-      if (currentEntry) stage.appendChild(createCarouselIsland(currentEntry, state, 'current'));
+    } else if (currentEntry) {
+      stage.appendChild(createIslandElement(currentEntry, 'current'));
     }
     stage.appendChild(createBoardStageHero());
     inner.appendChild(stage);
@@ -5205,8 +5094,8 @@
       const left = document.createElement('button');
       left.type = 'button';
       left.className = 'board-carousel-arrow board-carousel-arrow-left';
-      left.setAttribute('aria-label', 'Vorherige Insel anzeigen');
       left.textContent = '‹';
+      left.setAttribute('aria-label','Vorherige Insel');
       left.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); moveCarousel(-1); });
       inner.appendChild(left);
     }
@@ -5214,106 +5103,132 @@
       const right = document.createElement('button');
       right.type = 'button';
       right.className = 'board-carousel-arrow board-carousel-arrow-right';
-      right.setAttribute('aria-label', 'Nächste Insel anzeigen');
       right.textContent = '›';
+      right.setAttribute('aria-label','Nächste Insel');
       right.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); moveCarousel(1); });
       inner.appendChild(right);
-      if (nodes.length > 2 && currentIndex < nodes.length - 1) {
+      if (nodes.length > 2) {
         const latest = document.createElement('button');
         latest.type = 'button';
         latest.className = 'board-carousel-arrow board-carousel-arrow-latest';
-        latest.setAttribute('aria-label', 'Zur neuesten Insel springen');
         latest.textContent = '»';
+        latest.setAttribute('aria-label','Zur neuesten Insel');
         latest.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); jumpCarouselToLatest(); });
         inner.appendChild(latest);
       }
     }
 
-    const marketBar = document.createElement('div');
-    marketBar.className = 'board-market-bottombar';
-
-    const optionsBtn = document.createElement('button');
-    optionsBtn.type = 'button';
-    optionsBtn.className = 'board-bottom-options-btn';
-    optionsBtn.setAttribute('aria-label', 'Optionen öffnen');
-    optionsBtn.textContent = '⚙';
-    optionsBtn.addEventListener('click', ev => {
-      ev.preventDefault();
-      ev.stopPropagation();
-      document.body.classList.add('board-menu-open');
-    });
-    marketBar.appendChild(optionsBtn);
-
-    const marketBtn = document.createElement('button');
-    marketBtn.type = 'button';
-    marketBtn.className = 'game-btn primary board-market-open-btn';
-    marketBtn.textContent = 'Marktbrett';
-    marketBtn.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); openScan(); });
-    marketBar.appendChild(marketBtn);
-
-    document.body.appendChild(marketBar);
-
+    const bottom = document.createElement('div');
+    bottom.className = 'board-market-bottombar';
+    const options = document.createElement('button');
+    options.type = 'button';
+    options.className = 'board-bottom-options-btn';
+    options.textContent = '⚙';
+    options.setAttribute('aria-label','Optionen öffnen');
+    options.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); document.body.classList.add('board-menu-open'); });
+    const market = document.createElement('button');
+    market.type = 'button';
+    market.className = 'game-btn primary board-market-open-btn';
+    market.textContent = 'Marktbrett';
+    market.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); openScan(); });
+    bottom.append(options, market);
+    document.body.appendChild(bottom);
     renderGuide(state);
   }
-
-  async function onLevelNode(index) {
+  function onLevelNode(slot, senseId = null) {
     const state = getState();
-    const completed = state.completed[index];
-    const assigned = state.slots[index];
-    if (!assigned) return;
-    if (isPlaceholderSlot(index)) {
-      if (completed && index !== 1 && index !== 3 && index !== 5 && index !== 7) return;
-      showPlaceholder(index);
-      return;
-    }
-    if (completed) {
-      location.href = pageUrl(assigned === 'boss'
-        ? `level.html?type=boss&slot=${index}`
-        : `level.html?sense=${encodeURIComponent(assigned)}&slot=${index}`);
-      return;
-    }
-    showEncounter(assigned, index);
+    const id = senseId || state.slots?.[slot] || state.activeBiome;
+    if (!id) { showVillageScanReminder(); return; }
+    const current = currentBoardNode(state);
+    if (id !== 'boss' && current !== id) { setCurrentBoardNode(id); renderBoard(); window.setTimeout(() => maybeShowIslandStoryForNode(id), 220); return; }
+    if (id === 'boss' && current !== 'boss') { setCurrentBoardNode('boss'); renderBoard(); window.setTimeout(() => maybeShowIslandStoryForNode('boss'), 220); return; }
+    const next = nextSlotForBiome(id, state);
+    if (Number.isInteger(next)) showEncounter(id, next);
+    else showVillageScanReminder();
   }
-
-  async function unlockSense(id, index) {
-    await stopScanner();
-    resetScanModalState();
+  function unlockSense(id, { silent=false } = {}) {
+    if (!BIOME_LEVEL_PLAN[id]) return false;
     const state = getState();
-    state.started = true;
+    if (id === 'boss') {
+      if (!finalBridgeUnlocked(state)) return false;
+      state.activeBiome = 'boss';
+      state.slots[BOSS_SLOT] = 'boss';
+      state.boardCurrentNode = 'boss';
+      setState(state);
+      if (!silent) showIslandUnlockedModal('boss');
+      renderBoard();
+      return true;
+    }
+    if (!KEY_ORDER.includes(id)) return false;
+    if (!state.journeyOrder.includes(id)) state.journeyOrder.push(id);
+    const firstSlot = firstSlotForBiome(id);
+    if (Number.isInteger(firstSlot) && !state.slots[firstSlot]) state.slots[firstSlot] = id;
     state.activeBiome = id;
-    state.heroIndex = index;
-    state.slots[index] = id;
-    if (KEY_ORDER.includes(id) && !state.journeyOrder.includes(id)) state.journeyOrder = [...state.journeyOrder, id].slice(0, 5);
-    if (!getCarouselNodes(state).includes(state.boardCurrentNode)) state.boardCurrentNode = 'start';
+    state.boardCurrentNode = currentBoardNode(state);
+    setState(state);
+    if (!silent) showIslandUnlockedModal(id);
+    renderBoard();
+    return true;
+  }
+  async function animateHeroHome(fromSlot, viaSlot = null) {
+    const state = getState();
+    if (finalBridgeUnlocked(state) && !state.journeyOrder.includes('boss')) state.boardCurrentNode = currentBoardNode(state);
     setState(state);
     renderBoard();
-    playSound('levelunlocked');
-    const modal = ensureIslandUnlockedModal();
-    const title = $('islandUnlockedTitle');
-    const image = $('islandUnlockedImage');
-    const text = $('islandUnlockedText');
-    if (title) title.textContent = `${JOURNEY_LABELS[id] || 'Neue Insel'} freigeschaltet`;
-    if (image) { image.src = JOURNEY_ISLAND_IMAGES[id] || JOURNEY_ISLAND_IMAGES.start; image.alt = JOURNEY_LABELS[id] || 'Neue Insel'; }
-    if (text) text.textContent = 'Eine neue Insel wurde freigeschaltet. Nutze den Pfeil rechts, um sie ins Zentrum zu holen.';
-    show(modal);
   }
-
-  async function animateHeroHome(fromSlot, viaSlot = null) {
-    renderBoard();
-    showVillageScanReminder();
-  }
-
   function showVillageScanReminder() {
     const modal = ensureIslandUnlockedModal();
-    const title = $('islandUnlockedTitle');
-    const image = $('islandUnlockedImage');
-    const text = $('islandUnlockedText');
-    if (title) title.textContent = 'Zurück zur Startinsel';
-    if (image) {
-      image.src = JOURNEY_ISLAND_IMAGES.start;
-      image.alt = 'Startinsel';
-    }
-    if (text) text.textContent = 'Tippe mit dem Pfeil zurück zur Startinsel und scanne im Dorf einen neuen Steckbrief.';
+    modal.querySelector('[data-island-image]').src = JOURNEY_ISLAND_IMAGES.start;
+    modal.querySelector('[data-island-kicker]').textContent = 'Nächster Steckbrief';
+    modal.querySelector('[data-island-title]').textContent = 'Zurück zum Marktplatz';
+    modal.querySelector('[data-island-text]').textContent = 'Scanne am Marktbrett auf der Startinsel einen neuen Steckbrief, um die nächste Insel freizuschalten.';
+    show(modal);
+  }
+  function ensureIslandUnlockedModal() {
+    let modal = $('islandUnlockedModal');
+    if (modal) return modal;
+    modal = document.createElement('div');
+    modal.id = 'islandUnlockedModal';
+    modal.className = 'modal hidden island-unlocked-modal';
+    modal.innerHTML = `<div class="modal-card encounter-card island-unlocked-card"><img data-island-image class="character-img" alt="Neue Insel"><div class="encounter-text"><span data-island-kicker class="kicker">Insel</span><h2 data-island-title>Neue Insel freigeschaltet</h2><p data-island-text></p><div class="button-line center"><button class="game-btn primary" type="button" data-island-close>Weiter</button></div></div></div>`;
+    modal.querySelector('[data-island-close]').addEventListener('click', () => hide(modal));
+    document.body.appendChild(modal);
+    return modal;
+  }
+  function showIslandUnlockedModal(id) {
+    const modal = ensureIslandUnlockedModal();
+    const image = modal.querySelector('[data-island-image]');
+    const kicker = modal.querySelector('[data-island-kicker]');
+    const title = modal.querySelector('[data-island-title]');
+    const text = modal.querySelector('[data-island-text]');
+    const label = JOURNEY_LABELS[id] || BIOME_BY_SENSE[id]?.label || 'Neue Insel';
+    image.src = JOURNEY_ISLAND_IMAGES[id] || JOURNEY_ISLAND_IMAGES.start;
+    kicker.textContent = id === 'boss' ? 'Finale Insel' : 'Neue Insel freigeschaltet';
+    title.textContent = label;
+    text.textContent = id === 'boss' ? 'Die finale Insel wurde freigeschaltet. Blättere nach rechts bis zum Magieschloss.' : `Die ${label} wurde freigeschaltet. Nutze den Pfeil rechts, um zur neuen Insel zu reisen.`;
+    show(modal);
+  }
+  function ensureIslandStoryModal() {
+    let modal = $('islandStoryModal');
+    if (modal) return modal;
+    modal = document.createElement('div');
+    modal.id = 'islandStoryModal';
+    modal.className = 'modal hidden island-story-modal';
+    modal.innerHTML = `<div class="modal-card island-story-card"><h2 data-island-story-title>Insel</h2><p data-island-story-text></p><div class="button-line center"><button class="game-btn primary" type="button" data-island-story-close>Weiter</button></div></div>`;
+    modal.querySelector('[data-island-story-close]').addEventListener('click', () => hide(modal));
+    document.body.appendChild(modal);
+    return modal;
+  }
+  function maybeShowIslandStoryForNode(node) {
+    if (!boardScreenIsVisible() || !node || node === 'start') return;
+    const state = getState();
+    const key = node === 'boss' ? 'boss' : node;
+    if (!state.seenIslandStories || state.seenIslandStories[key]) return;
+    state.seenIslandStories[key] = true;
+    setState(state);
+    const modal = ensureIslandStoryModal();
+    modal.querySelector('[data-island-story-title]').textContent = JOURNEY_LABELS[key] || 'Neue Insel';
+    modal.querySelector('[data-island-story-text]').textContent = heroText(ISLAND_STORIES[key] || 'Eine neue Insel liegt vor dir.');
     show(modal);
   }
   document.addEventListener('DOMContentLoaded', () => {
