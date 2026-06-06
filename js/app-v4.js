@@ -1169,7 +1169,7 @@
   function showBoard(firstStart=false, options={}) {
     const { playMusic = true } = options;
     document.body.classList.add('board-ui-active');
-    hide($('introScreen')); show($('boardScreen')); show($('openBoardMenuBtn')); show($('belowBoard'));
+    hide($('introScreen')); show($('boardScreen')); hide($('openBoardMenuBtn')); hide($('belowBoard')); document.body.classList.remove('board-menu-open');
     resetBoardViewport();
     updateMapGeometry(); renderBoard();
     startMagicCastleBoardFloat();
@@ -1687,8 +1687,9 @@
     document.body.classList.remove('board-menu-open');
     hide($('introScreen'));
     show($('boardScreen'));
-    show($('openBoardMenuBtn'));
-    show($('belowBoard'));
+    hide($('openBoardMenuBtn'));
+    hide($('belowBoard'));
+    document.body.classList.remove('board-menu-open');
     renderBoard();
     playSound('levelunlocked');
   }
@@ -4855,6 +4856,27 @@
   let boardSlideTransition = null;
   let boardSlideTimer = 0;
 
+let boardDockSelection = null;
+const BOARD_UI_ASSETS = {
+  topBar: assetUrl('assets/images/custom_ui/name_board.png'),
+  options: assetUrl('assets/images/custom_ui/options_shield.png'),
+  qr: assetUrl('assets/images/custom_ui/qr_board.png'),
+  bottomGrass: assetUrl('assets/images/custom_ui/down_grass.png'),
+  treasure: assetUrl('assets/images/custom_ui/treasure_chest.png')
+};
+const BOARD_DOCK_LABELS = {
+  options: 'Optionen',
+  qr: 'QR-Board',
+  treasure: 'Schatz'
+};
+const BOARD_KEY_SUMMARY = [
+  { id:'riechen', title:'Grasinsel', image: assetUrl('assets/images/ui/key_grass.png') },
+  { id:'hoeren', title:'Wüsteninsel', image: assetUrl('assets/images/ui/key_sand.png') },
+  { id:'fuehlen', title:'Eisinsel', image: assetUrl('assets/images/ui/key_ice.png') },
+  { id:'schmecken', title:'Lavainsel', image: assetUrl('assets/images/ui/key_lava.png') },
+  { id:'sehen', title:'Himmelsinsel', image: assetUrl('assets/images/ui/key_cloud.png') }
+];
+
   function blankFlags() { return { sehen:false, hoeren:false, riechen:false, schmecken:false, fuehlen:false, boss:false }; }
   function defaultState() {
     return {
@@ -5034,107 +5056,223 @@
     });
     return btn;
   }
-  function createBoardStageHero() {
-    const hero = document.createElement('div');
-    hero.className = 'board-stage-hero';
-    hero.setAttribute('aria-hidden', 'true');
-    hero.innerHTML = `<img class="hero-token" src="${ASSETS.hero}" alt="">`;
-    return hero;
+
+function createBoardStageHero() {
+  const hero = document.createElement('div');
+  hero.className = 'board-stage-hero';
+  hero.setAttribute('aria-hidden', 'true');
+  hero.innerHTML = `<img class="hero-token" src="${ASSETS.hero}" alt="">`;
+  return hero;
+}
+function setBoardDockSelection(kind = null) {
+  boardDockSelection = kind;
+  document.querySelectorAll('.board-dock-item').forEach(btn => {
+    btn.classList.toggle('is-selected', btn.dataset.kind === kind);
+    btn.setAttribute('aria-pressed', btn.dataset.kind === kind ? 'true' : 'false');
+  });
+}
+function ensureBoardOverlayModals() {
+  let treasureModal = $('treasureModal');
+  if (!treasureModal) {
+    treasureModal = document.createElement('div');
+    treasureModal.id = 'treasureModal';
+    treasureModal.className = 'modal hidden';
+    treasureModal.innerHTML = `
+      <div class="modal-card board-popup-card" role="dialog" aria-modal="true" aria-labelledby="treasureTitle">
+        <div class="board-popup-head">
+          <div>
+            <span class="kicker">Schatzkammer</span>
+            <h2 id="treasureTitle">Gefundene Schlüssel</h2>
+          </div>
+          <button type="button" class="round-btn" data-close-treasure aria-label="Schließen">×</button>
+        </div>
+        <p class="board-popup-copy">Hier siehst du, welche Schlüssel bereits gesammelt wurden.</p>
+        <div id="treasureKeyGrid" class="board-key-grid"></div>
+      </div>`;
+    treasureModal.addEventListener('click', ev => { if (ev.target === treasureModal) hide(treasureModal); });
+    treasureModal.querySelector('[data-close-treasure]')?.addEventListener('click', () => hide(treasureModal));
+    document.body.appendChild(treasureModal);
   }
-  function handleCarouselIslandClick(entry) {
-    if (!entry) return;
-    const state = getState();
-    if (entry.type === 'start') { openScan(); return; }
-    if (entry.type === 'boss') { onLevelNode(BOSS_SLOT, 'boss'); return; }
-    const slot = nextSlotForBiome(entry.type, state);
-    if (Number.isInteger(slot)) { onLevelNode(slot, entry.type); return; }
-    showVillageScanReminder();
-  }
-  function renderBoard() {
-    const inner = $('mapInner');
-    if (!inner || !boardScreenIsVisible()) return;
-    document.body.classList.add('board-ui-active');
-    ensureBoardShellAssets();
-    document.querySelectorAll('.board-world-topbar, .board-market-bottombar').forEach(el => el.remove());
-    inner.replaceChildren();
-    const state = getState();
-    const nodes = getCarouselNodes(state);
-    const current = currentBoardNode(state);
-    const currentEntry = getCarouselEntry(current, state) || getCarouselEntry('start', state);
-    const currentIndex = Math.max(0, nodes.indexOf(current));
-
-    const top = document.createElement('div');
-    top.className = 'board-world-topbar';
-    top.textContent = currentEntry?.title || 'Königreich der Sinne';
-    document.body.appendChild(top);
-
-    const status = document.createElement('div');
-    status.className = 'board-journey-status board-carousel-status';
-    updateBoardStatusText(status, state);
-    inner.appendChild(status);
-
-    const stage = document.createElement('div');
-    stage.className = 'board-carousel-stage';
-    if (boardSlideTransition) {
-      stage.classList.add('is-sliding', boardSlideTransition.direction > 0 ? 'slide-next' : 'slide-prev');
-      const track = document.createElement('div');
-      track.className = 'board-carousel-track';
-      const fromEntry = getCarouselEntry(boardSlideTransition.from, state);
-      const toEntry = getCarouselEntry(boardSlideTransition.to, state);
-      if (fromEntry) track.appendChild(createIslandElement(fromEntry, 'from'));
-      if (toEntry) track.appendChild(createIslandElement(toEntry, 'to'));
-      stage.appendChild(track);
-    } else if (currentEntry) {
-      stage.appendChild(createIslandElement(currentEntry, 'current'));
-    }
-    stage.appendChild(createBoardStageHero());
-    inner.appendChild(stage);
-
-    if (currentIndex > 0) {
-      const left = document.createElement('button');
-      left.type = 'button';
-      left.className = 'board-carousel-arrow board-carousel-arrow-left';
-      left.textContent = '‹';
-      left.setAttribute('aria-label','Vorherige Insel');
-      left.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); moveCarousel(-1); });
-      inner.appendChild(left);
-    }
-    if (currentIndex < nodes.length - 1) {
-      const right = document.createElement('button');
-      right.type = 'button';
-      right.className = 'board-carousel-arrow board-carousel-arrow-right';
-      right.textContent = '›';
-      right.setAttribute('aria-label','Nächste Insel');
-      right.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); moveCarousel(1); });
-      inner.appendChild(right);
-      if (nodes.length > 2) {
-        const latest = document.createElement('button');
-        latest.type = 'button';
-        latest.className = 'board-carousel-arrow board-carousel-arrow-latest';
-        latest.textContent = '»';
-        latest.setAttribute('aria-label','Zur neuesten Insel');
-        latest.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); jumpCarouselToLatest(); });
-        inner.appendChild(latest);
+  let optionsModal = $('boardOptionsModal');
+  if (!optionsModal) {
+    optionsModal = document.createElement('div');
+    optionsModal.id = 'boardOptionsModal';
+    optionsModal.className = 'modal hidden';
+    optionsModal.innerHTML = `
+      <div class="modal-card board-popup-card" role="dialog" aria-modal="true" aria-labelledby="boardOptionsTitle">
+        <div class="board-popup-head">
+          <div>
+            <span class="kicker">Optionen</span>
+            <h2 id="boardOptionsTitle">Einstellungen & Aktionen</h2>
+          </div>
+          <button type="button" class="round-btn" data-close-options aria-label="Schließen">×</button>
+        </div>
+        <p class="board-popup-copy">Hier findest du die wichtigsten Einstellungen für das Spielbrett.</p>
+        <div class="board-option-actions">
+          <button id="boardOptionsSoundBtn" class="game-btn secondary" type="button">Ton umschalten</button>
+          <a class="game-btn secondary" href="./codes.html">QR-Codes anzeigen</a>
+          <button id="boardOptionsUnlockBtn" class="game-btn secondary" type="button">Alle Schlüssel freischalten</button>
+          <button id="boardOptionsResetBtn" class="game-btn danger" type="button">Spielbrett zurücksetzen</button>
+        </div>
+      </div>`;
+    optionsModal.addEventListener('click', ev => { if (ev.target === optionsModal) hide(optionsModal); });
+    optionsModal.querySelector('[data-close-options]')?.addEventListener('click', () => hide(optionsModal));
+    optionsModal.querySelector('#boardOptionsSoundBtn')?.addEventListener('click', () => $('globalSpeakerBtn')?.click());
+    optionsModal.querySelector('#boardOptionsUnlockBtn')?.addEventListener('click', () => { unlockAllLevels(); hide(optionsModal); });
+    optionsModal.querySelector('#boardOptionsResetBtn')?.addEventListener('click', () => {
+      if (confirm('Spielbrett wirklich zurücksetzen?')) {
+        localStorage.removeItem(STORE);
+        localStorage.removeItem(RETURN_STORE);
+        location.href = pageUrl('index.html');
       }
-    }
-
-    const bottom = document.createElement('div');
-    bottom.className = 'board-market-bottombar';
-    const options = document.createElement('button');
-    options.type = 'button';
-    options.className = 'board-bottom-options-btn';
-    options.textContent = '⚙';
-    options.setAttribute('aria-label','Optionen öffnen');
-    options.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); document.body.classList.add('board-menu-open'); });
-    const market = document.createElement('button');
-    market.type = 'button';
-    market.className = 'game-btn primary board-market-open-btn';
-    market.textContent = 'Marktbrett';
-    market.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); openScan(); });
-    bottom.append(options, market);
-    document.body.appendChild(bottom);
-    renderGuide(state);
+    });
+    document.body.appendChild(optionsModal);
   }
+  return { treasureModal, optionsModal };
+}
+function showTreasureModal() {
+  const { treasureModal } = ensureBoardOverlayModals();
+  const grid = $('treasureKeyGrid');
+  if (grid) {
+    const state = getState();
+    grid.innerHTML = '';
+    BOARD_KEY_SUMMARY.forEach(item => {
+      const found = Boolean(state.keysFound?.[item.id] || biomeIsComplete(item.id, state));
+      const card = document.createElement('div');
+      card.className = `board-key-card ${found ? 'is-found' : 'is-missing'}`;
+      card.innerHTML = `
+        <img src="${item.image}" alt="${esc(item.title)} Schlüssel">
+        <h3>${esc(item.title)}</h3>
+        <p>${found ? 'Schlüssel gefunden' : 'Noch nicht gefunden'}</p>`;
+      grid.appendChild(card);
+    });
+  }
+  show(treasureModal);
+}
+function showBoardOptionsModal() {
+  const { optionsModal } = ensureBoardOverlayModals();
+  const soundBtn = $('boardOptionsSoundBtn');
+  if (soundBtn) soundBtn.textContent = muted ? 'Ton einschalten' : 'Ton ausschalten';
+  show(optionsModal);
+}
+function createBoardTopBar(title) {
+  const top = document.createElement('div');
+  top.className = 'board-world-topbar';
+  top.innerHTML = `
+    <img class="board-topbar-art" src="${BOARD_UI_ASSETS.topBar}" alt="Namensschild">
+    <div class="board-world-topbar-text">${esc(title || 'Königreich der Sinne')}</div>`;
+  return top;
+}
+function createDockButton(kind, imgSrc, label, onClick) {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'board-dock-item';
+  btn.dataset.kind = kind;
+  btn.dataset.label = label;
+  btn.setAttribute('aria-label', label);
+  btn.setAttribute('aria-pressed', boardDockSelection === kind ? 'true' : 'false');
+  btn.innerHTML = `<img src="${imgSrc}" alt="${esc(label)}"><span class="board-dock-label">${esc(label)}</span>`;
+  btn.addEventListener('click', ev => {
+    ev.preventDefault();
+    ev.stopPropagation();
+    setBoardDockSelection(kind);
+    onClick?.();
+  });
+  return btn;
+}
+function createBoardBottomDock() {
+  const bottom = document.createElement('div');
+  bottom.className = 'board-market-bottombar';
+  const items = document.createElement('div');
+  items.className = 'board-dock-items';
+  items.appendChild(createDockButton('options', BOARD_UI_ASSETS.options, BOARD_DOCK_LABELS.options, showBoardOptionsModal));
+  items.appendChild(createDockButton('qr', BOARD_UI_ASSETS.qr, BOARD_DOCK_LABELS.qr, () => openScan()));
+  items.appendChild(createDockButton('treasure', BOARD_UI_ASSETS.treasure, BOARD_DOCK_LABELS.treasure, showTreasureModal));
+  const grass = document.createElement('img');
+  grass.className = 'board-bottom-foreground';
+  grass.src = BOARD_UI_ASSETS.bottomGrass;
+  grass.alt = 'Wiesenleiste';
+  bottom.append(items, grass);
+  return bottom;
+}
+function handleCarouselIslandClick(entry) {
+  if (!entry) return;
+  const state = getState();
+  if (entry.type === 'start') { openScan(); return; }
+  if (entry.type === 'boss') { onLevelNode(BOSS_SLOT, 'boss'); return; }
+  const slot = nextSlotForBiome(entry.type, state);
+  if (Number.isInteger(slot)) { onLevelNode(slot, entry.type); return; }
+  showVillageScanReminder();
+}
+function renderBoard() {
+  const inner = $('mapInner');
+  if (!inner || !boardScreenIsVisible()) return;
+  document.body.classList.add('board-ui-active');
+  ensureBoardShellAssets();
+  document.querySelectorAll('.board-world-topbar, .board-market-bottombar').forEach(el => el.remove());
+  inner.replaceChildren();
+  const state = getState();
+  const nodes = getCarouselNodes(state);
+  const current = currentBoardNode(state);
+  const currentEntry = getCarouselEntry(current, state) || getCarouselEntry('start', state);
+  const currentIndex = Math.max(0, nodes.indexOf(current));
+
+  document.body.appendChild(createBoardTopBar(currentEntry?.title || 'Königreich der Sinne'));
+
+  const status = document.createElement('div');
+  status.className = 'board-journey-status board-carousel-status';
+  updateBoardStatusText(status, state);
+  inner.appendChild(status);
+
+  const stage = document.createElement('div');
+  stage.className = 'board-carousel-stage';
+  if (boardSlideTransition) {
+    stage.classList.add('is-sliding', boardSlideTransition.direction > 0 ? 'slide-next' : 'slide-prev');
+    const track = document.createElement('div');
+    track.className = 'board-carousel-track';
+    const fromEntry = getCarouselEntry(boardSlideTransition.from, state);
+    const toEntry = getCarouselEntry(boardSlideTransition.to, state);
+    if (fromEntry) track.appendChild(createIslandElement(fromEntry, 'from'));
+    if (toEntry) track.appendChild(createIslandElement(toEntry, 'to'));
+    stage.appendChild(track);
+  } else if (currentEntry) {
+    stage.appendChild(createIslandElement(currentEntry, 'current'));
+  }
+  stage.appendChild(createBoardStageHero());
+  inner.appendChild(stage);
+
+  if (currentIndex > 0) {
+    const left = document.createElement('button');
+    left.type = 'button';
+    left.className = 'board-carousel-arrow board-carousel-arrow-left';
+    left.textContent = '‹';
+    left.setAttribute('aria-label','Vorherige Insel');
+    left.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); moveCarousel(-1); });
+    inner.appendChild(left);
+  }
+  if (currentIndex < nodes.length - 1) {
+    const right = document.createElement('button');
+    right.type = 'button';
+    right.className = 'board-carousel-arrow board-carousel-arrow-right';
+    right.textContent = '›';
+    right.setAttribute('aria-label','Nächste Insel');
+    right.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); moveCarousel(1); });
+    inner.appendChild(right);
+    if (nodes.length > 2) {
+      const latest = document.createElement('button');
+      latest.type = 'button';
+      latest.className = 'board-carousel-arrow board-carousel-arrow-latest';
+      latest.textContent = '»';
+      latest.setAttribute('aria-label','Zur neuesten Insel');
+      latest.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); jumpCarouselToLatest(); });
+      inner.appendChild(latest);
+    }
+  }
+
+  document.body.appendChild(createBoardBottomDock());
+  setBoardDockSelection(boardDockSelection);
+  renderGuide(state);
+}
   function onLevelNode(slot, senseId = null) {
     const state = getState();
     const id = senseId || state.slots?.[slot] || state.activeBiome;
