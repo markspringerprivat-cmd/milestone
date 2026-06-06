@@ -9732,3 +9732,165 @@ body[data-page="board"] .board-bottom-foreground{
   body[data-page="board"] .board-dock-item{bottom:10px!important;}
   body[data-page="board"] .board-dock-item[data-kind="qr"]{bottom:4px!important;width:104px!important;}
 }
+
+
+/* === v22 board polish: transparent bars, centered title, dock tune-up === */
+body[data-page="board"] .speaker-btn{
+  top:max(84px, calc(env(safe-area-inset-top, 0px) + 74px))!important;
+  z-index:1400!important;
+}
+body[data-page="board"].board-ui-active .board-world-topbar,
+body[data-page="board"] .board-world-topbar{
+  left:50%!important;
+  right:auto!important;
+  top:max(6px, env(safe-area-inset-top, 0px))!important;
+  width:clamp(260px, 42vw, 420px)!important;
+  height:auto!important;
+  min-height:0!important;
+  padding:0!important;
+  transform:translateX(-50%)!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  overflow:visible!important;
+  z-index:1200!important;
+}
+body[data-page="board"] .board-topbar-art{
+  width:100%!important;
+  height:auto!important;
+  display:block!important;
+  object-fit:contain!important;
+  object-position:center center!important;
+  filter:drop-shadow(0 14px 24px rgba(0,0,0,.28))!important;
+}
+body[data-page="board"] .board-world-topbar-text{
+  position:absolute!important;
+  inset:auto 19% 23% 19%!important;
+  top:36%!important;
+  bottom:auto!important;
+  height:auto!important;
+  transform:translateY(-50%)!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  color:#6d4218!important;
+  font-weight:900!important;
+  text-align:center!important;
+  line-height:1.05!important;
+  letter-spacing:.01em!important;
+  text-shadow:0 1px 0 rgba(255,255,255,.82)!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  font-size:clamp(.95rem, 2vw, 1.35rem)!important;
+}
+body[data-page="board"].board-ui-active .board-market-bottombar,
+body[data-page="board"] .board-market-bottombar{
+  left:0!important;
+  right:0!important;
+  bottom:0!important;
+  width:100%!important;
+  height:min(175px, 22svh)!important;
+  min-height:0!important;
+  padding:0!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  overflow:visible!important;
+  z-index:1100!important;
+}
+body[data-page="board"] .board-market-bottombar::before,
+body[data-page="board"] .board-market-bottombar::after{
+  content:none!important;
+  display:none!important;
+}
+body[data-page="board"] .board-dock-items{
+  z-index:2!important;
+}
+body[data-page="board"] .board-bottom-foreground{
+  z-index:1!important;
+  width:100%!important;
+  height:auto!important;
+  bottom:0!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+}
+body[data-page="board"] .board-dock-item{
+  z-index:2!important;
+  bottom:8px!important;
+}
+body[data-page="board"] .board-dock-item[data-kind="options"]{
+  left:12%!important;
+  width:clamp(92px, 12vw, 140px)!important;
+  bottom:4px!important;
+}
+body[data-page="board"] .board-dock-item[data-kind="qr"]{
+  left:50%!important;
+  width:clamp(150px, 18vw, 240px)!important;
+  bottom:0!important;
+}
+body[data-page="board"] .board-dock-item[data-kind="treasure"]{
+  right:12%!important;
+  width:clamp(96px, 12.5vw, 150px)!important;
+  bottom:28px!important;
+}
+body[data-page="board"] .board-dock-item .board-dock-label{
+  z-index:3!important;
+}
+body[data-page="board"] .board-dock-item.is-selected{
+  transform:translateY(-8px) scale(1.05)!important;
+}
+body[data-page="board"] .board-dock-item[data-kind="qr"].is-selected{
+  transform:translateX(-50%) translateY(-10px) scale(1.05)!important;
+}
+body[data-page="board"] .modal,
+body[data-page="board"] .mini-tutorial-modal,
+body[data-page="board"] .page-transition-overlay{
+  z-index:3000!important;
+}
+body[data-page="board"] .modal .modal-card,
+body[data-page="board"] #scanModal .scan-card,
+body[data-page="board"] .board-popup-card,
+body[data-page="board"] .mini-tutorial-card{
+  position:relative!important;
+  z-index:3001!important;
+}
+@media (max-width: 640px){
+  body[data-page="board"] .speaker-btn{
+    top:max(82px, calc(env(safe-area-inset-top, 0px) + 72px))!important;
+  }
+  body[data-page="board"].board-ui-active .board-world-topbar,
+  body[data-page="board"] .board-world-topbar{
+    width:min(310px, 82vw)!important;
+    top:max(4px, env(safe-area-inset-top, 0px))!important;
+  }
+  body[data-page="board"] .board-world-topbar-text{
+    left:18%!important;
+    right:18%!important;
+    top:35.5%!important;
+    font-size:clamp(.9rem, 4.1vw, 1.08rem)!important;
+  }
+  body[data-page="board"].board-ui-active .board-market-bottombar,
+  body[data-page="board"] .board-market-bottombar{
+    height:155px!important;
+  }
+  body[data-page="board"] .board-dock-item{
+    bottom:3px!important;
+  }
+  body[data-page="board"] .board-dock-item[data-kind="options"]{
+    left:8%!important;
+    width:92px!important;
+    bottom:-2px!important;
+  }
+  body[data-page="board"] .board-dock-item[data-kind="qr"]{
+    width:136px!important;
+    bottom:-2px!important;
+  }
+  body[data-page="board"] .board-dock-item[data-kind="treasure"]{
+    right:8%!important;
+    width:94px!important;
+    bottom:22px!important;
+  }
+}
